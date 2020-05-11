@@ -16,11 +16,7 @@ class BookServiceTest {
 
     @Test
     @Given("author")
-    @Verify(
-        value = "books",
-        included = {"id", "title", "author.id", "author.firstName", "author.lastName"}
-    )
-
+    @Verify(value = "books", included = {"id", "title", "author.id", "author.firstName", "author.lastName"})
     void should_get_books_by_author() {
         books = bookService.findBooks(author);
     }
