@@ -2,10 +2,11 @@ package com.recordo.interceptor;
 
 import com.recordo.Verifies;
 import com.recordo.Verify;
-import com.recordo.json.JsonPropertyFilter;
 import com.recordo.json.JsonConverter;
+import com.recordo.json.JsonPropertyFilter;
 import com.recordo.utils.Files;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -23,6 +24,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.reflect.MethodUtils.getAnnotation;
 
+@Slf4j
 public class VerifyInterceptor extends AbstractInterceptor {
 
     public VerifyInterceptor(String rootFolder, JsonConverter jsonConverter) {
@@ -85,6 +87,8 @@ public class VerifyInterceptor extends AbstractInterceptor {
                     .map(expectedJson -> assertJson(expectedJson, actualJson, verify))
                     .orElseThrow(() -> new FileNotFoundException(format("File not found: %s", fileName)));
 
+            log.info("Assert actual `{}` value equals to expected in `{}`", verify.value(), fileName);
+
             return Optional.empty();
 
         } catch (AssertionError | FileNotFoundException e) {
@@ -104,6 +108,7 @@ public class VerifyInterceptor extends AbstractInterceptor {
 
     @SneakyThrows
     private String assertJson(String expectedJson, String actualJson, Verify verify) {
+        log.debug("Assert expected \n{} is equals to actual \n{}", expectedJson, actualJson);
         JSONAssert.assertEquals(expectedJson, actualJson, compareMode(verify));
         return actualJson;
     }
@@ -113,7 +118,7 @@ public class VerifyInterceptor extends AbstractInterceptor {
                 .filter(mode -> mode.isExtensible() == verify.extensible())
                 .filter(mode -> mode.hasStrictOrder() == verify.strictOrder())
                 .findAny()
-                .get();
+                .orElseThrow(() -> new IllegalArgumentException("Compare mode not found"));
     }
 
     private List<Verify> findVerifyAnnotations(Method method) {

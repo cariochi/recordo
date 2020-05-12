@@ -5,6 +5,7 @@ import com.recordo.Givens;
 import com.recordo.json.JsonConverter;
 import com.recordo.utils.Files;
 import com.recordo.utils.ReflectionUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -19,6 +20,7 @@ import static com.recordo.utils.ReflectionUtils.writeField;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.reflect.MethodUtils.getAnnotation;
 
+@Slf4j
 public class GivenInterceptor extends AbstractInterceptor {
 
     public GivenInterceptor(String rootFolder, JsonConverter jsonConverter) {
@@ -43,6 +45,8 @@ public class GivenInterceptor extends AbstractInterceptor {
         files.readFromFile(fileName)
                 .map(json -> jsonConverter.fromJson(json, fieldType))
                 .ifPresent(o -> writeField(testInstance, given.value(), o));
+
+        log.info("`{}` value was read from `{}`", given.value(), fileName);
     }
 
     private List<Given> findGivenAnnotations(Method method) {
