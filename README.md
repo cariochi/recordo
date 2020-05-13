@@ -5,12 +5,12 @@ The `@Verify` annotation allows asserting that the expected value (saved in a `J
 
 The `@Given` annotation allows initializing a test field from a `JSON` file.
 
-The @Verify annotation concept is:
-A developer creates a test and runs it the first time;
-The test fails because the expected file is absent and `recordo` extension saves the current actual test result as expected;
-A developer verifies the saved file;
-The test is ready.
-In case if something changes in code and the actual value is changed, the test will fail and `recordo` extension will overwrite the expected file by the new actual value. A developer can compare what was changed in IDE (e.g. compare with the committed version or local history) and reverse file if it was a bug or leave a new version if it was valid logic change.
+The `@Verify` annotation using concept is:
+1. A developer creates a test and runs it the first time;
+1. The test fails because the expected file is absent and `Recordo` extension saves the current actual test result as expected;
+1. A developer verifies the saved file;
+1. The test is ready.
+1. In case if something changes in code and the actual value is changed, the test will fail and `Recordo` extension will overwrite the expected file by the new actual value. A developer can compare what was changed in IDE (e.g. compare with the committed version or local history) and reverse file if it was a bug or leave a new version if it was valid logic change.
 
 ```java
 @ExtendWith(RecordoExtension.class)
