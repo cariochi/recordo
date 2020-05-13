@@ -23,7 +23,7 @@ class BookServiceTest {
     @Test
     @Verify("book")
     void should_get_book_by_id() {
-        books = bookService.findBook(33L);
+        book = bookService.findBook(33L);
     }
 
     @Test

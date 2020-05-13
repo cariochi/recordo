@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
+import static org.apache.commons.lang3.StringUtils.replace;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeField;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,17 +36,17 @@ class VerifyInterceptorTest {
     @Test
     @SneakyThrows
     void object_extensible() {
-        mockExpectedFile("{\n" +
-                         "   \"id\" : 1,\n" +
-                         "   \"text\" : \"Test Object 1\",\n" +
-                         "   \"children\" : [ {\n" +
-                         "     \"id\" : 2,\n" +
-                         "     \"text\" : \"Test Object 2\"\n" +
-                         "   }, {\n" +
-                         "     \"id\" : 3,\n" +
-                         "     \"text\" : \"Test Object 3\"\n" +
-                         "   } ]\n" +
-                         " }\n");
+        mockExpectedFile("{" +
+                         "   'id' : 1," +
+                         "   'text' : 'Test Object 1'," +
+                         "   'children' : [ {" +
+                         "     'id' : 2," +
+                         "     'text' : 'Test Object 2'" +
+                         "   }, {" +
+                         "     'id' : 3," +
+                         "     'text' : 'Test Object 3'" +
+                         "   } ]" +
+                         " }");
 
         run("extensible");
 
@@ -55,17 +56,17 @@ class VerifyInterceptorTest {
     @Test
     @SneakyThrows
     void object_not_extensible() {
-        mockExpectedFile("{\n" +
-                         "   \"id\" : 1,\n" +
-                         "   \"text\" : \"Test Object 1\",\n" +
-                         "   \"children\" : [ {\n" +
-                         "     \"id\" : 2,\n" +
-                         "     \"text\" : \"Test Object 2\"\n" +
-                         "   }, {\n" +
-                         "     \"id\" : 3,\n" +
-                         "     \"text\" : \"Test Object 3\"\n" +
-                         "   } ]\n" +
-                         " }\n");
+        mockExpectedFile("{" +
+                         "   'id' : 1," +
+                         "   'text' : 'Test Object 1'," +
+                         "   'children' : [ {" +
+                         "     'id' : 2," +
+                         "     'text' : 'Test Object 2'" +
+                         "   }, {" +
+                         "     'id' : 3," +
+                         "     'text' : 'Test Object 3'" +
+                         "   } ]" +
+                         " }");
 
         assertThrows(AssertionError.class, () -> run("not_extensible"));
 
@@ -74,17 +75,17 @@ class VerifyInterceptorTest {
 
     @Test
     void object_included_fields() {
-        mockExpectedFile("{\n" +
-                         "   \"id\" : 1,\n" +
-                         "   \"text\" : \"Test Object 1\",\n" +
-                         "   \"children\" : [ {\n" +
-                         "     \"id\" : 2,\n" +
-                         "     \"text\" : \"Test Object 2\"\n" +
-                         "   }, {\n" +
-                         "     \"id\" : 3,\n" +
-                         "     \"text\" : \"Test Object 3\"\n" +
-                         "   } ]\n" +
-                         " }\n");
+        mockExpectedFile("{" +
+                         "   'id' : 1," +
+                         "   'text' : 'Test Object 1'," +
+                         "   'children' : [ {" +
+                         "     'id' : 2," +
+                         "     'text' : 'Test Object 2'" +
+                         "   }, {" +
+                         "     'id' : 3," +
+                         "     'text' : 'Test Object 3'" +
+                         "   } ]" +
+                         " }");
 
         run("included");
 
@@ -93,17 +94,17 @@ class VerifyInterceptorTest {
 
     @Test
     void object_excluded_fields() {
-        mockExpectedFile("{\n" +
-                         "   \"id\" : 1,\n" +
-                         "   \"text\" : \"Test Object 1\",\n" +
-                         "   \"children\" : [ {\n" +
-                         "     \"id\" : 2,\n" +
-                         "     \"text\" : \"Test Object 2\"\n" +
-                         "   }, {\n" +
-                         "     \"id\" : 3,\n" +
-                         "     \"text\" : \"Test Object 3\"\n" +
-                         "   } ]\n" +
-                         " }\n");
+        mockExpectedFile("{" +
+                         "   'id' : 1," +
+                         "   'text' : 'Test Object 1'," +
+                         "   'children' : [ {" +
+                         "     'id' : 2," +
+                         "     'text' : 'Test Object 2'" +
+                         "   }, {" +
+                         "     'id' : 3," +
+                         "     'text' : 'Test Object 3'" +
+                         "   } ]" +
+                         " }");
 
         run("excluded");
 
@@ -112,30 +113,30 @@ class VerifyInterceptorTest {
 
     @Test
     void list_extensible() {
-        mockExpectedFile("[\n" +
-                         "    {\n" +
-                         "       \"id\" : 1,\n" +
-                         "       \"text\" : \"Test Object 1\",\n" +
-                         "       \"children\" : [ {\n" +
-                         "         \"id\" : 2,\n" +
-                         "         \"text\" : \"Test Object 2\"\n" +
-                         "       }, {\n" +
-                         "         \"id\" : 3,\n" +
-                         "         \"text\" : \"Test Object 3\"\n" +
-                         "       } ]\n" +
-                         "     },\n" +
-                         "     {\n" +
-                         "       \"id\" : 4,\n" +
-                         "       \"text\" : \"Test Object 4\",\n" +
-                         "       \"children\" : [ {\n" +
-                         "         \"id\" : 5,\n" +
-                         "         \"text\" : \"Test Object 5\"\n" +
-                         "       }, {\n" +
-                         "         \"id\" : 6,\n" +
-                         "         \"text\" : \"Test Object 6\"\n" +
-                         "       } ]\n" +
-                         "     }\n" +
-                         " ]\n");
+        mockExpectedFile("[" +
+                         "    {" +
+                         "       'id' : 1," +
+                         "       'text' : 'Test Object 1'," +
+                         "       'children' : [ {" +
+                         "         'id' : 2," +
+                         "         'text' : 'Test Object 2'" +
+                         "       }, {" +
+                         "         'id' : 3," +
+                         "         'text' : 'Test Object 3'" +
+                         "       } ]" +
+                         "     }," +
+                         "     {" +
+                         "       'id' : 4," +
+                         "       'text' : 'Test Object 4'," +
+                         "       'children' : [ {" +
+                         "         'id' : 5," +
+                         "         'text' : 'Test Object 5'" +
+                         "       }, {" +
+                         "         'id' : 6," +
+                         "         'text' : 'Test Object 6'" +
+                         "       } ]" +
+                         "     }" +
+                         " ]");
 
         run("list_extensible");
 
@@ -144,30 +145,30 @@ class VerifyInterceptorTest {
 
     @Test
     void list_not_extensible() {
-        mockExpectedFile("[\n" +
-                         "    {\n" +
-                         "       \"id\" : 1,\n" +
-                         "       \"text\" : \"Test Object 1\",\n" +
-                         "       \"children\" : [ {\n" +
-                         "         \"id\" : 2,\n" +
-                         "         \"text\" : \"Test Object 2\"\n" +
-                         "       }, {\n" +
-                         "         \"id\" : 3,\n" +
-                         "         \"text\" : \"Test Object 3\"\n" +
-                         "       } ]\n" +
-                         "     },\n" +
-                         "     {\n" +
-                         "       \"id\" : 4,\n" +
-                         "       \"text\" : \"Test Object 4\",\n" +
-                         "       \"children\" : [ {\n" +
-                         "         \"id\" : 5,\n" +
-                         "         \"text\" : \"Test Object 5\"\n" +
-                         "       }, {\n" +
-                         "         \"id\" : 6,\n" +
-                         "         \"text\" : \"Test Object 6\"\n" +
-                         "       } ]\n" +
-                         "     }\n" +
-                         " ]\n");
+        mockExpectedFile("[" +
+                         "    {" +
+                         "       'id' : 1," +
+                         "       'text' : 'Test Object 1'," +
+                         "       'children' : [ {" +
+                         "         'id' : 2," +
+                         "         'text' : 'Test Object 2'" +
+                         "       }, {" +
+                         "         'id' : 3," +
+                         "         'text' : 'Test Object 3'" +
+                         "       } ]" +
+                         "     }," +
+                         "     {" +
+                         "       'id' : 4," +
+                         "       'text' : 'Test Object 4'," +
+                         "       'children' : [ {" +
+                         "         'id' : 5," +
+                         "         'text' : 'Test Object 5'" +
+                         "       }, {" +
+                         "         'id' : 6," +
+                         "         'text' : 'Test Object 6'" +
+                         "       } ]" +
+                         "     }" +
+                         " ]");
 
         assertThrows(AssertionError.class, () -> run("list_not_extensible"));
 
@@ -176,30 +177,30 @@ class VerifyInterceptorTest {
 
     @Test
     void list_included_fields() {
-        mockExpectedFile("[\n" +
-                         "    {\n" +
-                         "       \"id\" : 1,\n" +
-                         "       \"text\" : \"Test Object 1\",\n" +
-                         "       \"children\" : [ {\n" +
-                         "         \"id\" : 2,\n" +
-                         "         \"text\" : \"Test Object 2\"\n" +
-                         "       }, {\n" +
-                         "         \"id\" : 3,\n" +
-                         "         \"text\" : \"Test Object 3\"\n" +
-                         "       } ]\n" +
-                         "     },\n" +
-                         "     {\n" +
-                         "       \"id\" : 4,\n" +
-                         "       \"text\" : \"Test Object 4\",\n" +
-                         "       \"children\" : [ {\n" +
-                         "         \"id\" : 5,\n" +
-                         "         \"text\" : \"Test Object 5\"\n" +
-                         "       }, {\n" +
-                         "         \"id\" : 6,\n" +
-                         "         \"text\" : \"Test Object 6\"\n" +
-                         "       } ]\n" +
-                         "     }\n" +
-                         " ]\n");
+        mockExpectedFile("[" +
+                         "    {" +
+                         "       'id' : 1," +
+                         "       'text' : 'Test Object 1'," +
+                         "       'children' : [ {" +
+                         "         'id' : 2," +
+                         "         'text' : 'Test Object 2'" +
+                         "       }, {" +
+                         "         'id' : 3," +
+                         "         'text' : 'Test Object 3'" +
+                         "       } ]" +
+                         "     }," +
+                         "     {" +
+                         "       'id' : 4," +
+                         "       'text' : 'Test Object 4'," +
+                         "       'children' : [ {" +
+                         "         'id' : 5," +
+                         "         'text' : 'Test Object 5'" +
+                         "       }, {" +
+                         "         'id' : 6," +
+                         "         'text' : 'Test Object 6'" +
+                         "       } ]" +
+                         "     }" +
+                         " ]");
 
         run("list_included");
 
@@ -209,43 +210,43 @@ class VerifyInterceptorTest {
 
     @Test
     void list_strict_order() {
-        mockExpectedFile("[ {\n" +
-                         "    \"id\" : 1,\n" +
-                         "    \"text\" : \"Test Object 1\",\n" +
-                         "    \"strings\" : [ \"1\", \"2\", \"3\" ],\n" +
-                         "    \"date\" : \"2020-01-02T00:00:00Z\",\n" +
-                         "    \"children\" : [ {\n" +
-                         "      \"id\" : 2,\n" +
-                         "      \"text\" : \"Test Object 2\",\n" +
-                         "      \"strings\" : [ \"2\", \"3\", \"4\" ],\n" +
-                         "      \"date\" : \"2020-01-03T00:00:00Z\",\n" +
-                         "      \"children\" : [ ]\n" +
-                         "    }, {\n" +
-                         "      \"id\" : 3,\n" +
-                         "      \"text\" : \"Test Object 3\",\n" +
-                         "      \"strings\" : [ \"3\", \"4\", \"5\" ],\n" +
-                         "      \"date\" : \"2020-01-04T00:00:00Z\",\n" +
-                         "      \"children\" : [ ]\n" +
-                         "    }]\n" +
-                         "  }, {\n" +
-                         "    \"id\" : 4,\n" +
-                         "    \"text\" : \"Test Object 4\",\n" +
-                         "    \"strings\" : [ \"4\", \"5\", \"6\" ],\n" +
-                         "    \"date\" : \"2020-01-05T00:00:00Z\",\n" +
-                         "    \"children\" : [ {\n" +
-                         "      \"id\" : 5,\n" +
-                         "      \"text\" : \"Test Object 5\",\n" +
-                         "      \"strings\" : [ \"5\", \"6\", \"7\" ],\n" +
-                         "      \"date\" : \"2020-01-06T00:00:00Z\",\n" +
-                         "      \"children\" : [ ]\n" +
-                         "    }, {\n" +
-                         "      \"id\" : 6,\n" +
-                         "      \"text\" : \"Test Object 6\",\n" +
-                         "      \"strings\" : [ \"6\", \"7\", \"8\" ],\n" +
-                         "      \"date\" : \"2020-01-07T00:00:00Z\",\n" +
-                         "      \"children\" : [ ]\n" +
-                         "    } ]\n" +
-                         "  } ]\n");
+        mockExpectedFile("[ {" +
+                         "    'id' : 1," +
+                         "    'text' : 'Test Object 1'," +
+                         "    'strings' : [ '1', '2', '3' ]," +
+                         "    'date' : '2020-01-02T00:00:00Z'," +
+                         "    'children' : [ {" +
+                         "      'id' : 2," +
+                         "      'text' : 'Test Object 2'," +
+                         "      'strings' : [ '2', '3', '4' ]," +
+                         "      'date' : '2020-01-03T00:00:00Z'," +
+                         "      'children' : [ ]" +
+                         "    }, {" +
+                         "      'id' : 3," +
+                         "      'text' : 'Test Object 3'," +
+                         "      'strings' : [ '3', '4', '5' ]," +
+                         "      'date' : '2020-01-04T00:00:00Z'," +
+                         "      'children' : [ ]" +
+                         "    }]" +
+                         "  }, {" +
+                         "    'id' : 4," +
+                         "    'text' : 'Test Object 4'," +
+                         "    'strings' : [ '4', '5', '6' ]," +
+                         "    'date' : '2020-01-05T00:00:00Z'," +
+                         "    'children' : [ {" +
+                         "      'id' : 5," +
+                         "      'text' : 'Test Object 5'," +
+                         "      'strings' : [ '5', '6', '7' ]," +
+                         "      'date' : '2020-01-06T00:00:00Z'," +
+                         "      'children' : [ ]" +
+                         "    }, {" +
+                         "      'id' : 6," +
+                         "      'text' : 'Test Object 6'," +
+                         "      'strings' : [ '6', '7', '8' ]," +
+                         "      'date' : '2020-01-07T00:00:00Z'," +
+                         "      'children' : [ ]" +
+                         "    } ]" +
+                         "  } ]");
 
         assertThrows(AssertionError.class, () -> run("list_strict_order"));
 
@@ -264,6 +265,6 @@ class VerifyInterceptorTest {
     }
 
     public void mockExpectedFile(String json) {
-        when(files.readFromFile(any())).thenReturn(Optional.of(json));
+        when(files.readFromFile(any())).thenReturn(Optional.of(replace(json, "'", "\"")));
     }
 }
