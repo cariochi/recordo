@@ -15,16 +15,16 @@ abstract class AbstractConverterTest {
 
     private static final TestPojo GIVEN_OBJECT = pojo(1).withChild(pojo(2));
 
-    private static final String EXPECTED_JSON = "{\n" +
-                                                "    \"id\" : 1,\n" +
-                                                "    \"text\" : \"Test Object 1\",\n" +
-                                                "    \"children\" : [\n" +
-                                                "        {\n" +
-                                                "            \"id\" : 2,\n" +
-                                                "            \"text\" : \"Test Object 2\"\n" +
-                                                "        }\n" +
-                                                "    ]\n" +
-                                                "}\n";
+    private static final String EXPECTED_JSON = "{" +
+                                                "    \"id\" : 1," +
+                                                "    \"text\" : \"Test Object 1\"," +
+                                                "    \"children\" : [" +
+                                                "        {" +
+                                                "            \"id\" : 2," +
+                                                "            \"text\" : \"Test Object 2\"" +
+                                                "        }" +
+                                                "    ]" +
+                                                "}";
 
     private final JsonConverter jsonConverter;
 
