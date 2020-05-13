@@ -9,7 +9,16 @@
     <artifactId>recordo</artifactId>
     <version>1.0.1</version>
     <name>Recordo</name>
-    <description>JUnit Tool</description>
+    <description>JUnit Extension</description>
+    <url>https://cariochi.com</url>
+
+    <licenses>
+        <license>
+            <name>LGPLv3</name>
+            <url>http://www.gnu.org/licenses/lgpl.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
     <scm>
         <connection>scm:git:https://github.com/cariochi/recordo.git</connection>
