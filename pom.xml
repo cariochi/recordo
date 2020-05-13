@@ -5,19 +5,35 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.recordo</groupId>
+    <groupId>com.cariochi</groupId>
     <artifactId>recordo</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <name>Recordo</name>
     <description>JUnit Tool</description>
 
+    <scm>
+        <connection>scm:git:https://github.com/cariochi/recordo.git</connection>
+        <developerConnection>scm:git:https://github.com/cariochi/recordo.git</developerConnection>
+        <url>https://github.com/cariochi/recordo.git</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>Vadym Deineka</name>
+            <email>vadim@deineka.com</email>
+            <organization>cariochi.com</organization>
+            <organizationUrl>https://cariochi.com</organizationUrl>
+        </developer>
+    </developers>
+
     <properties>
+        <java.version>1.8</java.version>
         <gson.version>2.8.6</gson.version>
         <jsonassert.version>1.5.0</jsonassert.version>
         <commons-lang3.version>3.10</commons-lang3.version>
         <commons-io.version>2.6</commons-io.version>
-        <maven.compiler.source>14</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -77,7 +93,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.28</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -101,14 +116,73 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>{maven.compiler.source}</source>
-                    <target>{maven.compiler.target}</target>
-                    <compilerArgs>
-                        --enable-preview
-                    </compilerArgs>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+<!--                    <compilerArgs>&#45;&#45;enable-preview</compilerArgs>-->
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M4</version>
+                <configuration>
+                    <runOrder>alphabetical</runOrder>
+                    <reportsDirectory>${project.build.directory}/test-results</reportsDirectory>
+<!--                    <argLine>&#45;&#45;enable-preview</argLine>-->
                 </configuration>
             </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+    </distributionManagement>
 
 </project>
