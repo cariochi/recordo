@@ -16,6 +16,8 @@ The `@Verify` annotation using concept is:
 @ExtendWith(RecordoExtension.class)
 class BookServiceTest {
 
+    private BookService bookService = ...
+
     private Author author;
     private Book book;
     private List<Book> books;
@@ -23,14 +25,14 @@ class BookServiceTest {
     @Test
     @Verify("book")
     void should_get_book_by_id() {
-        book = bookService.findBook(33L);
+        book = bookService.findById(33L);
     }
 
     @Test
     @Given("author")
     @Verify(value = "books", included = {"id", "title", "author.id", "author.firstName", "author.lastName"})
     void should_get_books_by_author() {
-        books = bookService.findBooks(author);
+        books = bookService.findAllByAuthor(author);
     }
 
 }
