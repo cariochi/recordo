@@ -5,7 +5,9 @@ import com.cariochi.recordo.Verify;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonPropertyFilter;
 import com.cariochi.recordo.utils.Files;
+import com.cariochi.recordo.utils.RecordoProperties;
 import com.cariochi.recordo.utils.ReflectionUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -17,6 +19,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static com.cariochi.recordo.utils.ReflectionUtils.findAnnotation;
 import static com.cariochi.recordo.utils.ReflectionUtils.writeField;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -25,11 +28,11 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.reflect.MethodUtils.getAnnotation;
 
 @Slf4j
-public class VerifyInterceptor extends AbstractInterceptor {
+@RequiredArgsConstructor
+public class VerifyInterceptor implements BeforeTestInterceptor, AfterTestInterceptor {
 
-    public VerifyInterceptor(String rootFolder, JsonConverter jsonConverter) {
-        super(jsonConverter, new Files(rootFolder));
-    }
+    private final JsonConverter jsonConverter;
+    private final Files files = new Files();
 
     @Override
     public void beforeTest(Object testInstance, Method method) {
@@ -40,8 +43,7 @@ public class VerifyInterceptor extends AbstractInterceptor {
     @Override
     public void afterTest(Object testInstance, Method method) {
         final List<AssertionError> errors = findVerifyAnnotations(method).stream()
-                .map(annotation ->
-                        assertEquals(testInstance, annotation, method))
+                .map(verify -> assertEquals(testInstance, verify, method))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(toList());
@@ -69,23 +71,28 @@ public class VerifyInterceptor extends AbstractInterceptor {
         }
     }
 
+    @SneakyThrows
     private Optional<AssertionError> assertEquals(Object testInstance, Verify verify, Method method) {
 
         final Object actual = ReflectionUtils.readField(testInstance, verify.value());
+
         final JsonPropertyFilter jsonPropertyFilter = JsonPropertyFilter.builder()
                 .included(asList(verify.included()))
                 .excluded(asList(verify.excluded()))
                 .build();
+
         final String actualJson = jsonConverter.toJson(actual, jsonPropertyFilter);
 
-        final String fileName = Optional.of(verify.file())
+        final String fileNamePattern =  Optional.of(verify.file())
                 .filter(StringUtils::isNotBlank)
-                .orElseGet(() -> fileName(method, verify.value()));
+                .orElseGet(RecordoProperties::verifyFileNamePattern);
+
+        final String fileName = files.fileName(fileNamePattern, method, verify.value());
+
         try {
 
-            files.readFromFile(fileName)
-                    .map(expectedJson -> assertJson(expectedJson, actualJson, verify))
-                    .orElseThrow(() -> new FileNotFoundException(format("File not found: %s", fileName)));
+            final String expectedJson = files.readFromFile(fileName);
+            assertJson(expectedJson, actualJson, verify);
 
             log.info("Asserted actual `{}` value equals to expected in `{}`", verify.value(), fileName);
 
