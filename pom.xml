@@ -7,7 +7,7 @@
 
     <groupId>com.cariochi</groupId>
     <artifactId>recordo</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <name>Recordo</name>
     <description>JUnit Extension</description>
     <url>https://cariochi.com</url>
@@ -87,6 +87,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.vaadin.external.google</groupId>
+            <artifactId>android-json</artifactId>
+            <version>0.0.20131108.vaadin1</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${commons-lang3.version}</version>
@@ -127,7 +133,6 @@
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
-<!--                    <compilerArgs>&#45;&#45;enable-preview</compilerArgs>-->
                 </configuration>
             </plugin>
             <plugin>
@@ -177,7 +182,6 @@
                 <configuration>
                     <runOrder>alphabetical</runOrder>
                     <reportsDirectory>${project.build.directory}/test-results</reportsDirectory>
-<!--                    <argLine>&#45;&#45;enable-preview</argLine>-->
                 </configuration>
             </plugin>
         </plugins>
