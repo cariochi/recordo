@@ -11,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Method;
-import java.util.Optional;
 
 import static org.apache.commons.lang3.StringUtils.replace;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeField;
@@ -25,7 +24,7 @@ class VerifyInterceptorTest {
     @Mock
     private Files files;
 
-    private final VerifyInterceptor verifyProcessor = new VerifyInterceptor("", new JacksonConverter());
+    private final VerifyInterceptor verifyProcessor = new VerifyInterceptor(new JacksonConverter());
 
     @BeforeEach
     @SneakyThrows
@@ -264,7 +263,8 @@ class VerifyInterceptorTest {
         verifyProcessor.afterTest(testInstance, method);
     }
 
+    @SneakyThrows
     public void mockExpectedFile(String json) {
-        when(files.readFromFile(any())).thenReturn(Optional.of(replace(json, "'", "\"")));
+        when(files.readFromFile(any())).thenReturn(replace(json, "'", "\""));
     }
 }

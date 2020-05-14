@@ -1,6 +1,8 @@
 package com.cariochi.recordo.junit4;
 
-import com.cariochi.recordo.interceptor.RecordoInterceptors;
+import com.cariochi.recordo.interceptor.GivenInterceptor;
+import com.cariochi.recordo.interceptor.RecordoInterceptor;
+import com.cariochi.recordo.interceptor.VerifyInterceptor;
 import com.cariochi.recordo.json.JacksonConverter;
 import com.cariochi.recordo.json.JsonConverter;
 import org.junit.rules.MethodRule;
@@ -9,14 +11,19 @@ import org.junit.runners.model.Statement;
 
 public class RecordoRule implements MethodRule {
 
-    private final RecordoInterceptors interceptors;
+    private final RecordoInterceptor interceptors;
 
     public RecordoRule() {
-        this("", new JacksonConverter());
+        this(new JacksonConverter());
     }
 
-    public RecordoRule(String rootFolder, JsonConverter jsonConverter) {
-        this.interceptors = new RecordoInterceptors(rootFolder, jsonConverter);
+    public RecordoRule(JsonConverter jsonConverter) {
+        final VerifyInterceptor verifyInterceptor = new VerifyInterceptor(jsonConverter);
+        final GivenInterceptor givenInterceptor = new GivenInterceptor(jsonConverter);
+        this.interceptors = RecordoInterceptor.builder()
+                .interceptor(verifyInterceptor)
+                .interceptor(givenInterceptor)
+                .build();
     }
 
     @Override
