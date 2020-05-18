@@ -9,7 +9,10 @@
     <artifactId>recordo</artifactId>
     <version>1.0.2</version>
     <name>Recordo</name>
-    <description>JUnit Extension</description>
+    <description>
+        The JUnit 4/5 extension. It provides '@Given' and '@Verify' annotations
+        which allows making test input fields initialization and a test result verification in a declarative style.
+    </description>
     <url>https://cariochi.com</url>
 
     <licenses>

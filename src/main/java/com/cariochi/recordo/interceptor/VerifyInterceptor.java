@@ -46,7 +46,7 @@ public class VerifyInterceptor implements BeforeTestInterceptor, AfterTestInterc
     @Override
     public void afterTest(Object testInstance, Method method) {
         ExceptionsSuppressor.of(AssertionError.class).executeAll(
-                findVerifyAnnotations(method).map(verify -> () -> assertEquals(testInstance, verify, method))
+                findVerifyAnnotations(method).map(verify -> () -> verifyTestResult(verify, method, testInstance))
         );
     }
 
@@ -63,7 +63,7 @@ public class VerifyInterceptor implements BeforeTestInterceptor, AfterTestInterc
         }
     }
 
-    private void assertEquals(Object testInstance, Verify verify, Method method) {
+    private void verifyTestResult(Verify verify, Method method, Object testInstance) {
 
         final Object actual = readField(testInstance, verify.value());
 
