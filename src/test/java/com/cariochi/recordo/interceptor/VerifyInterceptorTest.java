@@ -2,18 +2,16 @@ package com.cariochi.recordo.interceptor;
 
 import com.cariochi.recordo.VerifyAnnotationTest;
 import com.cariochi.recordo.json.JacksonConverter;
-import com.cariochi.recordo.utils.Files;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.FileNotFoundException;
 import java.lang.reflect.Method;
 
 import static org.apache.commons.lang3.StringUtils.replace;
-import static org.apache.commons.lang3.reflect.FieldUtils.writeField;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -21,16 +19,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class VerifyInterceptorTest {
 
-    @Mock
-    private Files files;
-
-    private final VerifyInterceptor verifyProcessor = new VerifyInterceptor(new JacksonConverter());
-
-    @BeforeEach
-    @SneakyThrows
-    void setUp() {
-        writeField(verifyProcessor, "files", files, true);
-    }
+    @Spy
+    private final VerifyInterceptor interceptor = new VerifyInterceptor(new JacksonConverter());
 
     @Test
     @SneakyThrows
@@ -49,7 +39,7 @@ class VerifyInterceptorTest {
 
         run("extensible");
 
-        verify(files, never()).writeToFile(any(), any());
+        verify(interceptor, never()).writeJsonToFile(any(), any());
     }
 
     @Test
@@ -69,7 +59,7 @@ class VerifyInterceptorTest {
 
         assertThrows(AssertionError.class, () -> run("not_extensible"));
 
-        verify(files, times(1)).writeToFile(any(), any());
+        verify(interceptor, times(1)).writeJsonToFile(any(), any());
     }
 
     @Test
@@ -88,7 +78,7 @@ class VerifyInterceptorTest {
 
         run("included");
 
-        verify(files, never()).writeToFile(any(), any());
+        verify(interceptor, never()).writeJsonToFile(any(), any());
     }
 
     @Test
@@ -107,7 +97,7 @@ class VerifyInterceptorTest {
 
         run("excluded");
 
-        verify(files, never()).writeToFile(any(), any());
+        verify(interceptor, never()).writeJsonToFile(any(), any());
     }
 
     @Test
@@ -139,7 +129,7 @@ class VerifyInterceptorTest {
 
         run("list_extensible");
 
-        verify(files, never()).writeToFile(any(), any());
+        verify(interceptor, never()).writeJsonToFile(any(), any());
     }
 
     @Test
@@ -171,7 +161,7 @@ class VerifyInterceptorTest {
 
         assertThrows(AssertionError.class, () -> run("list_not_extensible"));
 
-        verify(files, times(1)).writeToFile(any(), any());
+        verify(interceptor, times(1)).writeJsonToFile(any(), any());
     }
 
     @Test
@@ -203,7 +193,7 @@ class VerifyInterceptorTest {
 
         run("list_included");
 
-        verify(files, never()).writeToFile(any(), any());
+        verify(interceptor, never()).writeJsonToFile(any(), any());
     }
 
 
@@ -249,22 +239,35 @@ class VerifyInterceptorTest {
 
         assertThrows(AssertionError.class, () -> run("list_strict_order"));
 
-        verify(files, times(1)).writeToFile(any(), any());
+        verify(interceptor, times(1)).writeJsonToFile(any(), any());
     }
 
+    @Test
+    @SneakyThrows
+    void file_not_found() {
+        doThrow(new FileNotFoundException()).when(interceptor).readJsonFromFile(any());
+        assertThrows(AssertionError.class, () -> run("extensible"));
+        verify(interceptor, times(1)).writeJsonToFile(any(), any());
+    }
+
+    @Test
+    void null_object() {
+        assertThrows(AssertionError.class, () -> run("null_object"));
+        verify(interceptor, never()).writeJsonToFile(any(), any());
+    }
 
     @SneakyThrows
     private void run(String methodName) {
         final Method method = VerifyAnnotationTest.class.getDeclaredMethod(methodName);
         method.setAccessible(true);
         final Object testInstance = method.getDeclaringClass().getDeclaredConstructor().newInstance();
-        verifyProcessor.beforeTest(testInstance, method);
+        interceptor.beforeTest(testInstance, method);
         method.invoke(testInstance);
-        verifyProcessor.afterTest(testInstance, method);
+        interceptor.afterTest(testInstance, method);
     }
 
     @SneakyThrows
     public void mockExpectedFile(String json) {
-        when(files.readFromFile(any())).thenReturn(replace(json, "'", "\""));
+        doReturn(replace(json, "'", "\"")).when(interceptor).readJsonFromFile(any());
     }
 }

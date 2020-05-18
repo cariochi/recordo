@@ -1,20 +1,21 @@
 package com.cariochi.recordo.utils;
 
-import lombok.Data;
-import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
 
 import java.io.*;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
-import static com.cariochi.recordo.utils.RecordoProperties.resourcesFolder;
+import static com.cariochi.recordo.utils.Properties.resourcesFolderPath;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.lang3.StringUtils.*;
+import static org.slf4j.LoggerFactory.getLogger;
 
-@Data
 public class Files {
+
+    private static final Logger log = getLogger(Files.class);
 
     public static final String TEST_CLASS_FILL_NAME = "{TEST_CLASS_FILL_NAME}";
     public static final String TEST_CLASS_SIMPLE_NAME = "{TEST_CLASS_SIMPLE_NAME}";
@@ -27,7 +28,11 @@ public class Files {
             TEST_FIELD_NAME
     };
 
-    public String fileName(String fileNamePattern, Method method, String fieldName) {
+    private Files() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
+    public static String fileName(String fileNamePattern, Method method, String fieldName) {
         final String testClassFullName = replace(uncapitalize(method.getDeclaringClass().getName()), ".", "/");
         final String testClassSimpleName = uncapitalize(method.getDeclaringClass().getSimpleName());
         final String testName = method.getName();
@@ -35,31 +40,43 @@ public class Files {
         return replaceEach(fileNamePattern, FILE_NAME_VARIABLES, values);
     }
 
-    public String readFromFile(String fileName) throws IOException {
+    public static String readFromFile(String fileName) throws IOException {
         try (InputStream inputStream = Files.class.getResourceAsStream("/" + fileName)) {
             if (inputStream == null) {
-                throw new FileNotFoundException(format("File '%s' not found", fileName));
+                final String filePath = findFile(fileName)
+                        .map(File::getAbsolutePath)
+                        .orElse(fileName);
+                throw new IOException(format("\nFile 'file://%s' not found.", filePath));
             }
             return readFromStream(inputStream);
         }
     }
 
-    @SneakyThrows
-    public Optional<File> writeToFile(String json, String fileName) {
-        final File dir = new File(resourcesFolder());
-        if (!dir.exists()) {
-            return Optional.empty();
+    public static Optional<File> writeToFile(String json, String fileName) {
+        final Optional<File> fileOptional = findFile(fileName);
+        if (fileOptional.isPresent()) {
+            try {
+                final File file = fileOptional.get();
+                file.getParentFile().mkdirs();
+                try (OutputStream out = new FileOutputStream(file)) {
+                    IOUtils.write(json + '\n', out, UTF_8);
+                }
+            } catch (IOException e) {
+                log.error("Cannot write file", e);
+            }
         }
-        final File file = new File(dir, fileName);
-        file.getParentFile().mkdirs();
-        try (OutputStream out = new FileOutputStream(file)) {
-            IOUtils.write(json + '\n', out, UTF_8);
-        }
-        return Optional.of(file);
+        return fileOptional;
     }
 
-    @SneakyThrows
-    private String readFromStream(InputStream inputStream) {
+    private static Optional<File> findFile(String fileName) {
+        final File resourcesFolder = new File(resourcesFolderPath());
+        if (!resourcesFolder.exists()) {
+            return Optional.empty();
+        }
+        return Optional.of(new File(resourcesFolder, fileName));
+    }
+
+    private static String readFromStream(InputStream inputStream) throws IOException {
         return IOUtils.toString(inputStream, UTF_8);
     }
 
