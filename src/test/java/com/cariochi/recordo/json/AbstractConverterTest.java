@@ -32,15 +32,10 @@ abstract class AbstractConverterTest {
     @SneakyThrows
     void should_remove_fields_by_include() {
         // given
-        final JsonPropertyFilter jsonPropertyFilter = JsonPropertyFilter.builder()
-                .included(asList(
-                        "id",
-                        "text",
-                        "children.id",
-                        "children.text"
-                ))
-                .excluded(asList())
-                .build();
+        final JsonPropertyFilter jsonPropertyFilter = new JsonPropertyFilter(
+                asList("id", "text", "children.id", "children.text"),
+                asList()
+        );
 
         // when
         final String result = jsonConverter.toJson(GIVEN_OBJECT, jsonPropertyFilter);
@@ -53,16 +48,10 @@ abstract class AbstractConverterTest {
     @SneakyThrows
     void should_remove_fields_by_exclude() {
         // given
-        final JsonPropertyFilter jsonPropertyFilter = JsonPropertyFilter.builder()
-                .included(asList())
-                .excluded(asList(
-                        "date",
-                        "strings",
-                        "children.date",
-                        "children.strings",
-                        "children.children"
-                ))
-                .build();
+        final JsonPropertyFilter jsonPropertyFilter = new JsonPropertyFilter(
+                asList(),
+                asList("date", "strings", "children.date", "children.strings", "children.children")
+        );
 
         // when
         final String result = jsonConverter.toJson(GIVEN_OBJECT, jsonPropertyFilter);
@@ -75,23 +64,10 @@ abstract class AbstractConverterTest {
     @SneakyThrows
     void should_remove_fields_by_include_and_exclude() {
         // given
-        final JsonPropertyFilter jsonPropertyFilter = JsonPropertyFilter.builder()
-                .included(asList(
-                        "id",
-                        "text",
-                        "date",
-                        "children.id",
-                        "children.text",
-                        "children.date"
-                ))
-                .excluded(asList(
-                        "date",
-                        "strings",
-                        "children.date",
-                        "children.strings",
-                        "children.children"
-                ))
-                .build();
+        final JsonPropertyFilter jsonPropertyFilter = new JsonPropertyFilter(
+                asList("id", "text", "date", "children.id", "children.text", "children.date"),
+                asList("date", "strings", "children.date", "children.strings", "children.children")
+        );
 
         // when
         final String result = jsonConverter.toJson(GIVEN_OBJECT, jsonPropertyFilter);

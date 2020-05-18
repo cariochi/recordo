@@ -107,6 +107,14 @@ public class VerifyAnnotationTest {
         list = actualList();
     }
 
+    /**
+     * "This method is for {@link com.cariochi.recordo.verify.VerifyInterceptorTest}."
+     */
+    @Verify("object")
+    void null_object() {
+        object = null;
+    }
+
     private TestPojo actualObject(int id) {
         return TestPojo.pojo(id).withChild(TestPojo.pojo(id + 1)).withChild(TestPojo.pojo(id + 2));
     }

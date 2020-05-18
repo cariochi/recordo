@@ -24,19 +24,29 @@ class GivenAnnotationTest {
 
     @Test
     @Given("object")
+    @Verify("object")
     void given() {
         assertEquals(EXPECTED_OBJECT, object);
     }
 
     @Test
     @Given("list")
+    @Verify("list")
     void given_list() {
         assertEquals(EXPECTED_LIST, list);
     }
 
     @Test
-    @Given(value = "object", file = "custom-object-file.json")
-    @Given(value = "list", file = "custom-list-file.json")
+    @Given("object")
+    @Given("list")
+    @Verify("object")
+    @Verify("list")
+    void create_empty_json() {
+    }
+
+    @Test
+    @Given(value = "object", file = "{TEST_CLASS_FILL_NAME}/custom-object-file.json")
+    @Given(value = "list", file = "{TEST_CLASS_FILL_NAME}/custom-list-file.json")
     void given_multiple() {
         assertEquals(EXPECTED_OBJECT, object);
         assertEquals(EXPECTED_LIST, list);

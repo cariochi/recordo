@@ -1,16 +1,17 @@
 package com.cariochi.recordo.interceptor;
 
-import lombok.Builder;
-import lombok.Singular;
-
 import java.lang.reflect.Method;
 import java.util.List;
 
-@Builder
-public class RecordoInterceptor implements BeforeTestInterceptor, AfterTestInterceptor {
+import static java.util.Arrays.asList;
 
-    @Singular
+public class CompositeInterceptor implements BeforeTestInterceptor, AfterTestInterceptor {
+
     private final List<Interceptor> interceptors;
+
+    public CompositeInterceptor(Interceptor... interceptors) {
+        this.interceptors = asList(interceptors);
+    }
 
     public void beforeTest(Object testInstance, Method method) {
         interceptors.stream()
