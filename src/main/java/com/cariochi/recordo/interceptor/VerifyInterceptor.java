@@ -1,38 +1,41 @@
 package com.cariochi.recordo.interceptor;
 
+import com.cariochi.recordo.RecordoException;
 import com.cariochi.recordo.Verifies;
 import com.cariochi.recordo.Verify;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonPropertyFilter;
+import com.cariochi.recordo.utils.ExceptionsSuppressor;
 import com.cariochi.recordo.utils.Files;
-import com.cariochi.recordo.utils.RecordoProperties;
-import com.cariochi.recordo.utils.ReflectionUtils;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import com.cariochi.recordo.utils.Properties;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.slf4j.Logger;
 
-import java.io.FileNotFoundException;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.cariochi.recordo.utils.ReflectionUtils.findAnnotation;
-import static com.cariochi.recordo.utils.ReflectionUtils.writeField;
+import static com.cariochi.recordo.utils.ReflectionUtils.*;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.reflect.MethodUtils.getAnnotation;
 
-@Slf4j
-@RequiredArgsConstructor
 public class VerifyInterceptor implements BeforeTestInterceptor, AfterTestInterceptor {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(VerifyInterceptor.class);
     private final JsonConverter jsonConverter;
-    private final Files files = new Files();
+
+    public VerifyInterceptor(JsonConverter jsonConverter) {
+        this.jsonConverter = jsonConverter;
+    }
 
     @Override
     public void beforeTest(Object testInstance, Method method) {
@@ -42,24 +45,13 @@ public class VerifyInterceptor implements BeforeTestInterceptor, AfterTestInterc
 
     @Override
     public void afterTest(Object testInstance, Method method) {
-        final List<AssertionError> errors = findVerifyAnnotations(method).stream()
-                .map(verify -> assertEquals(testInstance, verify, method))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(toList());
-
-        if (!errors.isEmpty()) {
-            if (errors.size() == 1) {
-                throw errors.get(0);
-            } else {
-                final String message = errors.stream().map(AssertionError::getMessage).collect(joining("\n"));
-                throw new AssertionError(message);
-            }
-        }
+        ExceptionsSuppressor.of(AssertionError.class).executeAll(
+                findVerifyAnnotations(method).map(verify -> () -> assertEquals(testInstance, verify, method))
+        );
     }
 
     private void clearField(Object testInstance, Verify verify) {
-        final Object value = ReflectionUtils.readField(testInstance, verify.value());
+        final Object value = readField(testInstance, verify.value());
         if (value != null) {
             if (value instanceof Collection) {
                 ((Collection) value).clear();
@@ -71,53 +63,55 @@ public class VerifyInterceptor implements BeforeTestInterceptor, AfterTestInterc
         }
     }
 
-    @SneakyThrows
-    private Optional<AssertionError> assertEquals(Object testInstance, Verify verify, Method method) {
+    private void assertEquals(Object testInstance, Verify verify, Method method) {
 
-        final Object actual = ReflectionUtils.readField(testInstance, verify.value());
+        final Object actual = readField(testInstance, verify.value());
 
-        final JsonPropertyFilter jsonPropertyFilter = JsonPropertyFilter.builder()
-                .included(asList(verify.included()))
-                .excluded(asList(verify.excluded()))
-                .build();
+        if (actual == null) {
+            throw new AssertionError(format("Actual '%s' value should not be null", verify.value()));
+        }
 
-        final String actualJson = jsonConverter.toJson(actual, jsonPropertyFilter);
-
-        final String fileNamePattern =  Optional.of(verify.file())
-                .filter(StringUtils::isNotBlank)
-                .orElseGet(RecordoProperties::verifyFileNamePattern);
-
-        final String fileName = files.fileName(fileNamePattern, method, verify.value());
-
+        final String fileName = fileName(verify, method);
+        final String actualJson = jsonConverter.toJson(actual, jsonFilter(verify));
         try {
-
-            final String expectedJson = files.readFromFile(fileName);
-            assertJson(expectedJson, actualJson, verify);
-
+            final String expectedJson = readJsonFromFile(fileName);
+            log.debug("Asserting expected \n{} is equals to actual \n{}", expectedJson, actualJson);
+            JSONAssert.assertEquals(expectedJson, actualJson, compareMode(verify));
             log.info("Asserted actual `{}` value equals to expected in `{}`", verify.value(), fileName);
-
-            return Optional.empty();
-
-        } catch (AssertionError | FileNotFoundException e) {
-
-            final String message = files.writeToFile(actualJson, fileName)
-                    .map(file -> format(
-                            "\n'%s' Assertion failed: \n%s\nExpected object was recorded to 'file://%s'.",
-                            verify.value(),
-                            e.getMessage(),
-                            file.getAbsolutePath()
-                    ))
+        } catch (AssertionError | IOException e) {
+            final String message = writeJsonToFile(actualJson, fileName)
+                    .map(
+                            file -> format(
+                                    "\n'%s' assertion failed: %s" +
+                                    "\nExpected '%s' value file was created.",
+                                    verify.value(), e.getMessage(), verify.value()
+                            )
+                    )
                     .orElse(e.getMessage());
-
-            return Optional.of(new AssertionError(message));
+            throw new AssertionError(message);
+        } catch (JSONException e) {
+            throw new RecordoException(e);
         }
     }
 
-    @SneakyThrows
-    private String assertJson(String expectedJson, String actualJson, Verify verify) {
-        log.debug("Asserting expected \n{} is equals to actual \n{}", expectedJson, actualJson);
-        JSONAssert.assertEquals(expectedJson, actualJson, compareMode(verify));
-        return actualJson;
+    private String fileName(Verify verify, Method method) {
+        final String fileNamePattern = Optional.of(verify.file())
+                .filter(StringUtils::isNotBlank)
+                .orElseGet(Properties::verifyFileNamePattern);
+
+        return Files.fileName(fileNamePattern, method, verify.value());
+    }
+
+    private JsonPropertyFilter jsonFilter(Verify verify) {
+        return new JsonPropertyFilter(asList(verify.included()), asList(verify.excluded()));
+    }
+
+    String readJsonFromFile(String fileName) throws IOException {
+        return Files.readFromFile(fileName);
+    }
+
+    Optional<File> writeJsonToFile(String actualJson, String fileName) {
+        return Files.writeToFile(actualJson, fileName);
     }
 
     private JSONCompareMode compareMode(Verify verify) {
@@ -128,10 +122,10 @@ public class VerifyInterceptor implements BeforeTestInterceptor, AfterTestInterc
                 .orElseThrow(() -> new IllegalArgumentException("Compare mode not found"));
     }
 
-    private List<Verify> findVerifyAnnotations(Method method) {
+    private Stream<Verify> findVerifyAnnotations(Method method) {
         return Optional.ofNullable(getAnnotation(method, Verifies.class, true, true))
                 .map(Verifies::value)
-                .map(Arrays::asList)
+                .map(Arrays::stream)
                 .orElseGet(() -> findAnnotation(method, Verify.class));
     }
 }

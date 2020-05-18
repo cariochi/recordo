@@ -1,19 +1,20 @@
 package com.cariochi.recordo.json;
 
 import com.google.gson.*;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 
 import java.lang.reflect.Type;
 import java.util.function.Supplier;
 
-@RequiredArgsConstructor
 public class GsonConverter implements JsonConverter {
 
     private final Supplier<Gson> gson;
 
     public GsonConverter() {
         this(new GsonBuilder().setPrettyPrinting()::create);
+    }
+
+    public GsonConverter(Supplier<Gson> gson) {
+        this.gson = gson;
     }
 
     @Override
@@ -36,7 +37,6 @@ public class GsonConverter implements JsonConverter {
         }
     }
 
-    @SneakyThrows
     private void applyFilter(JsonObject target, JsonPropertyFilter filter) {
         target.entrySet().removeIf(f -> filter.shouldExclude(f.getKey()));
         target.entrySet().forEach(property -> {
