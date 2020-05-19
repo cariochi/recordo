@@ -17,8 +17,8 @@
 
     <licenses>
         <license>
-            <name>LGPLv3</name>
-            <url>http://www.gnu.org/licenses/lgpl.txt</url>
+            <name>Eclipse Public License 2.0</name>
+            <url>https://www.eclipse.org/legal/epl-v20.html</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
