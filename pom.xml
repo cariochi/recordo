@@ -7,7 +7,7 @@
 
     <groupId>com.cariochi</groupId>
     <artifactId>recordo</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.4</version>
     <name>Recordo</name>
     <description>
         The JUnit 4/5 extension. It provides '@Given' and '@Verify' annotations
@@ -17,8 +17,8 @@
 
     <licenses>
         <license>
-            <name>Eclipse Public License 2.0</name>
-            <url>https://www.eclipse.org/legal/epl-v20.html</url>
+            <name>LGPLv3</name>
+            <url>http://www.gnu.org/licenses/lgpl.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
