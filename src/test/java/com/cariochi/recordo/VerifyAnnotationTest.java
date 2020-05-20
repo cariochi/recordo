@@ -60,9 +60,6 @@ public class VerifyAnnotationTest {
     @Verify("list")
     void list_not_extensible() {
         list = actualList();
-        shuffle(list.get(0).getChildren());
-        shuffle(list.get(1).getChildren());
-        shuffle(list);
     }
 
     @Test
@@ -84,13 +81,19 @@ public class VerifyAnnotationTest {
     }
 
     @Test
-    @Verify(
-            value = "list",
-            strictOrder = true
-    )
+    @Verify("list")
     void list_strict_order() {
         list = actualList();
         reverse(list.get(0).getChildren());
+    }
+
+    @Test
+    @Verify(value = "list", strictOrder = false)
+    void list_not_strict_order() {
+        list = actualList();
+        shuffle(list.get(0).getChildren());
+        shuffle(list.get(1).getChildren());
+        shuffle(list);
     }
 
     @Test
@@ -102,7 +105,7 @@ public class VerifyAnnotationTest {
     }
 
     /**
-     * "This method is for {@link com.cariochi.recordo.verify.VerifyInterceptorTest}."
+     * "This method is for {@link com.cariochi.recordo.interceptor.VerifyInterceptorTest }."
      */
     @Verify("object")
     void null_object() {

@@ -1,7 +1,5 @@
 package com.cariochi.recordo.books.app;
 
-import com.cariochi.recordo.AuthorService;
-
 import java.util.List;
 import java.util.stream.Stream;
 
