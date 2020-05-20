@@ -1,6 +1,4 @@
-package com.cariochi.recordo;
-
-import com.cariochi.recordo.books.app.Author;
+package com.cariochi.recordo.books.app;
 
 public class AuthorService {
 
