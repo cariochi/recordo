@@ -10,7 +10,7 @@ public @interface Verify {
 
     String value();
 
-    boolean extensible() default true;
+    boolean extensible() default false;
 
     boolean strictOrder() default false;
 

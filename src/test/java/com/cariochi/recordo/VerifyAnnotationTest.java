@@ -17,16 +17,17 @@ public class VerifyAnnotationTest {
     private List<TestPojo> list;
 
     @Test
-    @Verify(value = "object", file = "expected/custom-result.json")
+    @Verify(
+            value = "object",
+            file = "expected/custom-result.json",
+            extensible = true
+    )
     void extensible() {
         object = actualObject(1);
     }
 
     @Test
-    @Verify(
-            value = "object",
-            extensible = false
-    )
+    @Verify("object")
     void not_extensible() {
         object = actualObject(1);
     }
@@ -34,8 +35,7 @@ public class VerifyAnnotationTest {
     @Test
     @Verify(
             value = "object",
-            included = {"id", "text", "children.id", "children.text"},
-            extensible = false
+            included = {"id", "text", "children.id", "children.text"}
     )
     void included() {
         object = actualObject(1);
@@ -44,24 +44,20 @@ public class VerifyAnnotationTest {
     @Test
     @Verify(
             value = "object",
-            excluded = {"strings", "date", "children.strings", "children.date", "children.children"},
-            extensible = false
+            excluded = {"strings", "date", "children.strings", "children.date", "children.children"}
     )
     void excluded() {
         object = actualObject(1);
     }
 
     @Test
-    @Verify("list")
+    @Verify(value = "list", extensible = true)
     void list_extensible() {
         list = actualList();
     }
 
     @Test
-    @Verify(
-            value = "list",
-            extensible = false
-    )
+    @Verify("list")
     void list_not_extensible() {
         list = actualList();
         shuffle(list.get(0).getChildren());
@@ -72,8 +68,7 @@ public class VerifyAnnotationTest {
     @Test
     @Verify(
             value = "list",
-            included = {"id", "text", "children.id", "children.text"},
-            extensible = false
+            included = {"id", "text", "children.id", "children.text"}
     )
     void list_included() {
         list = actualList();
@@ -82,8 +77,7 @@ public class VerifyAnnotationTest {
     @Test
     @Verify(
             value = "list",
-            excluded = {"strings", "date", "children.strings", "children.date", "children.children"},
-            extensible = false
+            excluded = {"strings", "date", "children.strings", "children.date", "children.children"}
     )
     void list_excluded() {
         list = actualList();
