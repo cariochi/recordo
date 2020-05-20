@@ -137,16 +137,16 @@ For doing that you need to create the `recordo.properties` and define properties
 |`given.filename.pattern`|File name pattern for `@Given` annotation|
 |`verify.filename.pattern`|File name pattern for `@Verify` annotation|
 
-##### File name pattern placeholders:
-* `{TEST_CLASS_FILL_NAME}`
-* `{TEST_CLASS_SIMPLE_NAME}`
-* `{TEST_METHOD_NAME}`
-* `{TEST_FIELD_NAME}`
+#### File name pattern placeholders
+* {TEST_CLASS_FULL_NAME}
+* {TEST_CLASS_SIMPLE_NAME}
+* {TEST_METHOD_NAME}
+* {TEST_FIELD_NAME}
 
-##### Default properties:
+#### Default properties
 ```properties
 resources.folder = src/test/resources
-given.filename.pattern = {TEST_CLASS_FILL_NAME}/{TEST_METHOD_NAME}/given-{TEST_FIELD_NAME}.json
-verify.filename.pattern = {TEST_CLASS_FILL_NAME}/{TEST_METHOD_NAME}/verify-{TEST_FIELD_NAME}.json
+given.filename.pattern = {TEST_CLASS_FULL_NAME}/{TEST_METHOD_NAME}/given-{TEST_FIELD_NAME}.json
+verify.filename.pattern = {TEST_CLASS_FULL_NAME}/{TEST_METHOD_NAME}/verify-{TEST_FIELD_NAME}.json
 
 ```

@@ -17,12 +17,12 @@ public class Files {
 
     private static final Logger log = getLogger(Files.class);
 
-    public static final String TEST_CLASS_FILL_NAME = "{TEST_CLASS_FILL_NAME}";
+    public static final String TEST_CLASS_FULL_NAME = "{TEST_CLASS_FULL_NAME}";
     public static final String TEST_CLASS_SIMPLE_NAME = "{TEST_CLASS_SIMPLE_NAME}";
     public static final String TEST_METHOD_NAME = "{TEST_METHOD_NAME}";
     public static final String TEST_FIELD_NAME = "{TEST_FIELD_NAME}";
     public static final String[] FILE_NAME_VARIABLES = {
-            TEST_CLASS_FILL_NAME,
+            TEST_CLASS_FULL_NAME,
             TEST_CLASS_SIMPLE_NAME,
             TEST_METHOD_NAME,
             TEST_FIELD_NAME

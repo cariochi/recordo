@@ -9,9 +9,9 @@ public final class Properties {
 
     public static final String DEFAULT_RESOURCES_FOLDER = "src/test/resources";
     public static final String DEFAULT_GIVEN_FILE_NAME_PATTERN =
-            "{TEST_CLASS_FILL_NAME}/{TEST_METHOD_NAME}/given-{TEST_FIELD_NAME}.json";
+            "{TEST_CLASS_FULL_NAME}/{TEST_METHOD_NAME}/given-{TEST_FIELD_NAME}.json";
     public static final String DEFAULT_VERIFY_FILE_NAME_PATTERN =
-            "{TEST_CLASS_FILL_NAME}/{TEST_METHOD_NAME}/verify-{TEST_FIELD_NAME}.json";
+            "{TEST_CLASS_FULL_NAME}/{TEST_METHOD_NAME}/verify-{TEST_FIELD_NAME}.json";
 
     private static final java.util.Properties properties = loadProperties();
 
