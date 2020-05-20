@@ -11,14 +11,11 @@ import com.cariochi.recordo.utils.Properties;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
-import uk.co.jemos.podam.api.PodamFactory;
-import uk.co.jemos.podam.api.PodamFactoryImpl;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Optional;
@@ -35,7 +32,7 @@ public class GivenInterceptor implements BeforeTestInterceptor {
 
     private static final Logger log = getLogger(GivenInterceptor.class);
 
-    private final PodamFactory podamFactory = new PodamFactoryImpl(new RandomDataProviderStrategy());
+    private final RandomDataGenerator randomDataGenerator = new RandomDataGenerator();
     private final JsonConverter jsonConverter;
 
     public GivenInterceptor(JsonConverter jsonConverter) {
@@ -79,22 +76,8 @@ public class GivenInterceptor implements BeforeTestInterceptor {
     }
 
     private Optional<File> generateFile(Type fieldType, String fileName) {
-        return Optional.ofNullable(generateValue(fieldType))
+        return Optional.ofNullable(randomDataGenerator.generateObject(fieldType))
                 .flatMap(o -> writeToFile(jsonConverter.toJson(o, new JsonPropertyFilter()), fileName));
-    }
-
-    private Object generateValue(Type type) {
-        if (type instanceof ParameterizedType) {
-            final ParameterizedType parameterizedType = (ParameterizedType) type;
-            return podamFactory.manufacturePojo(
-                    (Class<?>) parameterizedType.getRawType(),
-                    parameterizedType.getActualTypeArguments()
-            );
-        } else if (type instanceof Class) {
-            return podamFactory.manufacturePojo((Class<?>) type);
-        } else {
-            return null;
-        }
     }
 
     private Stream<Given> findGivenAnnotations(Method method) {
