@@ -3,12 +3,12 @@
 
 It provides `@Verify` and `@Given` annotations, which allows making test field initialization and a test result verification in a declarative style.
 
-### `@Given`
+#### @Given
 The `@Given` annotation allows initializing a test field from a `json` file.
 If a file is absent - `Recordo` will generate a new file with random data for the test field according to its type.
 
 
-### `@Verify`
+#### @Verify
 The `@Verify` annotation allows asserting the expected value is equal to an actual one. 
 `Recordo` records an expected value automatically at the first test run or if a file is absent. 
 A developer can specify fields that should be included or excluded, comparison rules (`strictOrder` for arrays and `extensible` for objects), and a file name.
@@ -17,7 +17,7 @@ A developer can specify fields that should be included or excluded, comparison r
 
 ## Getting started
 
-* ### Add maven dependency
+### Add maven dependency
 ```
 <dependency>
     <groupId>com.cariochi</groupId>
@@ -26,8 +26,8 @@ A developer can specify fields that should be included or excluded, comparison r
     <scope>test</scope>
 </dependency>
 ```
-* ### Add `Recordo` extension/rule to your test
-##### JUnit 4:
+### Add Recordo extension/rule to your test
+* ##### JUnit 4:
 ```java
 public class BookServiceTest {
 
@@ -37,19 +37,19 @@ public class BookServiceTest {
 	...
 } 
 ```
-##### JUnit 5:
+* ##### JUnit 5:
 ```java
 @ExtendWith(RecordoExtension.class)
 class BookServiceTest {
     ...
 } 
 ```
-* ### Define test fields
+### Define test fields
 ```java
     private Author author;
     private Book book;
 ```
-* ### Annotate your test method with `@Given` or `@Verify` annotation
+### Annotate your test method with @Given or @Verify annotation
 ```java
     @Test
     @Given("author")
@@ -59,7 +59,7 @@ class BookServiceTest {
     }
 
 ```
-* ### Test Sample:
+### Test Sample:
 ```java
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(RecordoExtension.class)
@@ -109,7 +109,7 @@ class BookServiceTest {
 ---
 ## How it works
 
-#### `@Given` annotation:
+#### @Given annotation
 1. Create a test and annotate it with `@Given`.
 1. Run it the first time.
 1. The test fails because the file is absent.
@@ -117,7 +117,7 @@ class BookServiceTest {
 1. You can modify the file if needed.
 1. The test is ready.
 
-#### `@Verify` annotation:
+#### @Verify annotation
 1. Create a test and annotate it with `@Verify`.
 1. Run it the first time.
 1. The test fails because the expected file is absent.
