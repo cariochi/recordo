@@ -45,8 +45,8 @@ class GivenAnnotationTest {
     }
 
     @Test
-    @Given(value = "object", file = "{TEST_CLASS_FILL_NAME}/custom-object-file.json")
-    @Given(value = "list", file = "{TEST_CLASS_FILL_NAME}/custom-list-file.json")
+    @Given(value = "object", file = "{TEST_CLASS_FULL_NAME}/custom-object-file.json")
+    @Given(value = "list", file = "{TEST_CLASS_FULL_NAME}/custom-list-file.json")
     void given_multiple() {
         assertEquals(EXPECTED_OBJECT, object);
         assertEquals(EXPECTED_LIST, list);
