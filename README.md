@@ -91,7 +91,8 @@ class BookServiceTest {
     @Given("author")
     @Verify(value = "book", excluded = "id")
     void should_create_book() {
-        when(authorService.findById(book.getAuthor().getId())).thenReturn(author);
+        when(authorService.findById(book.getAuthor().getId()))
+		.thenReturn(author);
         book = bookService.create(book);
     }
 
