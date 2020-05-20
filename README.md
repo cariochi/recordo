@@ -3,12 +3,12 @@
 
 It provides `@Verify` and `@Given` annotations, which allows making test field initialization and a test result verification in a declarative style.
 
-### `@Given` Annotation
+### `@Given`
 The `@Given` annotation allows initializing a test field from a `json` file.
 If a file is absent - `Recordo` will generate a new file with random data for the test field according to its type.
 
 
-### `@Verify` Annotation
+### `@Verify`
 The `@Verify` annotation allows asserting the expected value is equal to an actual one. 
 `Recordo` records an expected value automatically at the first test run or if a file is absent. 
 A developer can specify fields that should be included or excluded, comparison rules (`strictOrder` for arrays and `extensible` for objects), and a file name.
@@ -18,7 +18,7 @@ A developer can specify fields that should be included or excluded, comparison r
 ## Getting started
 
 * ### Add maven dependency
-```xml
+```
 <dependency>
     <groupId>com.cariochi</groupId>
     <artifactId>recordo</artifactId>
