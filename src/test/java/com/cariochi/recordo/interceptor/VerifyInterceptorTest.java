@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.FileNotFoundException;
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import static org.apache.commons.lang3.StringUtils.replace;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -45,6 +46,7 @@ class VerifyInterceptorTest {
     @Test
     @SneakyThrows
     void object_not_extensible() {
+        mockWriteJsonToFile();
         mockExpectedFile("{" +
                          "   'id' : 1," +
                          "   'text' : 'Test Object 1'," +
@@ -134,6 +136,7 @@ class VerifyInterceptorTest {
 
     @Test
     void list_not_extensible() {
+        mockWriteJsonToFile();
         mockExpectedFile("[" +
                          "    {" +
                          "       'id' : 1," +
@@ -196,9 +199,55 @@ class VerifyInterceptorTest {
         verify(interceptor, never()).writeJsonToFile(any(), any());
     }
 
+    @Test
+    void list_not_strict_order() {
+        mockExpectedFile("[ {" +
+                         "    'id' : 1," +
+                         "    'text' : 'Test Object 1'," +
+                         "    'strings' : [ '1', '2', '3' ]," +
+                         "    'date' : '2020-01-02T00:00:00Z'," +
+                         "    'children' : [ {" +
+                         "      'id' : 2," +
+                         "      'text' : 'Test Object 2'," +
+                         "      'strings' : [ '2', '3', '4' ]," +
+                         "      'date' : '2020-01-03T00:00:00Z'," +
+                         "      'children' : [ ]" +
+                         "    }, {" +
+                         "      'id' : 3," +
+                         "      'text' : 'Test Object 3'," +
+                         "      'strings' : [ '3', '4', '5' ]," +
+                         "      'date' : '2020-01-04T00:00:00Z'," +
+                         "      'children' : [ ]" +
+                         "    }]" +
+                         "  }, {" +
+                         "    'id' : 4," +
+                         "    'text' : 'Test Object 4'," +
+                         "    'strings' : [ '4', '5', '6' ]," +
+                         "    'date' : '2020-01-05T00:00:00Z'," +
+                         "    'children' : [ {" +
+                         "      'id' : 5," +
+                         "      'text' : 'Test Object 5'," +
+                         "      'strings' : [ '5', '6', '7' ]," +
+                         "      'date' : '2020-01-06T00:00:00Z'," +
+                         "      'children' : [ ]" +
+                         "    }, {" +
+                         "      'id' : 6," +
+                         "      'text' : 'Test Object 6'," +
+                         "      'strings' : [ '6', '7', '8' ]," +
+                         "      'date' : '2020-01-07T00:00:00Z'," +
+                         "      'children' : [ ]" +
+                         "    } ]" +
+                         "  } ]");
+
+        run("list_not_strict_order");
+
+        verify(interceptor, never()).writeJsonToFile(any(), any());
+    }
+
 
     @Test
     void list_strict_order() {
+        mockWriteJsonToFile();
         mockExpectedFile("[ {" +
                          "    'id' : 1," +
                          "    'text' : 'Test Object 1'," +
@@ -245,6 +294,7 @@ class VerifyInterceptorTest {
     @Test
     @SneakyThrows
     void file_not_found() {
+        mockWriteJsonToFile();
         doThrow(new FileNotFoundException()).when(interceptor).readJsonFromFile(any());
         assertThrows(AssertionError.class, () -> run("extensible"));
         verify(interceptor, times(1)).writeJsonToFile(any(), any());
@@ -270,4 +320,9 @@ class VerifyInterceptorTest {
     public void mockExpectedFile(String json) {
         doReturn(replace(json, "'", "\"")).when(interceptor).readJsonFromFile(any());
     }
+
+    public void mockWriteJsonToFile() {
+        doReturn(Optional.empty()).when(interceptor).writeJsonToFile(any(), any());
+    }
+
 }

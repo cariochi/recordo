@@ -12,7 +12,7 @@ public @interface Verify {
 
     boolean extensible() default false;
 
-    boolean strictOrder() default false;
+    boolean strictOrder() default true;
 
     String[] included() default {};
 

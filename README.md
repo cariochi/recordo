@@ -8,7 +8,7 @@ The `@Given` annotation allows initializing a test field from a `json` file.
 If a file is absent - `Recordo` will generate a new file with random data for the test field according to its type.
 
 
-###`@Verify` Annotation
+### `@Verify` Annotation
 The `@Verify` annotation allows asserting the expected value is equal to an actual one. 
 `Recordo` records an expected value automatically at the first test run or if a file is absent. 
 A developer can specify fields that should be included or excluded, comparison rules (`strictOrder` for arrays and `extensible` for objects), and a file name.
@@ -59,9 +59,8 @@ class BookServiceTest {
     }
 
 ```
-* ###Test Sample:
+* ### Test Sample:
 ```java
-@FieldNameConstants
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(RecordoExtension.class)
 class BookServiceTest {
@@ -77,31 +76,31 @@ class BookServiceTest {
     private List<Book> books;
 
     @Test
-    @Verify(Fields.book)
+    @Verify("book")
     void should_get_book_by_id() {
         book = bookService.findById(1L);
     }
 
     @Test
-    @Given(Fields.author)
-    @Verify(value = Fields.books, included = {"id", "title", "author.id"})
+    @Given("author")
+    @Verify(value = "books", included = {"id", "title", "author.id"})
     void should_get_books_by_author() {
         books = bookService.findAllByAuthor(author);
     }
 
     @Test
-    @Given(Fields.book)
-    @Given(Fields.author)
-    @Verify(value = Fields.book, excluded = "id")
+    @Given("book")
+    @Given("author")
+    @Verify(value = "book", excluded = "id")
     void should_create_book() {
         when(authorService.findById(book.getAuthor().getId())).thenReturn(author);
         book = bookService.create(book);
     }
 
     @Test
-    @Given(Fields.book)
-    @Given(Fields.books)
-    @Verify(Fields.books)
+    @Given("book")
+    @Given("books")
+    @Verify("books")
     void should_add_book_to_shelf() {
         books = bookService.merge(books, book);
     }
