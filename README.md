@@ -25,7 +25,7 @@ A developer can specify fields that should be included or excluded, comparison r
 </dependency>
 ```
 ### Add Recordo extension/rule to your test
-* ###### JUnit 4:
+###### JUnit 4
 ```java
 public class BookServiceTest {
 
@@ -35,7 +35,7 @@ public class BookServiceTest {
 	...
 } 
 ```
-* ###### JUnit 5:
+###### JUnit 5
 ```java
 @ExtendWith(RecordoExtension.class)
 class BookServiceTest {
