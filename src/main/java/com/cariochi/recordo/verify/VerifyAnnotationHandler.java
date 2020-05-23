@@ -1,8 +1,10 @@
-package com.cariochi.recordo.interceptor;
+package com.cariochi.recordo.verify;
 
-import com.cariochi.recordo.RecordoException;
-import com.cariochi.recordo.Verifies;
-import com.cariochi.recordo.Verify;
+import com.cariochi.recordo.RecordoError;
+import com.cariochi.recordo.annotation.Verifies;
+import com.cariochi.recordo.annotation.Verify;
+import com.cariochi.recordo.handler.AfterTestHandler;
+import com.cariochi.recordo.handler.BeforeTestHandler;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonPropertyFilter;
 import com.cariochi.recordo.utils.ExceptionsSuppressor;
@@ -23,22 +25,21 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.cariochi.recordo.utils.ReflectionUtils.*;
-import static java.lang.String.format;
+import static com.cariochi.recordo.utils.Format.format;
+import static com.cariochi.recordo.utils.Reflection.*;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.reflect.MethodUtils.getAnnotation;
+import static org.slf4j.LoggerFactory.getLogger;
 
-public class VerifyInterceptor implements BeforeTestInterceptor, AfterTestInterceptor {
+public class VerifyAnnotationHandler implements BeforeTestHandler, AfterTestHandler {
 
-    private static final Logger log = org.slf4j.LoggerFactory.getLogger(VerifyInterceptor.class);
-    private final JsonConverter jsonConverter;
+    private static final Logger log = getLogger(VerifyAnnotationHandler.class);
 
-    public VerifyInterceptor(JsonConverter jsonConverter) {
-        this.jsonConverter = jsonConverter;
-    }
+    private JsonConverter jsonConverter;
 
     @Override
     public void beforeTest(Object testInstance, Method method) {
+        jsonConverter = JsonConverter.of(testInstance);
         findVerifyAnnotations(method)
                 .forEach(verify -> clearField(testInstance, verify));
     }
@@ -68,38 +69,38 @@ public class VerifyInterceptor implements BeforeTestInterceptor, AfterTestInterc
         final Object actual = readField(testInstance, verify.value());
 
         if (actual == null) {
-            throw new AssertionError(format("Actual '%s' value should not be null", verify.value()));
+            throw new AssertionError(format("Actual '{}' value should not be null", verify.value()));
         }
 
-        final String fileName = fileName(verify, method);
+        final String fileName = fileName(verify, testInstance.getClass(), method);
         final String actualJson = jsonConverter.toJson(actual, jsonFilter(verify));
         try {
             final String expectedJson = readJsonFromFile(fileName);
             log.debug("Asserting expected \n{} is equals to actual \n{}", expectedJson, actualJson);
             JSONAssert.assertEquals(expectedJson, actualJson, compareMode(verify));
-            log.info("Asserted actual `{}` value equals to expected in `{}`", verify.value(), fileName);
+            log.info("Asserted actual '{}' value equals to expected in '{}'", verify.value(), fileName);
         } catch (AssertionError | IOException e) {
             final String message = writeJsonToFile(actualJson, fileName)
                     .map(
                             file -> format(
-                                    "\n'%s' assertion failed: %s" +
-                                    "\nExpected '%s' value file was created.",
+                                    "\n'{}' assertion failed: {}" +
+                                    "\nExpected '{}' value file was created.",
                                     verify.value(), e.getMessage(), verify.value()
                             )
                     )
                     .orElse(e.getMessage());
             throw new AssertionError(message);
         } catch (JSONException e) {
-            throw new RecordoException(e);
+            throw new RecordoError(e);
         }
     }
 
-    private String fileName(Verify verify, Method method) {
+    private String fileName(Verify verify, Class<?> testClass, Method method) {
         final String fileNamePattern = Optional.of(verify.file())
                 .filter(StringUtils::isNotBlank)
                 .orElseGet(Properties::verifyFileNamePattern);
 
-        return Files.fileName(fileNamePattern, method, verify.value());
+        return Files.fileName(fileNamePattern, testClass, method, verify.value());
     }
 
     private JsonPropertyFilter jsonFilter(Verify verify) {
@@ -126,6 +127,6 @@ public class VerifyInterceptor implements BeforeTestInterceptor, AfterTestInterc
         return Optional.ofNullable(getAnnotation(method, Verifies.class, true, true))
                 .map(Verifies::value)
                 .map(Arrays::stream)
-                .orElseGet(() -> findAnnotation(method, Verify.class));
+                .orElseGet(() -> findAnnotation(method, Verify.class).map(Stream::of).orElseGet(Stream::empty));
     }
 }

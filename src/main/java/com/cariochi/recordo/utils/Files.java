@@ -7,13 +7,13 @@ import java.io.*;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
+import static com.cariochi.recordo.utils.Format.format;
 import static com.cariochi.recordo.utils.Properties.resourcesFolderPath;
-import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.lang3.StringUtils.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class Files {
+public final class Files {
 
     private static final Logger log = getLogger(Files.class);
 
@@ -29,12 +29,11 @@ public class Files {
     };
 
     private Files() {
-        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
 
-    public static String fileName(String fileNamePattern, Method method, String fieldName) {
-        final String testClassFullName = replace(uncapitalize(method.getDeclaringClass().getName()), ".", "/");
-        final String testClassSimpleName = uncapitalize(method.getDeclaringClass().getSimpleName());
+    public static String fileName(String fileNamePattern, Class<?> testClass, Method method, String fieldName) {
+        final String testClassFullName = replace(uncapitalize(testClass.getName()), ".", "/");
+        final String testClassSimpleName = uncapitalize(testClass.getSimpleName());
         final String testName = method.getName();
         final String[] values = new String[]{testClassFullName, testClassSimpleName, testName, fieldName};
         return replaceEach(fileNamePattern, FILE_NAME_VARIABLES, values);
@@ -45,8 +44,9 @@ public class Files {
             if (inputStream == null) {
                 final String filePath = findFile(fileName)
                         .map(File::getAbsolutePath)
+                        .map(path -> "file://" + path)
                         .orElse(fileName);
-                throw new IOException(format("\nFile 'file://%s' not found.", filePath));
+                throw new IOException(format("\nFile '{}' not found.", filePath));
             }
             return readFromStream(inputStream);
         }
@@ -68,7 +68,7 @@ public class Files {
         return fileOptional;
     }
 
-    private static Optional<File> findFile(String fileName) {
+    public static Optional<File> findFile(String fileName) {
         final File resourcesFolder = new File(resourcesFolderPath());
         if (!resourcesFolder.exists()) {
             return Optional.empty();

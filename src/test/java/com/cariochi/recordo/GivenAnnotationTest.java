@@ -1,6 +1,12 @@
 package com.cariochi.recordo;
 
+import com.cariochi.recordo.annotation.Given;
+import com.cariochi.recordo.annotation.RecordoJsonConverter;
+import com.cariochi.recordo.annotation.Verify;
 import com.cariochi.recordo.junit5.RecordoExtension;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -18,6 +24,11 @@ class GivenAnnotationTest {
             pojo(1).withChild(pojo(2)).withChild(pojo(3)),
             pojo(4).withChild(pojo(5)).withChild(pojo(6))
     );
+
+    @RecordoJsonConverter
+    private ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .setDateFormat(new StdDateFormat());
 
     private TestPojo object;
     private List<TestPojo> list;

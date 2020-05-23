@@ -1,6 +1,6 @@
 package com.cariochi.recordo.json;
 
-import com.cariochi.recordo.RecordoException;
+import com.cariochi.recordo.RecordoError;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,38 +13,37 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.lang.reflect.Type;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class JacksonConverter implements JsonConverter {
 
-    private final Supplier<ObjectMapper> objectMapper;
+    private final ObjectMapper objectMapper;
 
     public JacksonConverter() {
-        this(() -> new ObjectMapper().registerModule(new JavaTimeModule()).setDateFormat(new StdDateFormat()));
+        this(new ObjectMapper().registerModule(new JavaTimeModule()).setDateFormat(new StdDateFormat()));
     }
 
-    public JacksonConverter(Supplier<ObjectMapper> objectMapper) {
+    public JacksonConverter(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
     @Override
     public String toJson(Object object, JsonPropertyFilter filter) {
         try {
-            final JsonNode jsonNode = objectMapper.get().valueToTree(object);
+            final JsonNode jsonNode = objectMapper.valueToTree(object);
             applyFilter(jsonNode, filter);
-            return objectMapper.get().writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
         } catch (JsonProcessingException e) {
-            throw new RecordoException(e);
+            throw new RecordoError(e);
         }
     }
 
     @Override
-    public Object fromJson(String json, Type type) {
+    public <T> T fromJson(String json, Type type) {
         try {
-            final JavaType valueType = objectMapper.get().getTypeFactory().constructType(type);
-            return objectMapper.get().readValue(json, valueType);
+            final JavaType valueType = objectMapper.getTypeFactory().constructType(type);
+            return objectMapper.readValue(json, valueType);
         } catch (JsonProcessingException e) {
-            throw new RecordoException(e);
+            throw new RecordoError(e);
         }
     }
 

@@ -1,4 +1,4 @@
-package com.cariochi.recordo.interceptor;
+package com.cariochi.recordo.given;
 
 import uk.co.jemos.podam.api.AbstractRandomDataProviderStrategy;
 import uk.co.jemos.podam.api.PodamFactory;
