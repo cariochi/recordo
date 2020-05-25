@@ -4,51 +4,41 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
 import java.io.*;
-import java.lang.reflect.Method;
 import java.util.Optional;
 
 import static com.cariochi.recordo.utils.Format.format;
 import static com.cariochi.recordo.utils.Properties.resourcesFolderPath;
+import static java.lang.System.getProperty;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.lang3.StringUtils.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public final class Files {
 
     private static final Logger log = getLogger(Files.class);
-
-    public static final String TEST_CLASS_FULL_NAME = "{TEST_CLASS_FULL_NAME}";
-    public static final String TEST_CLASS_SIMPLE_NAME = "{TEST_CLASS_SIMPLE_NAME}";
-    public static final String TEST_METHOD_NAME = "{TEST_METHOD_NAME}";
-    public static final String TEST_FIELD_NAME = "{TEST_FIELD_NAME}";
-    public static final String[] FILE_NAME_VARIABLES = {
-            TEST_CLASS_FULL_NAME,
-            TEST_CLASS_SIMPLE_NAME,
-            TEST_METHOD_NAME,
-            TEST_FIELD_NAME
-    };
+    public static final String USER_DIR = getProperty("user.dir");
 
     private Files() {
     }
 
-    public static String fileName(String fileNamePattern, Class<?> testClass, Method method, String fieldName) {
-        final String testClassFullName = replace(uncapitalize(testClass.getName()), ".", "/");
-        final String testClassSimpleName = uncapitalize(testClass.getSimpleName());
-        final String testName = method.getName();
-        final String[] values = new String[]{testClassFullName, testClassSimpleName, testName, fieldName};
-        return replaceEach(fileNamePattern, FILE_NAME_VARIABLES, values);
+    public static String readFromFile(String fileName) throws IOException {
+        final Optional<File> folder = resourceFolder();
+        return folder.isPresent()
+                ? readFromFile(new File(folder.get(), fileName))
+                : readFromResources(fileName);
     }
 
-    public static String readFromFile(String fileName) throws IOException {
-        try (InputStream inputStream = Files.class.getResourceAsStream("/" + fileName)) {
-            if (inputStream == null) {
-                final String filePath = findFile(fileName)
-                        .map(File::getAbsolutePath)
-                        .map(path -> "file://" + path)
-                        .orElse(fileName);
-                throw new IOException(format("\nFile '{}' not found.", filePath));
-            }
-            return readFromStream(inputStream);
+    public static String readFromResources(String fileName) throws IOException {
+        try (InputStream inputStream = Files.class.getResourceAsStream(fileName)) {
+            return IOUtils.toString(inputStream, UTF_8);
+        }
+    }
+
+    private static String readFromFile(File file) throws IOException {
+        if (!file.exists()) {
+            throw new IOException(format("\nFile '{}' not found.", file.getAbsolutePath()));
+        }
+        try (InputStream inputStream = new FileInputStream(file)) {
+            return IOUtils.toString(inputStream, UTF_8);
         }
     }
 
@@ -68,16 +58,22 @@ public final class Files {
         return fileOptional;
     }
 
-    public static Optional<File> findFile(String fileName) {
-        final File resourcesFolder = new File(resourcesFolderPath());
-        if (!resourcesFolder.exists()) {
-            return Optional.empty();
-        }
-        return Optional.of(new File(resourcesFolder, fileName));
+    public static String filePath(String fileName) {
+        return findFile(fileName)
+                .map(File::getAbsolutePath)
+//                .map(path -> "file://" + path)
+                .orElse(fileName);
     }
 
-    private static String readFromStream(InputStream inputStream) throws IOException {
-        return IOUtils.toString(inputStream, UTF_8);
+    public static Optional<File> findFile(String fileName) {
+        return resourceFolder()
+                .map(folder -> new File(folder, fileName));
+    }
+
+    private static Optional<File> resourceFolder() {
+        return Optional.of(resourcesFolderPath())
+                .map(folder -> new File(USER_DIR, folder))
+                .filter(File::exists);
     }
 
 

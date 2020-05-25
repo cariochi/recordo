@@ -10,11 +10,10 @@ import com.cariochi.recordo.httpmock.model.RecordoRequest;
 import com.cariochi.recordo.httpmock.model.RecordoResponse;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonPropertyFilter;
-import com.cariochi.recordo.utils.Files;
+import com.cariochi.recordo.utils.Properties;
 import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -66,7 +65,7 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
 
             writeToFile(json, fileName(testInstance.getClass(), method))
                     .ifPresent(file -> log.info(
-                            "Http Mocks were recorded to 'file://{}'\nRequests:\n{}",
+                            "Record Http Mocks\n\t* {}\n{}",
                             file.getAbsolutePath(), urlsOf(actualMocks)
                     ));
         }
@@ -77,7 +76,7 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
             return Optional.empty();
         }
         final RecordoHttpMock expected = expectedMocks.remove(0);
-        log.info("\n    * Playback Http Mock: {}", request.getMethod() + " " + request.getUrl());
+        log.info("Playback Http Mock\n\t\t- {}", request.getMethod() + " " + request.getUrl());
         request.setHeaders(filteredHeaders(request.getHeaders  ()));
         RequestAssert.assertEquals(expected.getRequest(), request);
         return Optional.of(expected.getResponse());
@@ -93,13 +92,7 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
             final String fileName = fileName(testClass, method);
             expectedMocks = jsonConverter.fromJson(readFromFile(fileName), TYPE);
             expectedMocks.forEach(this::prepareForPlayback);
-
-            final String filePath = findFile(fileName)
-                    .map(File::getAbsolutePath)
-                    .map(path -> "file://" + path)
-                    .orElse(fileName);
-
-            log.info("\nHttp Mocks were read from '{}'\nRequests:\n{}", filePath, urlsOf(expectedMocks));
+            log.info("Read Http Mocks.\n\t* {}\n{}",  filePath(fileName), urlsOf(expectedMocks));
         } catch (IOException e) {
             log.warn("{}", e.getMessage());
             expectedMocks = emptyList();
@@ -107,7 +100,7 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
     }
 
     private String fileName(Class<?> testClass, Method method) {
-        return Files.fileName(httpMocksFileNamePattern(), testClass, method, "expectedMocks");
+        return Properties.fileName(httpMocksFileNamePattern(), testClass, method, "");
     }
 
     private void prepareForRecord(RecordoHttpMock mock) {
@@ -157,7 +150,7 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
     private String urlsOf(List<RecordoHttpMock> mocks) {
         return mocks.stream()
                 .map(RecordoHttpMock::getRequest)
-                .map(req -> "   * " + req.getMethod() + " " + req.getUrl())
+                .map(req -> "\t\t- " + req.getMethod() + " " + req.getUrl())
                 .collect(joining("\n"));
     }
 

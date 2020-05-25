@@ -20,7 +20,7 @@ public class VerifyAnnotationTest {
     @Test
     @Verify(
             value = "object",
-            file = "expected/custom-result.json",
+            file = "/expected/custom-result.json",
             extensible = true
     )
     void extensible() {

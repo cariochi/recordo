@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static com.cariochi.recordo.utils.Files.filePath;
 import static com.cariochi.recordo.utils.Format.format;
 import static com.cariochi.recordo.utils.Reflection.findAnnotation;
 import static com.cariochi.recordo.utils.Reflection.readField;
@@ -57,7 +58,7 @@ public class VerifyAnnotationHandler implements AfterTestHandler {
             final String expectedJson = readJsonFromFile(fileName);
             log.debug("Asserting expected \n{} is equals to actual \n{}", expectedJson, actualJson);
             JSONAssert.assertEquals(expectedJson, actualJson, compareMode(verify));
-            log.info("Asserted actual '{}' value equals to expected in '{}'", verify.value(), fileName);
+            log.info("Actual '{}' value equals to expected.\n\t* {}", verify.value(), filePath(fileName));
         } catch (AssertionError | IOException e) {
             final String message = writeJsonToFile(actualJson, fileName)
                     .map(
@@ -79,7 +80,7 @@ public class VerifyAnnotationHandler implements AfterTestHandler {
                 .filter(StringUtils::isNotBlank)
                 .orElseGet(Properties::verifyFileNamePattern);
 
-        return Files.fileName(fileNamePattern, testClass, method, verify.value());
+        return Properties.fileName(fileNamePattern, testClass, method, verify.value());
     }
 
     private JsonPropertyFilter jsonFilter(Verify verify) {

@@ -7,7 +7,6 @@ import com.cariochi.recordo.handler.BeforeTestHandler;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonPropertyFilter;
 import com.cariochi.recordo.utils.ExceptionsSuppressor;
-import com.cariochi.recordo.utils.Files;
 import com.cariochi.recordo.utils.Properties;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -21,8 +20,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.cariochi.recordo.utils.Files.readFromFile;
-import static com.cariochi.recordo.utils.Files.writeToFile;
+import static com.cariochi.recordo.utils.Files.*;
 import static com.cariochi.recordo.utils.Format.format;
 import static com.cariochi.recordo.utils.Reflection.*;
 import static org.apache.commons.lang3.reflect.MethodUtils.getAnnotation;
@@ -51,7 +49,7 @@ public class GivenAnnotationHandler implements BeforeTestHandler {
         try {
             final String json = readFromFile(fileName);
             givenObject = jsonConverter.fromJson(json, fieldType);
-            log.info("'{}' value was read from '{}'", given.value(), fileName);
+            log.info("Read given '{}' value.\n\t* {}", given.value(), filePath(fileName));
         } catch (IOException e) {
             givenObject = randomDataGenerator.generateObject(fieldType);
             writeToFile(jsonConverter.toJson(givenObject, new JsonPropertyFilter()), fileName)
@@ -74,7 +72,7 @@ public class GivenAnnotationHandler implements BeforeTestHandler {
         final String fileNamePattern = Optional.of(given.file())
                 .filter(StringUtils::isNotBlank)
                 .orElseGet(Properties::givenFileNamePattern);
-        return Files.fileName(fileNamePattern, testClass, method, given.value());
+        return Properties.fileName(fileNamePattern, testClass, method, given.value());
     }
 
     private Stream<Given> findGivenAnnotations(Method method) {
