@@ -15,15 +15,15 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-public final class OkHttpMapper {
+public class OkHttpMapper {
 
     public static final String CONTENT_TYPE = "Content-Type";
     private static final String DEFAULT_CONTENT_TYPE = "application/json; charset=utf-8";
 
-    private OkHttpMapper() {
+    public OkHttpMapper() {
     }
 
-    public static RecordoRequest toRecordoRequest(Request request) {
+    public RecordoRequest toRecordoRequest(Request request) {
         return new RecordoRequest()
                 .setMethod(request.method())
                 .setUrl(request.url().url().toString())
@@ -31,7 +31,7 @@ public final class OkHttpMapper {
                 .setBody(bodyOf(request));
     }
 
-    public static RecordoResponse toRecordoResponse(Response response) {
+    public RecordoResponse toRecordoResponse(Response response) {
         return new RecordoResponse()
                 .setProtocol(response.protocol().toString())
                 .setHeaders(headersOf(response.headers()))
@@ -40,7 +40,7 @@ public final class OkHttpMapper {
                 .setBody(bodyOf(response));
     }
 
-    public static Response fromRecordoResponse(Request request, RecordoResponse response) throws IOException {
+    public Response fromRecordoResponse(Request request, RecordoResponse response) throws IOException {
         final byte[] body = bytes(response.getBody());
         final ResponseBody responseBody = ResponseBody.create(
                 MediaType.parse(contentTypeOf(response.getHeaders())),
@@ -57,7 +57,7 @@ public final class OkHttpMapper {
                 .build();
     }
 
-    private static String bodyOf(Request request) {
+    private String bodyOf(Request request) {
         try {
             String requestContent = null;
             if (request.body() != null) {
@@ -71,7 +71,7 @@ public final class OkHttpMapper {
         }
     }
 
-    private static String bodyOf(Response response) {
+    private String bodyOf(Response response) {
         try {
             String responseContent = null;
             if (response.body() != null) {
@@ -83,16 +83,16 @@ public final class OkHttpMapper {
         }
     }
 
-    private static Map<String, String> headersOf(Headers headers) {
+    private Map<String, String> headersOf(Headers headers) {
         return headers.toMultimap().entrySet().stream()
                 .collect(toMap(Map.Entry::getKey, e -> join(", ", e.getValue())));
     }
 
-    private static String contentTypeOf(Map<String, String> headers) {
+    private String contentTypeOf(Map<String, String> headers) {
         return Optional.ofNullable(headers.get(CONTENT_TYPE)).orElse(DEFAULT_CONTENT_TYPE);
     }
 
-    private static byte[] bytes(Object body) {
+    private byte[] bytes(Object body) {
         return Optional.ofNullable(body)
                 .map(String.class::cast)
                 .map(s -> s.getBytes(UTF_8))

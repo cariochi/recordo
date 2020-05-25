@@ -9,9 +9,9 @@ import org.apache.http.impl.execchain.MainClientExec;
 import java.lang.reflect.Field;
 import java.util.Optional;
 
-public final class ApacheAttach {
+public final class ApacheclientAttachUtils {
 
-    private ApacheAttach() {
+    private ApacheclientAttachUtils() {
     }
 
     public static RecordExecChain attachRecordExecChain(HttpClient httpClient) {
@@ -46,7 +46,9 @@ public final class ApacheAttach {
                 final Field field = optionalField.get();
                 field.setAccessible(true);
                 final Object value = field.get(target);
-                if (MainClientExec.class.isAssignableFrom(value.getClass())) {
+                if (PlaybackExecChain.class.isAssignableFrom(value.getClass())) {
+                    return (PlaybackExecChain) value;
+                } else if (MainClientExec.class.isAssignableFrom(value.getClass())) {
                     final PlaybackExecChain playbackExecChain = new PlaybackExecChain((MainClientExec) value);
                     field.set(target, playbackExecChain);
                     return playbackExecChain;

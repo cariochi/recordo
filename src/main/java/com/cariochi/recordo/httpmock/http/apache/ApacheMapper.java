@@ -21,12 +21,12 @@ import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.*;
 import static org.apache.commons.lang3.StringUtils.*;
 
-public final class ApacheMapper {
+public class ApacheMapper {
 
-    private ApacheMapper() {
+    public ApacheMapper() {
     }
 
-    public static RecordoRequest toRecordoRequest(HttpRequestWrapper wrapper) throws IOException {
+    public RecordoRequest toRecordoRequest(HttpRequestWrapper wrapper) throws IOException {
         final HttpRequest request = wrapper.getOriginal();
         final String body = request instanceof HttpEntityEnclosingRequest
                 ? bodyOf(((HttpEntityEnclosingRequest) request).getEntity())
@@ -38,7 +38,7 @@ public final class ApacheMapper {
                 .setBody(body);
     }
 
-    public static RecordoResponse toRecordoResponse(HttpResponse response) throws IOException {
+    public RecordoResponse toRecordoResponse(HttpResponse response) throws IOException {
         return new RecordoResponse()
                 .setProtocol(response.getProtocolVersion().toString())
                 .setStatusCode(response.getStatusLine().getStatusCode())
@@ -47,7 +47,7 @@ public final class ApacheMapper {
                 .setBody(bodyOf(response.getEntity()));
     }
 
-    public static CloseableHttpResponse fromRecordoResponse(RecordoResponse response) {
+    public CloseableHttpResponse fromRecordoResponse(RecordoResponse response) {
         final String protocol = substringBefore(response.getProtocol(), "/");
         final String[] version = substringAfter(response.getProtocol(), "/").split("\\.");
         final Response newResponse = new Response(
@@ -65,7 +65,7 @@ public final class ApacheMapper {
         return newResponse;
     }
 
-    private static String bodyOf(HttpEntity entity) throws IOException {
+    private String bodyOf(HttpEntity entity) throws IOException {
         String bytes = null;
         if (entity != null) {
             try (InputStream is = entity.getContent()) {
@@ -75,7 +75,7 @@ public final class ApacheMapper {
         return isEmpty(bytes) ? null : bytes;
     }
 
-    public static Map<String, String> headersOf(Header[] headers) {
+    public Map<String, String> headersOf(Header[] headers) {
         return stream(headers)
                 .collect(groupingBy(
                         Header::getName,
@@ -83,7 +83,7 @@ public final class ApacheMapper {
                 ));
     }
 
-    private static byte[] bytes(Object body) {
+    private byte[] bytes(Object body) {
         return Optional.ofNullable(body)
                 .map(String.class::cast)
                 .map(s -> s.getBytes(UTF_8))

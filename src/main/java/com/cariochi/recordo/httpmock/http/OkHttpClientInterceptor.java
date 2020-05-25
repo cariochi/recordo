@@ -1,5 +1,6 @@
 package com.cariochi.recordo.httpmock.http;
 
+import com.cariochi.recordo.httpmock.http.okhttp.OkHttpMapper;
 import com.cariochi.recordo.httpmock.model.RecordoRequest;
 import com.cariochi.recordo.httpmock.model.RecordoResponse;
 import okhttp3.Interceptor;
@@ -13,12 +14,13 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import static com.cariochi.recordo.httpmock.http.okhttp.OkHttpMapper.*;
 import static com.cariochi.recordo.utils.Exceptions.trying;
 import static com.cariochi.recordo.utils.Reflection.writeField;
 import static java.util.stream.Collectors.toList;
 
 public class OkHttpClientInterceptor implements Interceptor, HttpClientInterceptor {
+
+    private final OkHttpMapper mapper = new OkHttpMapper();
 
     private Function<RecordoRequest, Optional<RecordoResponse>> onBeforeRequest;
     private BiFunction<RecordoRequest, RecordoResponse, RecordoResponse> onAfterRequest;
@@ -40,12 +42,12 @@ public class OkHttpClientInterceptor implements Interceptor, HttpClientIntercept
     @Override
     public Response intercept(Chain chain) throws IOException {
         final Request request = chain.request();
-        final RecordoRequest recordoRequest = toRecordoRequest(request);
+        final RecordoRequest recordoRequest = mapper.toRecordoRequest(request);
         final RecordoResponse recordoResponse = onBeforeRequest.apply(recordoRequest)
                 .orElseGet(trying(
-                        () -> onAfterRequest.apply(recordoRequest, toRecordoResponse(chain.proceed(request)))
+                        () -> onAfterRequest.apply(recordoRequest, mapper.toRecordoResponse(chain.proceed(request)))
                 ));
-        return fromRecordoResponse(request, recordoResponse);
+        return mapper.fromRecordoResponse(request, recordoResponse);
     }
 
     private void attachToHttpClient(OkHttpClient httpClient) {

@@ -66,7 +66,7 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
 
             writeToFile(json, fileName(testInstance.getClass(), method))
                     .ifPresent(file -> log.info(
-                            "Http Mocks were recorded to file: 'file://{}'\nRequests:\n{}",
+                            "Http Mocks were recorded to 'file://{}'\nRequests:\n{}",
                             file.getAbsolutePath(), urlsOf(actualMocks)
                     ));
         }
@@ -99,7 +99,7 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
                     .map(path -> "file://" + path)
                     .orElse(fileName);
 
-            log.info("\nHttp Mocks were read from file: '{}'\nRequests:\n{}", filePath, urlsOf(expectedMocks));
+            log.info("\nHttp Mocks were read from '{}'\nRequests:\n{}", filePath, urlsOf(expectedMocks));
         } catch (IOException e) {
             log.warn("{}", e.getMessage());
             expectedMocks = emptyList();
@@ -107,7 +107,7 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
     }
 
     private String fileName(Class<?> testClass, Method method) {
-        return Files.fileName(restFileNamePattern(), testClass, method, "expectedMocks");
+        return Files.fileName(httpMocksFileNamePattern(), testClass, method, "expectedMocks");
     }
 
     private void prepareForRecord(RecordoHttpMock mock) {
@@ -131,10 +131,10 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
 
     private Map<String, String> filteredHeaders(Map<String, String> headers) {
         return headers.entrySet().stream()
-                .filter(header -> restHeaders().contains(header.getKey().toLowerCase()))
+                .filter(header -> httpMocksIncludedHeaders().contains(header.getKey().toLowerCase()))
                 .collect(toMap(
                         Map.Entry::getKey,
-                        entry -> sensitiveHeaders().contains(entry.getKey().toLowerCase())
+                        entry -> httpMocksSensitiveHeaders().contains(entry.getKey().toLowerCase())
                                 ? "********"
                                 : entry.getValue()
                 ));

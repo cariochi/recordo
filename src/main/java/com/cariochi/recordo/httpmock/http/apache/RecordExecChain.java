@@ -13,11 +13,11 @@ import org.apache.http.impl.execchain.ClientExecChain;
 import java.io.IOException;
 import java.util.function.BiFunction;
 
-import static com.cariochi.recordo.httpmock.http.apache.ApacheMapper.*;
-
 public class RecordExecChain implements ClientExecChain {
 
     private final ClientExecChain requestExecutor;
+    private final ApacheMapper mapper = new ApacheMapper();
+
     private BiFunction<RecordoRequest, RecordoResponse, RecordoResponse> onAfterRequest;
     private boolean active;
 
@@ -40,9 +40,9 @@ public class RecordExecChain implements ClientExecChain {
                                          HttpExecutionAware executionAware) throws IOException, HttpException {
         final CloseableHttpResponse response = requestExecutor.execute(route, request, context, executionAware);
         if (active) {
-            final RecordoRequest recordoRequest = toRecordoRequest(request);
-            final RecordoResponse recordoResponse = toRecordoResponse(response);
-            return fromRecordoResponse(onAfterRequest.apply(recordoRequest, recordoResponse));
+            final RecordoRequest recordoRequest = mapper.toRecordoRequest(request);
+            final RecordoResponse recordoResponse = mapper.toRecordoResponse(response);
+            return mapper.fromRecordoResponse(onAfterRequest.apply(recordoRequest, recordoResponse));
         } else {
             return response;
         }

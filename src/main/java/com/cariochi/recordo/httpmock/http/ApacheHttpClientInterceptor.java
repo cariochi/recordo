@@ -10,8 +10,8 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import static com.cariochi.recordo.httpmock.http.apache.ApacheAttach.attachPlaybackExecChain;
-import static com.cariochi.recordo.httpmock.http.apache.ApacheAttach.attachRecordExecChain;
+import static com.cariochi.recordo.httpmock.http.apache.ApacheclientAttachUtils.attachPlaybackExecChain;
+import static com.cariochi.recordo.httpmock.http.apache.ApacheclientAttachUtils.attachRecordExecChain;
 
 public class ApacheHttpClientInterceptor implements HttpClientInterceptor {
 

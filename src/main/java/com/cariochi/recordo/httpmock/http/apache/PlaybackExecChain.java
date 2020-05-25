@@ -14,13 +14,13 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static com.cariochi.recordo.httpmock.http.apache.ApacheMapper.fromRecordoResponse;
-import static com.cariochi.recordo.httpmock.http.apache.ApacheMapper.toRecordoRequest;
 
 public class PlaybackExecChain implements ClientExecChain {
 
-    private Function<RecordoRequest, Optional<RecordoResponse>> onBeforeRequest;
     private final ClientExecChain requestExecutor;
+    private final ApacheMapper mapper = new ApacheMapper();
+
+    private Function<RecordoRequest, Optional<RecordoResponse>> onBeforeRequest;
 
     public PlaybackExecChain(ClientExecChain requestExecutor) {
         this.requestExecutor = requestExecutor;
@@ -35,9 +35,9 @@ public class PlaybackExecChain implements ClientExecChain {
                                          HttpRequestWrapper request,
                                          HttpClientContext context,
                                          HttpExecutionAware executionAware) throws IOException, HttpException {
-        final Optional<RecordoResponse> recordoResponse = onBeforeRequest.apply(toRecordoRequest(request));
+        final Optional<RecordoResponse> recordoResponse = onBeforeRequest.apply(mapper.toRecordoRequest(request));
         return recordoResponse.isPresent()
-                ? fromRecordoResponse(recordoResponse.get())
+                ? mapper.fromRecordoResponse(recordoResponse.get())
                 : requestExecutor.execute(route, request, context, executionAware);
     }
 }

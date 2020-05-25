@@ -310,7 +310,6 @@ class VerifyAnnotationHandlerTest {
         final Method method = VerifyAnnotationTest.class.getDeclaredMethod(methodName);
         method.setAccessible(true);
         final Object testInstance = method.getDeclaringClass().getDeclaredConstructor().newInstance();
-        interceptor.beforeTest(testInstance, method);
         method.invoke(testInstance);
         interceptor.afterTest(testInstance, method);
     }

@@ -15,9 +15,9 @@ public class CompositeAnnotationHandler implements BeforeTestHandler, AfterTestH
 
     public CompositeAnnotationHandler() {
         this.handlers = asList(
-                new VerifyAnnotationHandler(),
                 new GivenAnnotationHandler(),
-                new HttpMockAnnotationHandler()
+                new HttpMockAnnotationHandler(),
+                new VerifyAnnotationHandler()
         );
     }
 

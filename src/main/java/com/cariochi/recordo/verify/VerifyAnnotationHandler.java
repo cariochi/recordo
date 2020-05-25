@@ -4,7 +4,6 @@ import com.cariochi.recordo.RecordoError;
 import com.cariochi.recordo.annotation.Verifies;
 import com.cariochi.recordo.annotation.Verify;
 import com.cariochi.recordo.handler.AfterTestHandler;
-import com.cariochi.recordo.handler.BeforeTestHandler;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonPropertyFilter;
 import com.cariochi.recordo.utils.ExceptionsSuppressor;
@@ -20,48 +19,28 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.cariochi.recordo.utils.Format.format;
-import static com.cariochi.recordo.utils.Reflection.*;
+import static com.cariochi.recordo.utils.Reflection.findAnnotation;
+import static com.cariochi.recordo.utils.Reflection.readField;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.reflect.MethodUtils.getAnnotation;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class VerifyAnnotationHandler implements BeforeTestHandler, AfterTestHandler {
+public class VerifyAnnotationHandler implements AfterTestHandler {
 
     private static final Logger log = getLogger(VerifyAnnotationHandler.class);
 
     private JsonConverter jsonConverter;
 
     @Override
-    public void beforeTest(Object testInstance, Method method) {
-        jsonConverter = JsonConverter.of(testInstance);
-        findVerifyAnnotations(method)
-                .forEach(verify -> clearField(testInstance, verify));
-    }
-
-    @Override
     public void afterTest(Object testInstance, Method method) {
+        jsonConverter = JsonConverter.of(testInstance);
         ExceptionsSuppressor.of(AssertionError.class).executeAll(
                 findVerifyAnnotations(method).map(verify -> () -> verifyTestResult(verify, method, testInstance))
         );
-    }
-
-    private void clearField(Object testInstance, Verify verify) {
-        final Object value = readField(testInstance, verify.value());
-        if (value != null) {
-            if (value instanceof Collection) {
-                ((Collection) value).clear();
-            } else if (value instanceof Map) {
-                ((Map) value).clear();
-            } else {
-                writeField(testInstance, verify.value(), null);
-            }
-        }
     }
 
     private void verifyTestResult(Verify verify, Method method, Object testInstance) {
@@ -84,8 +63,8 @@ public class VerifyAnnotationHandler implements BeforeTestHandler, AfterTestHand
                     .map(
                             file -> format(
                                     "\n'{}' assertion failed: {}" +
-                                    "\nExpected '{}' value file was created.",
-                                    verify.value(), e.getMessage(), verify.value()
+                                    "\nExpected '{}' value file was saved to 'file://{}'",
+                                    verify.value(), e.getMessage(), verify.value(), file.getAbsolutePath()
                             )
                     )
                     .orElse(e.getMessage());
