@@ -7,7 +7,7 @@
 
     <groupId>com.cariochi</groupId>
     <artifactId>recordo</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <name>Recordo</name>
     <description>
         The JUnit 4/5 extension. It provides '@Given' and '@Verify' annotations
