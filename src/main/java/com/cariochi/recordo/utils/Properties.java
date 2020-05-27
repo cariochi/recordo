@@ -1,6 +1,7 @@
 package com.cariochi.recordo.utils;
 
 import com.cariochi.recordo.RecordoError;
+import com.cariochi.recordo.utils.Fields.ObjectField;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -26,11 +27,19 @@ public final class Properties {
     private Properties() {
     }
 
-    public static String fileName(String fileNamePattern, Class<?> testClass, Method method, String fieldName) {
+    public static String fileName(String fileNamePattern, ObjectField field, Method method) {
+        final String packageNme = replace(uncapitalize(field.getObjectClass().getPackage().getName()), ".", "/");
+        final String className = uncapitalize(field.getObjectClass().getSimpleName());
+        final String methodName = method.getName();
+        final String[] values = new String[]{packageNme, className, methodName, field.getName()};
+        return replaceEach(fileNamePattern, FILE_NAME_VARIABLES, values);
+    }
+
+    public static String fileName(String fileNamePattern, Class<?> testClass, Method method) {
         final String packageNme = replace(uncapitalize(testClass.getPackage().getName()), ".", "/");
         final String className = uncapitalize(testClass.getSimpleName());
         final String methodName = method.getName();
-        final String[] values = new String[]{packageNme, className, methodName, fieldName};
+        final String[] values = new String[]{packageNme, className, methodName, ""};
         return replaceEach(fileNamePattern, FILE_NAME_VARIABLES, values);
     }
 
@@ -40,6 +49,10 @@ public final class Properties {
 
     public static String givenFileNamePattern() {
         return property("given.filename.pattern");
+    }
+
+    public static String givenValueFileNamePattern() {
+        return property("given.value.filename.pattern");
     }
 
     public static String verifyFileNamePattern() {

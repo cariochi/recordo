@@ -2,27 +2,28 @@ package com.cariochi.recordo.given;
 
 import com.cariochi.recordo.RecordoError;
 import com.cariochi.recordo.annotation.Given;
+import com.cariochi.recordo.annotation.GivenValue;
 import com.cariochi.recordo.annotation.Givens;
 import com.cariochi.recordo.handler.BeforeTestHandler;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonPropertyFilter;
 import com.cariochi.recordo.utils.ExceptionsSuppressor;
+import com.cariochi.recordo.utils.Fields;
+import com.cariochi.recordo.utils.Fields.ObjectField;
 import com.cariochi.recordo.utils.Properties;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static com.cariochi.recordo.utils.Fields.getField;
 import static com.cariochi.recordo.utils.Files.*;
-import static com.cariochi.recordo.utils.Format.format;
-import static com.cariochi.recordo.utils.Reflection.*;
+import static com.cariochi.recordo.utils.Reflection.findAnnotation;
 import static org.apache.commons.lang3.reflect.MethodUtils.getAnnotation;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -38,41 +39,50 @@ public class GivenAnnotationHandler implements BeforeTestHandler {
     public void beforeTest(Object testInstance, Method method) {
         jsonConverter = JsonConverter.of(testInstance);
         ExceptionsSuppressor.of(RecordoError.class).executeAll(
-                findGivenAnnotations(method).map(given -> () -> writeFieldValue(testInstance, given, method))
+                Fields.getFieldsWithAnnotation(testInstance, GivenValue.class).stream()
+                        .map(field -> () -> setField(field, method))
+        );
+        ExceptionsSuppressor.of(RecordoError.class).executeAll(
+                findGivenAnnotations(method)
+                        .map(given -> () -> {
+                            final ObjectField field = getField(testInstance, given.value());
+                            setField(field, method, given.file());
+                        })
         );
     }
 
-    private void writeFieldValue(Object testInstance, Given given, Method method) {
-        final Type fieldType = fieldType(given.value(), testInstance);
-        final String fileName = fileName(given, testInstance.getClass(), method);
+    public void setField(ObjectField field, Method method) {
+        final GivenValue givenValue = field.getAnnotation(GivenValue.class);
+        final String fileNamePattern = Optional.of(givenValue.value())
+                .filter(StringUtils::isNotBlank)
+                .orElseGet(Properties::givenValueFileNamePattern);
+        final String fileName = Properties.fileName(fileNamePattern, field, method);
+        setField(field, fileName);
+    }
+
+    private void setField(ObjectField field, Method method, String file) {
+        final String fileNamePattern = Optional.of(file)
+                .filter(StringUtils::isNotBlank)
+                .orElseGet(Properties::givenFileNamePattern);
+        final String fileName = Properties.fileName(fileNamePattern, field, method);
+        setField(field, fileName);
+    }
+
+    private void setField(ObjectField field, String fileName) {
         Object givenObject;
         try {
             final String json = readFromFile(fileName);
-            givenObject = jsonConverter.fromJson(json, fieldType);
-            log.info("Read given '{}' value.\n\t* {}", given.value(), filePath(fileName));
+            givenObject = jsonConverter.fromJson(json, field.getType());
+            log.info("Read given '{}' value.\n\t* {}", field.getName(), filePath(fileName));
         } catch (IOException e) {
-            givenObject = randomDataGenerator.generateObject(fieldType);
+            givenObject = randomDataGenerator.generateObject(field.getType());
             writeToFile(jsonConverter.toJson(givenObject, new JsonPropertyFilter()), fileName)
                     .map(File::getAbsolutePath)
                     .ifPresent(file ->
-                            log.warn(e.getMessage() + "\nRandom '{}' value file was generated.", given.value())
+                            log.warn(e.getMessage() + "\nRandom '{}' value file was generated.", field.getName())
                     );
         }
-        writeField(testInstance, given.value(), givenObject);
-    }
-
-    private Type fieldType(String fieldName, Object testInstance) {
-        return findObjectField(testInstance, fieldName)
-                .map(ObjectField::field)
-                .map(Field::getGenericType)
-                .orElseThrow(() -> new IllegalArgumentException(format("Test field '{}' not found", fieldName)));
-    }
-
-    private String fileName(Given given, Class<?> testClass, Method method) {
-        final String fileNamePattern = Optional.of(given.file())
-                .filter(StringUtils::isNotBlank)
-                .orElseGet(Properties::givenFileNamePattern);
-        return Properties.fileName(fileNamePattern, testClass, method, given.value());
+        field.setValue(givenObject);
     }
 
     private Stream<Given> findGivenAnnotations(Method method) {

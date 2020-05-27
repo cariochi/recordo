@@ -1,6 +1,7 @@
 package com.cariochi.recordo;
 
 import com.cariochi.recordo.annotation.Given;
+import com.cariochi.recordo.annotation.GivenValue;
 import com.cariochi.recordo.annotation.RecordoJsonConverter;
 import com.cariochi.recordo.annotation.Verify;
 import com.cariochi.recordo.junit5.RecordoExtension;
@@ -30,18 +31,19 @@ class GivenAnnotationTest {
             .registerModule(new JavaTimeModule())
             .setDateFormat(new StdDateFormat());
 
+    @GivenValue
     private TestPojo object;
+
+    @GivenValue("/{package}/{class}/given-list.json")
     private List<TestPojo> list;
 
     @Test
-    @Given("object")
     @Verify("object")
     void given() {
         assertEquals(EXPECTED_OBJECT, object);
     }
 
     @Test
-    @Given("list")
     @Verify("list")
     void given_list() {
         assertEquals(EXPECTED_LIST, list);
@@ -56,8 +58,8 @@ class GivenAnnotationTest {
     }
 
     @Test
-    @Given(value = "object", file = "/{package}/{class}/custom-object-file.json")
-    @Given(value = "list", file = "/{package}/{class}/custom-list-file.json")
+    @Given(value = "object", file = "/{package}/{class}/given-object.json")
+    @Given(value = "list", file = "/{package}/{class}/given-list.json")
     void given_multiple() {
         assertEquals(EXPECTED_OBJECT, object);
         assertEquals(EXPECTED_LIST, list);

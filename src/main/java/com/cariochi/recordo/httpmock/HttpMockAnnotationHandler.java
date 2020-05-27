@@ -100,7 +100,7 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
     }
 
     private String fileName(Class<?> testClass, Method method) {
-        return Properties.fileName(httpMocksFileNamePattern(), testClass, method, "");
+        return Properties.fileName(httpMocksFileNamePattern(), testClass, method);
     }
 
     private void prepareForRecord(RecordoHttpMock mock) {

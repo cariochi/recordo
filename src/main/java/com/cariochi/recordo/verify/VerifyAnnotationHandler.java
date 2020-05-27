@@ -7,6 +7,8 @@ import com.cariochi.recordo.handler.AfterTestHandler;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonPropertyFilter;
 import com.cariochi.recordo.utils.ExceptionsSuppressor;
+import com.cariochi.recordo.utils.Fields;
+import com.cariochi.recordo.utils.Fields.ObjectField;
 import com.cariochi.recordo.utils.Files;
 import com.cariochi.recordo.utils.Properties;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +27,6 @@ import java.util.stream.Stream;
 import static com.cariochi.recordo.utils.Files.filePath;
 import static com.cariochi.recordo.utils.Format.format;
 import static com.cariochi.recordo.utils.Reflection.findAnnotation;
-import static com.cariochi.recordo.utils.Reflection.readField;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.reflect.MethodUtils.getAnnotation;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -45,27 +46,26 @@ public class VerifyAnnotationHandler implements AfterTestHandler {
     }
 
     private void verifyTestResult(Verify verify, Method method, Object testInstance) {
-
-        final Object actual = readField(testInstance, verify.value());
-
+        final ObjectField field = Fields.getField(testInstance, verify.value());
+        final Object actual = field.getValue();
         if (actual == null) {
             throw new AssertionError(format("Actual '{}' value should not be null", verify.value()));
         }
+        final String fileName = fileName(field, method, verify.file());
 
-        final String fileName = fileName(verify, testInstance.getClass(), method);
         final String actualJson = jsonConverter.toJson(actual, jsonFilter(verify));
         try {
             final String expectedJson = readJsonFromFile(fileName);
             log.debug("Asserting expected \n{} is equals to actual \n{}", expectedJson, actualJson);
             JSONAssert.assertEquals(expectedJson, actualJson, compareMode(verify));
-            log.info("Actual '{}' value equals to expected.\n\t* {}", verify.value(), filePath(fileName));
+            log.info("Actual '{}' value equals to expected.\n\t* {}", field.getName(), filePath(fileName));
         } catch (AssertionError | IOException e) {
             final String message = writeJsonToFile(actualJson, fileName)
                     .map(
                             file -> format(
                                     "\n'{}' assertion failed: {}" +
                                     "\nExpected '{}' value file was saved to 'file://{}'",
-                                    verify.value(), e.getMessage(), verify.value(), file.getAbsolutePath()
+                                    field.getName(), e.getMessage(), field.getName(), file.getAbsolutePath()
                             )
                     )
                     .orElse(e.getMessage());
@@ -75,12 +75,11 @@ public class VerifyAnnotationHandler implements AfterTestHandler {
         }
     }
 
-    private String fileName(Verify verify, Class<?> testClass, Method method) {
-        final String fileNamePattern = Optional.of(verify.file())
+    private String fileName(ObjectField field, Method method, String file) {
+        final String fileNamePattern = Optional.of(file)
                 .filter(StringUtils::isNotBlank)
                 .orElseGet(Properties::verifyFileNamePattern);
-
-        return Properties.fileName(fileNamePattern, testClass, method, verify.value());
+        return Properties.fileName(fileNamePattern, field, method);
     }
 
     private JsonPropertyFilter jsonFilter(Verify verify) {
