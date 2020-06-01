@@ -3,12 +3,17 @@
 
 @import "{{ site.theme }}";
 
+body {
+    padding: 30px;
+    font-size: 13px;
+}
+
 section {
     width: 560px;
 }
 
-body {
-    font-size: 13px;
+footer {
+    bottom: 10px;
 }
 
 .highlight {
