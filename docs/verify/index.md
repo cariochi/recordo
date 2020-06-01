@@ -1,2 +1,2 @@
 Hello
-[home](/)
+[home](..)
