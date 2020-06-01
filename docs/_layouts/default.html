@@ -30,9 +30,14 @@
         <p class="view"><a href="{{ site.github.owner_url }}">View My GitHub Profile</a></p>
         {% endif %}
         
-        <h3><a href="given_value"><strong>@GivenValue</strong></a></h3>
-        <h3><a href="given"><strong>@Given</strong></a></h3>
-        <h3><a href="verify"><strong>@Verify</strong></a></h3>
+        <div class="navigation">
+          <hr>
+          <a href="#overview">Overview</a></br>
+          <a href="#getting-started">Getting started</a></br>
+          <a href="given_value">@GivenValue</a></br>
+          <a href="given">@Given</a></br>
+          <a href="verify">@Verify</a></br>
+        </div>
         
         {% if site.show_downloads %}
         <ul class="downloads">
