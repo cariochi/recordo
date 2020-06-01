@@ -16,12 +16,12 @@
       <header>
         
         <div class="logo">
-            <a href="{{ "/" | absolute_url }}">{{ site.title | default: site.github.repository_name }}</a>
+            <a href="{{ "/" | absolute_url }}">recordo</a>
         </div>
         
         <!--
         <h1><a href="{{ "/" | absolute_url }}">{{ site.title | default: site.github.repository_name }}</a></h1>
-        -->
+
         
         {% if site.logo %}
           <img src="{{site.logo | relative_url}}" alt="Logo" />
@@ -31,17 +31,16 @@
 
         {% if site.github.is_project_page %}
         <p class="view"><a href="https://github.com/cariochi/recordo">[ View on GitHub ]</a></p>
-        <!--
+        
           <p class="view"><a href="{{ site.github.repository_url }}">View on GitHub <small>{{ site.github.repository_nwo }}</small></a></p>
-        -->
-        {% endif %}
 
+        {% endif %}
+        -->
         {% if site.github.is_user_page %}
         <p class="view"><a href="{{ site.github.owner_url }}">View My GitHub Profile</a></p>
         {% endif %}
         
         <div class="navigation">
-          <hr>
           <a href="#overview">Overview</a>
           <a href="#getting-started">Getting started</a>
           <a href="#how-it-works">How it works</a>
@@ -63,6 +62,7 @@
       </section>
       <footer>
         {% if site.github.is_project_page %}
+        <p class="view"><a href="https://github.com/cariochi/recordo">View on GitHub</a></p>
         <p>This project is maintained by <a href="{{ site.github.owner_url }}">{{ site.github.owner_name }}</a></p>
         {% endif %}
         <p><small>Hosted on GitHub Pages<br>Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
