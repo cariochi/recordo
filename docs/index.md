@@ -1,2 +1,2 @@
 Recordo
-[test link](verify.md)
+[test link](verify)
