@@ -44,8 +44,7 @@ public class OkHttpMapper {
         final byte[] body = bytes(response.getBody());
         final ResponseBody responseBody = ResponseBody.create(
                 MediaType.parse(contentTypeOf(response.getHeaders())),
-                body.length,
-                new Buffer().write(body)
+                body
         );
         return new Response.Builder()
                 .request(request)

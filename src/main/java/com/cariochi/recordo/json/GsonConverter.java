@@ -17,10 +17,19 @@ public class GsonConverter implements JsonConverter {
     }
 
     @Override
+    public String toJson(Object object) {
+        return gson.toJson(object);
+    }
+
+    @Override
     public String toJson(Object object, JsonPropertyFilter filter) {
-        final JsonElement jsonElement = gson.toJsonTree(object);
-        applyFilter(jsonElement, filter);
-        return gson.toJson(jsonElement);
+        if (filter.hasProperties()) {
+            final JsonElement jsonElement = gson.toJsonTree(object);
+            applyFilter(jsonElement, filter);
+            return toJson(jsonElement);
+        } else {
+            return toJson(object);
+        }
     }
 
     @Override

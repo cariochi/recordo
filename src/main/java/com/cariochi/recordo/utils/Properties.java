@@ -29,7 +29,7 @@ public final class Properties {
 
     public static String fileName(String fileNamePattern, ObjectField field, Method method) {
         final String packageNme = replace(uncapitalize(field.getObjectClass().getPackage().getName()), ".", "/");
-        final String className = uncapitalize(field.getObjectClass().getSimpleName());
+        final String className = field.getObjectClass().getSimpleName();
         final String methodName = method.getName();
         final String[] values = new String[]{packageNme, className, methodName, field.getName()};
         return replaceEach(fileNamePattern, FILE_NAME_VARIABLES, values);
@@ -37,7 +37,7 @@ public final class Properties {
 
     public static String fileName(String fileNamePattern, Class<?> testClass, Method method) {
         final String packageNme = replace(uncapitalize(testClass.getPackage().getName()), ".", "/");
-        final String className = uncapitalize(testClass.getSimpleName());
+        final String className = testClass.getSimpleName();
         final String methodName = method.getName();
         final String[] values = new String[]{packageNme, className, methodName, ""};
         return replaceEach(fileNamePattern, FILE_NAME_VARIABLES, values);

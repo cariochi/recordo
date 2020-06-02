@@ -45,10 +45,26 @@ public final class Fields {
                 .orElseThrow(() -> new IllegalArgumentException(format("Field '{}' not found", fieldName)));
     }
 
+    public static List<ObjectField> getAllFields(Object target) {
+        return FieldUtils.getAllFieldsList(target.getClass()).stream()
+                .map(field -> new ObjectField(target, field))
+                .collect(toList());
+    }
+
     public static List<ObjectField> getFieldsWithAnnotation(Object object, Class<? extends Annotation> annotationCls) {
         return FieldUtils.getFieldsListWithAnnotation(object.getClass(), annotationCls).stream()
                 .map(field -> new ObjectField(object, field))
                 .collect(toList());
+    }
+
+    public static <T> Optional<T> readAnnotatedValue(Object testInstance,
+                                                     Class<T> fieldType,
+                                                     Class<? extends Annotation> annotationClass) {
+        return getFieldsWithAnnotation(testInstance, annotationClass).stream()
+                .filter(field -> fieldType.isAssignableFrom(field.getFieldClass()))
+                .findFirst()
+                .map(ObjectField::getValue)
+                .map(fieldType::cast);
     }
 
     public static class ObjectField {
@@ -61,8 +77,12 @@ public final class Fields {
             this.field = field;
         }
 
-        public Type getType() {
+        public Type getFieldType() {
             return field.getGenericType();
+        }
+
+        public Class<?> getFieldClass() {
+            return field.getType();
         }
 
         public Class<?> getObjectClass() {

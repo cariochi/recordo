@@ -5,6 +5,7 @@ import com.cariochi.recordo.annotation.Verifies;
 import com.cariochi.recordo.annotation.Verify;
 import com.cariochi.recordo.handler.AfterTestHandler;
 import com.cariochi.recordo.json.JsonConverter;
+import com.cariochi.recordo.json.JsonConverters;
 import com.cariochi.recordo.json.JsonPropertyFilter;
 import com.cariochi.recordo.utils.ExceptionsSuppressor;
 import com.cariochi.recordo.utils.Fields;
@@ -39,7 +40,7 @@ public class VerifyAnnotationHandler implements AfterTestHandler {
 
     @Override
     public void afterTest(Object testInstance, Method method) {
-        jsonConverter = JsonConverter.of(testInstance);
+        jsonConverter = JsonConverters.find(testInstance);
         ExceptionsSuppressor.of(AssertionError.class).executeAll(
                 findVerifyAnnotations(method).map(verify -> () -> verifyTestResult(verify, method, testInstance))
         );
@@ -51,6 +52,7 @@ public class VerifyAnnotationHandler implements AfterTestHandler {
         if (actual == null) {
             throw new AssertionError(format("Actual '{}' value should not be null", verify.value()));
         }
+        field.setValue(null);
         final String fileName = fileName(field, method, verify.file());
 
         final String actualJson = jsonConverter.toJson(actual, jsonFilter(verify));

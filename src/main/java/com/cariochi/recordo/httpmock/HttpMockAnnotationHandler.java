@@ -4,14 +4,14 @@ import com.cariochi.recordo.annotation.HttpMock;
 import com.cariochi.recordo.handler.AfterTestHandler;
 import com.cariochi.recordo.handler.BeforeTestHandler;
 import com.cariochi.recordo.httpmock.assertion.RequestAssert;
-import com.cariochi.recordo.httpmock.http.HttpClientInterceptor;
+import com.cariochi.recordo.httpmock.http.HttpClientInterceptors;
 import com.cariochi.recordo.httpmock.model.RecordoHttpMock;
 import com.cariochi.recordo.httpmock.model.RecordoRequest;
 import com.cariochi.recordo.httpmock.model.RecordoResponse;
 import com.cariochi.recordo.json.JsonConverter;
-import com.cariochi.recordo.json.JsonPropertyFilter;
+import com.cariochi.recordo.json.JsonConverters;
 import com.cariochi.recordo.utils.Properties;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHandler {
 
     private static final Logger log = getLogger(HttpMockAnnotationHandler.class);
-    private static final Type TYPE = new TypeToken<List<RecordoHttpMock>>() {}.getType();
+    private static final Type TYPE = new TypeReference<List<RecordoHttpMock>>() {}.getType();
 
     private JsonConverter jsonConverter;
 
@@ -47,10 +47,10 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
         if (!annotation.isPresent()) {
             return;
         }
-        jsonConverter = JsonConverter.of(testInstance);
+        jsonConverter = JsonConverters.find(testInstance);
         loadExpectedMocks(testInstance.getClass(), method);
         actualMocks.clear();
-        HttpClientInterceptor.of(testInstance).init(this::playback, this::record);
+        HttpClientInterceptors.of(testInstance).init(this::playback, this::record);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
         }
         if (!actualMocks.isEmpty()) {
             actualMocks.forEach(this::prepareForRecord);
-            final String json = jsonConverter.toJson(actualMocks, new JsonPropertyFilter());
+            final String json = jsonConverter.toJson(actualMocks);
 
             writeToFile(json, fileName(testInstance.getClass(), method))
                     .ifPresent(file -> log.info(
@@ -77,7 +77,7 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
         }
         final RecordoHttpMock expected = expectedMocks.remove(0);
         log.info("Playback Http Mock\n\t\t- {}", request.getMethod() + " " + request.getUrl());
-        request.setHeaders(filteredHeaders(request.getHeaders  ()));
+        request.setHeaders(filteredHeaders(request.getHeaders()));
         RequestAssert.assertEquals(expected.getRequest(), request);
         return Optional.of(expected.getResponse());
     }
@@ -92,7 +92,7 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
             final String fileName = fileName(testClass, method);
             expectedMocks = jsonConverter.fromJson(readFromFile(fileName), TYPE);
             expectedMocks.forEach(this::prepareForPlayback);
-            log.info("Read Http Mocks.\n\t* {}\n{}",  filePath(fileName), urlsOf(expectedMocks));
+            log.info("Read Http Mocks.\n\t* {}\n{}", filePath(fileName), urlsOf(expectedMocks));
         } catch (IOException e) {
             log.warn("{}", e.getMessage());
             expectedMocks = emptyList();
@@ -155,7 +155,7 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
     }
 
     private Function<Object, String> toJson() {
-        return body -> jsonConverter.toJson(body, new JsonPropertyFilter());
+        return body -> jsonConverter.toJson(body);
     }
 
     private Function<String, Object> toObject() {

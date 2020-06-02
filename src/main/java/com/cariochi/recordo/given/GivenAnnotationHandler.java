@@ -6,7 +6,7 @@ import com.cariochi.recordo.annotation.GivenValue;
 import com.cariochi.recordo.annotation.Givens;
 import com.cariochi.recordo.handler.BeforeTestHandler;
 import com.cariochi.recordo.json.JsonConverter;
-import com.cariochi.recordo.json.JsonPropertyFilter;
+import com.cariochi.recordo.json.JsonConverters;
 import com.cariochi.recordo.utils.ExceptionsSuppressor;
 import com.cariochi.recordo.utils.Fields;
 import com.cariochi.recordo.utils.Fields.ObjectField;
@@ -37,7 +37,7 @@ public class GivenAnnotationHandler implements BeforeTestHandler {
 
     @Override
     public void beforeTest(Object testInstance, Method method) {
-        jsonConverter = JsonConverter.of(testInstance);
+        jsonConverter = JsonConverters.find(testInstance);
         ExceptionsSuppressor.of(RecordoError.class).executeAll(
                 Fields.getFieldsWithAnnotation(testInstance, GivenValue.class).stream()
                         .map(field -> () -> setField(field, method))
@@ -72,11 +72,13 @@ public class GivenAnnotationHandler implements BeforeTestHandler {
         Object givenObject;
         try {
             final String json = readFromFile(fileName);
-            givenObject = jsonConverter.fromJson(json, field.getType());
+            givenObject = String.class.equals(field.getFieldType())
+                    ? json
+                    : jsonConverter.fromJson(json, field.getFieldType());
             log.info("Read given '{}' value.\n\t* {}", field.getName(), filePath(fileName));
         } catch (IOException e) {
-            givenObject = randomDataGenerator.generateObject(field.getType());
-            writeToFile(jsonConverter.toJson(givenObject, new JsonPropertyFilter()), fileName)
+            givenObject = randomDataGenerator.generateObject(field.getFieldType());
+            writeToFile(jsonConverter.toJson(givenObject), fileName)
                     .map(File::getAbsolutePath)
                     .ifPresent(file ->
                             log.warn(e.getMessage() + "\nRandom '{}' value file was generated.", field.getName())

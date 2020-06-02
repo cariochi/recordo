@@ -5,6 +5,7 @@ import com.cariochi.recordo.annotation.GivenValue;
 import com.cariochi.recordo.annotation.RecordoJsonConverter;
 import com.cariochi.recordo.annotation.Verify;
 import com.cariochi.recordo.junit5.RecordoExtension;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -37,6 +38,9 @@ class GivenAnnotationTest {
     @GivenValue("/{package}/{class}/given-list.json")
     private List<TestPojo> list;
 
+    @GivenValue
+    private String string;
+
     @Test
     @Verify("object")
     void given() {
@@ -47,6 +51,11 @@ class GivenAnnotationTest {
     @Verify("list")
     void given_list() {
         assertEquals(EXPECTED_LIST, list);
+    }
+
+    @Test
+    void given_string() throws JsonProcessingException {
+        assertEquals(EXPECTED_OBJECT, objectMapper.readValue(string, TestPojo.class));
     }
 
     @Test
