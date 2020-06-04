@@ -1,7 +1,7 @@
 package com.cariochi.recordo.books;
 
-import com.cariochi.recordo.Given;
-import com.cariochi.recordo.Verify;
+import com.cariochi.recordo.annotation.Given;
+import com.cariochi.recordo.annotation.Verify;
 import com.cariochi.recordo.books.app.Author;
 import com.cariochi.recordo.books.app.AuthorService;
 import com.cariochi.recordo.books.app.Book;

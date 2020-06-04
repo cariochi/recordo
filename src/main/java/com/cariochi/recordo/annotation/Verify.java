@@ -1,4 +1,4 @@
-package com.cariochi.recordo;
+package com.cariochi.recordo.annotation;
 
 import java.lang.annotation.*;
 

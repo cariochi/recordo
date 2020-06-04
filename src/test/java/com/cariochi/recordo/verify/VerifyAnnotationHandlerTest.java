@@ -1,7 +1,6 @@
-package com.cariochi.recordo.interceptor;
+package com.cariochi.recordo.verify;
 
 import com.cariochi.recordo.VerifyAnnotationTest;
-import com.cariochi.recordo.json.JacksonConverter;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,10 +17,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class VerifyInterceptorTest {
+class VerifyAnnotationHandlerTest {
 
     @Spy
-    private final VerifyInterceptor interceptor = new VerifyInterceptor(new JacksonConverter());
+    private final VerifyAnnotationHandler interceptor = new VerifyAnnotationHandler();
 
     @Test
     @SneakyThrows
@@ -311,7 +310,6 @@ class VerifyInterceptorTest {
         final Method method = VerifyAnnotationTest.class.getDeclaredMethod(methodName);
         method.setAccessible(true);
         final Object testInstance = method.getDeclaringClass().getDeclaredConstructor().newInstance();
-        interceptor.beforeTest(testInstance, method);
         method.invoke(testInstance);
         interceptor.afterTest(testInstance, method);
     }

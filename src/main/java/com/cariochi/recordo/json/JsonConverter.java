@@ -4,8 +4,10 @@ import java.lang.reflect.Type;
 
 public interface JsonConverter {
 
+    String toJson(Object object);
+
     String toJson(Object object, JsonPropertyFilter filter);
 
-    Object fromJson(String json, Type type);
+    <T> T fromJson(String json, Type type);
 
 }

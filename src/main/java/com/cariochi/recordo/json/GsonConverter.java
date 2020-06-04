@@ -3,30 +3,38 @@ package com.cariochi.recordo.json;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
-import java.util.function.Supplier;
 
 public class GsonConverter implements JsonConverter {
 
-    private final Supplier<Gson> gson;
+    private final Gson gson;
 
     public GsonConverter() {
-        this(new GsonBuilder().setPrettyPrinting()::create);
+        this(new GsonBuilder().setPrettyPrinting().create());
     }
 
-    public GsonConverter(Supplier<Gson> gson) {
+    public GsonConverter(Gson gson) {
         this.gson = gson;
     }
 
     @Override
-    public String toJson(Object object, JsonPropertyFilter filter) {
-        final JsonElement jsonElement = gson.get().toJsonTree(object);
-        applyFilter(jsonElement, filter);
-        return gson.get().toJson(jsonElement);
+    public String toJson(Object object) {
+        return gson.toJson(object);
     }
 
     @Override
-    public Object fromJson(String json, Type type) {
-        return gson.get().fromJson(json, type);
+    public String toJson(Object object, JsonPropertyFilter filter) {
+        if (filter.hasProperties()) {
+            final JsonElement jsonElement = gson.toJsonTree(object);
+            applyFilter(jsonElement, filter);
+            return toJson(jsonElement);
+        } else {
+            return toJson(object);
+        }
+    }
+
+    @Override
+    public <T> T fromJson(String json, Type type) {
+        return gson.fromJson(json, type);
     }
 
     private void applyFilter(JsonElement target, JsonPropertyFilter filter) {
