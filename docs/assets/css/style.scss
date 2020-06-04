@@ -1,0 +1,41 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+body {
+    padding: 30px;
+    font-size: 13px;
+}
+
+header {
+}
+
+section {
+}
+
+footer {
+    bottom: 10px;
+}
+
+.highlight {
+    font-size: 11px;
+}
+
+.navigation a {
+    display: block;
+    font-weight: bold;
+    padding-bottom: 10px;
+}
+
+.logo a {
+    background-color: #267CB9;
+    text-align: center;
+    padding: 30px 0;
+    font-size: 28px;
+    display: block;
+    color: #f8f8f8;
+    font-weight: bold;
+    margin-bottom: 20px;
+    box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.5);
+}
