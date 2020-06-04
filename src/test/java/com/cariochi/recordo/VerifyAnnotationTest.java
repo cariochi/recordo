@@ -1,5 +1,6 @@
 package com.cariochi.recordo;
 
+import com.cariochi.recordo.annotation.Verify;
 import com.cariochi.recordo.junit5.RecordoExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +20,7 @@ public class VerifyAnnotationTest {
     @Test
     @Verify(
             value = "object",
-            file = "expected/custom-result.json",
+            file = "/expected/custom-result.json",
             extensible = true
     )
     void extensible() {
@@ -105,7 +106,7 @@ public class VerifyAnnotationTest {
     }
 
     /**
-     * "This method is for {@link com.cariochi.recordo.interceptor.VerifyInterceptorTest }."
+     * "This method is for {@link com.cariochi.recordo.handler.VerifyInterceptorTest }."
      */
     @Verify("object")
     void null_object() {

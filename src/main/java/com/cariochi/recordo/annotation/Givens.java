@@ -1,12 +1,12 @@
-package com.cariochi.recordo;
+package com.cariochi.recordo.annotation;
 
 import java.lang.annotation.*;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface Verifies {
+public @interface Givens {
 
-    Verify[] value();
+    Given[] value();
 
 }

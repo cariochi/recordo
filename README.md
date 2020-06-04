@@ -139,15 +139,15 @@ For doing that you need to create the `recordo.properties` and define properties
 |`verify.filename.pattern`|File name pattern for `@Verify` annotation|
 
 #### File name pattern placeholders
-* {TEST_CLASS_FULL_NAME}
-* {TEST_CLASS_SIMPLE_NAME}
-* {TEST_METHOD_NAME}
-* {TEST_FIELD_NAME}
+* {package}
+* {class}
+* {method}
+* {field}
 
 #### Default properties
 ```properties
-resources.folder = src/test/resources
-given.filename.pattern = {TEST_CLASS_FULL_NAME}/{TEST_METHOD_NAME}/given-{TEST_FIELD_NAME}.json
-verify.filename.pattern = {TEST_CLASS_FULL_NAME}/{TEST_METHOD_NAME}/verify-{TEST_FIELD_NAME}.json
+resources.folder=/src/test/resources
+given.filename.pattern=/{package}/{class}/{method}/given-{field}.json
+verify.filename.pattern=/{package}/{class}/{method}/verify-{field}.json
 
 ```
