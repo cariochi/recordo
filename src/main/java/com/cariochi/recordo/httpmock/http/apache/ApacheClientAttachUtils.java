@@ -1,7 +1,7 @@
 package com.cariochi.recordo.httpmock.http.apache;
 
-import com.cariochi.recordo.utils.Fields;
-import com.cariochi.recordo.utils.Fields.ObjectField;
+import com.cariochi.recordo.reflection.Fields;
+import com.cariochi.recordo.reflection.TargetField;
 import org.apache.http.impl.execchain.ClientExecChain;
 import org.apache.http.impl.execchain.MainClientExec;
 
@@ -11,22 +11,22 @@ public final class ApacheClientAttachUtils {
     }
 
     public static RecordExecChain attachRecordExecChain(Object target) {
-        return Fields.getAllFields(target).stream()
-                .filter(field -> ClientExecChain.class.isAssignableFrom(field.getFieldClass()))
+        return Fields.of(target).all().stream()
+                .filter(field -> ClientExecChain.class.isAssignableFrom(field.getType()))
                 .findAny()
                 .map(ApacheClientAttachUtils::getRecordExecChain)
                 .orElse(null);
     }
 
     public static PlaybackExecChain attachPlaybackExecChain(Object target) {
-        return Fields.getAllFields(target).stream()
-                .filter(field -> ClientExecChain.class.isAssignableFrom(field.getFieldClass()))
+        return Fields.of(target).all().stream()
+                .filter(field -> ClientExecChain.class.isAssignableFrom(field.getType()))
                 .findAny()
                 .map(ApacheClientAttachUtils::getPlaybackExecChain)
                 .orElse(null);
     }
 
-    public static PlaybackExecChain getPlaybackExecChain(ObjectField field) {
+    public static PlaybackExecChain getPlaybackExecChain(TargetField field) {
         final Object value = field.getValue();
         if (value == null) {
             return null;
@@ -41,7 +41,7 @@ public final class ApacheClientAttachUtils {
         }
     }
 
-    private static RecordExecChain getRecordExecChain(ObjectField field) {
+    private static RecordExecChain getRecordExecChain(TargetField field) {
         final Object value = field.getValue();
         if (value == null) {
             return null;

@@ -12,28 +12,25 @@ import static java.lang.System.getProperty;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public final class Files {
+public class Files {
 
     private static final Logger log = getLogger(Files.class);
-    public static final String USER_DIR = getProperty("user.dir");
+    public final String USER_DIR = getProperty("user.dir");
 
-    private Files() {
-    }
-
-    public static String readFromFile(String fileName) throws IOException {
+    public String readFromFile(String fileName) throws IOException {
         final Optional<File> folder = resourceFolder();
         return folder.isPresent()
                 ? readFromFile(new File(folder.get(), fileName))
                 : readFromResources(fileName);
     }
 
-    public static String readFromResources(String fileName) throws IOException {
+    private String readFromResources(String fileName) throws IOException {
         try (InputStream inputStream = Files.class.getResourceAsStream(fileName)) {
             return IOUtils.toString(inputStream, UTF_8);
         }
     }
 
-    private static String readFromFile(File file) throws IOException {
+    private String readFromFile(File file) throws IOException {
         if (!file.exists()) {
             throw new IOException(format("\nFile '{}' not found.", file.getAbsolutePath()));
         }
@@ -42,7 +39,7 @@ public final class Files {
         }
     }
 
-    public static Optional<File> writeToFile(String json, String fileName) {
+    public Optional<File> writeToFile(String json, String fileName) {
         final Optional<File> fileOptional = findFile(fileName);
         if (fileOptional.isPresent()) {
             try {
@@ -58,19 +55,19 @@ public final class Files {
         return fileOptional;
     }
 
-    public static String filePath(String fileName) {
+    public String filePath(String fileName) {
         return findFile(fileName)
                 .map(File::getAbsolutePath)
 //                .map(path -> "file://" + path)
                 .orElse(fileName);
     }
 
-    public static Optional<File> findFile(String fileName) {
+    public Optional<File> findFile(String fileName) {
         return resourceFolder()
                 .map(folder -> new File(folder, fileName));
     }
 
-    private static Optional<File> resourceFolder() {
+    private Optional<File> resourceFolder() {
         return Optional.of(resourcesFolderPath())
                 .map(folder -> new File(USER_DIR, folder))
                 .filter(File::exists);

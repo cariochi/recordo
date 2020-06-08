@@ -1,7 +1,6 @@
 package com.cariochi.recordo;
 
 import com.cariochi.recordo.annotation.Given;
-import com.cariochi.recordo.annotation.GivenValue;
 import com.cariochi.recordo.annotation.RecordoJsonConverter;
 import com.cariochi.recordo.annotation.Verify;
 import com.cariochi.recordo.junit5.RecordoExtension;
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import static com.cariochi.recordo.TestPojo.pojo;
 import static java.util.Arrays.asList;
@@ -32,14 +32,12 @@ class GivenAnnotationTest {
             .registerModule(new JavaTimeModule())
             .setDateFormat(new StdDateFormat());
 
-    @GivenValue
-    private TestPojo object;
 
-    @GivenValue("/{package}/{class}/given-list.json")
+    @Given(file = "/{package}/{class}/given-list.json")
     private List<TestPojo> list;
 
-    @GivenValue
-    private String string;
+    @Given(file = "/{package}/{class}/given-object.json")
+    private TestPojo object;
 
     @Test
     @Verify("object")
@@ -54,22 +52,30 @@ class GivenAnnotationTest {
     }
 
     @Test
-    void given_string() throws JsonProcessingException {
-        assertEquals(EXPECTED_OBJECT, objectMapper.readValue(string, TestPojo.class));
+    void given_string(
+            @Given(file = "/{package}/{class}/given-string.json") String string,
+            @Verify("object") Consumer<TestPojo> actual
+    ) throws JsonProcessingException {
+        final TestPojo value = objectMapper.readValue(string, TestPojo.class);
+        actual.accept(value);
     }
 
     @Test
-    @Given("object")
-    @Given("list")
-    @Verify("object")
-    @Verify("list")
-    void create_empty_json() {
+    void create_empty_json(@Given("object") TestPojo pojo,
+                           @Given("list") List<TestPojo> givenList,
+                           @Verify("object") Consumer<TestPojo> objectVerifier,
+                           @Verify("list") Consumer<List<TestPojo>> listVerifier
+    ) {
+        // test logic
+        objectVerifier.accept(pojo);
+        listVerifier.accept(givenList);
     }
 
     @Test
-    @Given(value = "object", file = "/{package}/{class}/given-object.json")
-    @Given(value = "list", file = "/{package}/{class}/given-list.json")
-    void given_multiple() {
+    void given_multiple(
+            @Given(file = "/{package}/{class}/given-object.json") TestPojo object,
+            @Given(file = "/{package}/{class}/given-list.json") List<TestPojo> list
+    ) {
         assertEquals(EXPECTED_OBJECT, object);
         assertEquals(EXPECTED_LIST, list);
     }
