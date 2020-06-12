@@ -1,12 +1,13 @@
 package com.cariochi.recordo.httpmock.http;
 
 import com.cariochi.recordo.annotation.EnableHttpMocks;
+import com.cariochi.recordo.reflection.Fields;
+import com.cariochi.recordo.reflection.TargetField;
 import okhttp3.OkHttpClient;
 import org.apache.http.client.HttpClient;
 
 import java.util.Optional;
 
-import static com.cariochi.recordo.utils.Fields.readAnnotatedValue;
 import static com.cariochi.recordo.utils.Reflection.checkClassLoaded;
 
 public final class HttpClientInterceptors {
@@ -24,7 +25,9 @@ public final class HttpClientInterceptors {
     private static Optional<HttpClientInterceptor> okHttpClientInterceptor(Object testInstance) {
         try {
             checkClassLoaded("okhttp3.OkHttpClient");
-            return readAnnotatedValue(testInstance, OkHttpClientInterceptor.class, EnableHttpMocks.class)
+            return Fields.of(testInstance)
+                    .withTypeAndAnnotation(OkHttpClientInterceptor.class, EnableHttpMocks.class).stream().findAny()
+                    .map(TargetField::getValue)
                     .map(Optional::of)
                     .orElseGet(() -> okHttpClient(testInstance).map(OkHttpClientInterceptor::new))
                     .map(HttpClientInterceptor.class::cast);
@@ -36,7 +39,9 @@ public final class HttpClientInterceptors {
     private static Optional<OkHttpClient> okHttpClient(Object testInstance) {
         try {
             checkClassLoaded("okhttp3.OkHttpClient");
-            return readAnnotatedValue(testInstance, OkHttpClient.class, EnableHttpMocks.class);
+            return Fields.of(testInstance)
+                    .withTypeAndAnnotation(OkHttpClient.class, EnableHttpMocks.class).stream().findAny()
+                    .map(TargetField::getValue);
         } catch (ClassNotFoundException e) {
             return Optional.empty();
         }
@@ -45,7 +50,10 @@ public final class HttpClientInterceptors {
     private static Optional<HttpClientInterceptor> apacheHttpClientInterceptor(Object testInstance) {
         try {
             checkClassLoaded("org.apache.http.client.HttpClient");
-            return readAnnotatedValue(testInstance, HttpClient.class, EnableHttpMocks.class)
+            return Fields.of(testInstance)
+                    .withTypeAndAnnotation(HttpClient.class, EnableHttpMocks.class).stream().findAny()
+                    .map(TargetField::getValue)
+                    .map(HttpClient.class::cast)
                     .map(ApacheHttpClientInterceptor::new);
         } catch (ClassNotFoundException e) {
             return Optional.empty();

@@ -23,6 +23,7 @@ public class TestPojo {
     private String nullValue;
     private List<String> strings;
     private Instant date;
+    private TestPojo parent;
 
     @Builder.Default
     private List<TestPojo> children = new ArrayList<>();
@@ -40,4 +41,5 @@ public class TestPojo {
         children.add(child);
         return this;
     }
+
 }
