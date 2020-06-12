@@ -10,11 +10,11 @@ import com.cariochi.recordo.httpmock.model.RecordoRequest;
 import com.cariochi.recordo.httpmock.model.RecordoResponse;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonConverters;
-import com.cariochi.recordo.utils.Properties;
+import com.cariochi.recordo.utils.Files;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static com.cariochi.recordo.utils.Files.*;
 import static com.cariochi.recordo.utils.Properties.*;
 import static com.cariochi.recordo.utils.Reflection.findAnnotation;
 import static java.util.Collections.emptyList;
@@ -40,6 +39,7 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
 
     private List<RecordoHttpMock> expectedMocks;
     private final List<RecordoHttpMock> actualMocks = new ArrayList<>();
+    private final Files files = new Files();
 
     @Override
     public void beforeTest(Object testInstance, Method method) {
@@ -62,11 +62,12 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
         if (!actualMocks.isEmpty()) {
             actualMocks.forEach(this::prepareForRecord);
             final String json = jsonConverter.toJson(actualMocks);
-
-            writeToFile(json, fileName(testInstance.getClass(), method))
+            final String fileName = fileName(httpMocksFileNamePattern(), testInstance.getClass(), method.getName(), "");
+            files.writeToFile(json, fileName)
                     .ifPresent(file -> log.info(
-                            "Record Http Mocks\n\t* {}\n{}",
-                            file.getAbsolutePath(), urlsOf(actualMocks)
+                            "Http mocks are recorded.\n\t* {}\n{}",
+                            file.getAbsolutePath(),
+                            urlsOf(actualMocks)
                     ));
         }
     }
@@ -89,18 +90,14 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
 
     private void loadExpectedMocks(Class<?> testClass, Method method) {
         try {
-            final String fileName = fileName(testClass, method);
-            expectedMocks = jsonConverter.fromJson(readFromFile(fileName), TYPE);
+            final String fileName = fileName(httpMocksFileNamePattern(), testClass, method.getName(), "");
+            expectedMocks = jsonConverter.fromJson(files.readFromFile(fileName), TYPE);
             expectedMocks.forEach(this::prepareForPlayback);
-            log.info("Read Http Mocks.\n\t* {}\n{}", filePath(fileName), urlsOf(expectedMocks));
-        } catch (IOException e) {
+            log.info("Read Http Mocks.\n\t* {}\n{}", files.filePath(fileName), urlsOf(expectedMocks));
+        } catch (FileNotFoundException e) {
             log.warn("{}", e.getMessage());
             expectedMocks = emptyList();
         }
-    }
-
-    private String fileName(Class<?> testClass, Method method) {
-        return Properties.fileName(httpMocksFileNamePattern(), testClass, method);
     }
 
     private void prepareForRecord(RecordoHttpMock mock) {
@@ -119,7 +116,6 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
                 .map(String.class::cast)
                 .map(toObject())
                 .ifPresent(response::setBody);
-
     }
 
     private Map<String, String> filteredHeaders(Map<String, String> headers) {

@@ -1,13 +1,12 @@
 package com.cariochi.recordo.utils;
 
 import com.cariochi.recordo.RecordoError;
-import com.cariochi.recordo.utils.Fields.ObjectField;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
@@ -27,36 +26,27 @@ public final class Properties {
     private Properties() {
     }
 
-    public static String fileName(String fileNamePattern, ObjectField field, Method method) {
-        final String packageNme = replace(uncapitalize(field.getObjectClass().getPackage().getName()), ".", "/");
-        final String className = field.getObjectClass().getSimpleName();
-        final String methodName = method.getName();
-        final String[] values = new String[]{packageNme, className, methodName, field.getName()};
-        return replaceEach(fileNamePattern, FILE_NAME_VARIABLES, values);
-    }
-
-    public static String fileName(String fileNamePattern, Class<?> testClass, Method method) {
+    public static String fileName(String pattern, Class<?> testClass, String method, String field) {
         final String packageNme = replace(uncapitalize(testClass.getPackage().getName()), ".", "/");
         final String className = testClass.getSimpleName();
-        final String methodName = method.getName();
-        final String[] values = new String[]{packageNme, className, methodName, ""};
-        return replaceEach(fileNamePattern, FILE_NAME_VARIABLES, values);
+        final String[] values = new String[]{packageNme, className, method, field};
+        return replaceEach(pattern, FILE_NAME_VARIABLES, values).replace("//", "/");
     }
 
     public static String resourcesFolderPath() {
         return property("resources.folder");
     }
 
-    public static String givenFileNamePattern() {
-        return property("given.filename.pattern");
+    public static String givenFileNamePattern(String pattern) {
+        return Optional.ofNullable(pattern)
+                .filter(StringUtils::isNotBlank)
+                .orElseGet(() -> property("given.filename.pattern"));
     }
 
-    public static String givenValueFileNamePattern() {
-        return property("given.value.filename.pattern");
-    }
-
-    public static String verifyFileNamePattern() {
-        return property("verify.filename.pattern");
+    public static String verifyFileNamePattern(String pattern) {
+        return Optional.ofNullable(pattern)
+                .filter(StringUtils::isNotBlank)
+                .orElseGet(() -> property("verify.filename.pattern"));
     }
 
     public static String httpMocksFileNamePattern() {

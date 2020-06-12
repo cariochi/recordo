@@ -3,12 +3,14 @@ package com.cariochi.recordo.annotation;
 import java.lang.annotation.*;
 
 @Repeatable(Verifies.class)
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface Verify {
 
-    String value();
+    String value() default "";
+
+    String file() default "";
 
     boolean extensible() default false;
 
@@ -17,7 +19,5 @@ public @interface Verify {
     String[] included() default {};
 
     String[] excluded() default {};
-
-    String file() default "";
 
 }

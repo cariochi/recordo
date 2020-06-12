@@ -3,7 +3,7 @@ package com.cariochi.recordo.httpmock.http;
 import com.cariochi.recordo.httpmock.http.okhttp.OkHttpMapper;
 import com.cariochi.recordo.httpmock.model.RecordoRequest;
 import com.cariochi.recordo.httpmock.model.RecordoResponse;
-import com.cariochi.recordo.utils.Fields;
+import com.cariochi.recordo.reflection.Fields;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -55,7 +55,7 @@ public class OkHttpClientInterceptor implements Interceptor, HttpClientIntercept
                 .filter(interceptor -> !(interceptor instanceof OkHttpClientInterceptor))
                 .collect(toList());
         interceptors.add(this);
-        Fields.getField(httpClient, "interceptors").setValue(interceptors);
+        Fields.of(httpClient).get("interceptors").setValue(interceptors);
     }
 
 }

@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.mockito.Mockito.when;
 
@@ -27,37 +28,37 @@ class BookServiceTest {
     @InjectMocks
     private BookService bookService;
 
-    private Author author;
-    private Book book;
-    private List<Book> books;
-
     @Test
-    @Verify("book")
-    void should_get_book_by_id() {
-        book = bookService.findById(1L);
+    void should_get_book_by_id(
+            @Verify(value = "book") Consumer<Book> verifier
+    ) {
+        verifier.accept(bookService.findById(1L));
     }
 
     @Test
-    @Given("author")
-    @Verify(value = "books", included = {"id", "title", "author.id"})
-    void should_get_books_by_author() {
-        books = bookService.findAllByAuthor(author);
+    void should_get_books_by_author(
+            @Given("author") Author author,
+            @Verify(value = "books", included = {"id", "title", "author.id"}) Consumer<List<Book>> verifier
+    ) {
+        verifier.accept(bookService.findAllByAuthor(author));
     }
 
     @Test
-    @Given("book")
-    @Given("author")
-    @Verify(value = "book", excluded = "id")
-    void should_create_book() {
+    void should_create_book(
+            @Given("book") Book book,
+            @Given("author") Author author,
+            @Verify(value = "book", excluded = "id") Consumer<Book> verifier
+    ) {
         when(authorService.findById(book.getAuthor().getId())).thenReturn(author);
-        book = bookService.create(book);
+        verifier.accept(bookService.create(book));
     }
 
     @Test
-    @Given("book")
-    @Given("books")
-    @Verify("books")
-    void should_add_book_to_shelf() {
-        books = bookService.merge(books, book);
+    void should_add_book_to_shelf(
+            @Given("book") Book book,
+            @Given("books") List<Book> books,
+            @Verify(value = "books") Consumer<List<Book>> verifier
+    ) {
+        verifier.accept(bookService.merge(books, book));
     }
 }

@@ -1,9 +1,13 @@
 package com.cariochi.recordo.verify;
 
 import com.cariochi.recordo.VerifyAnnotationTest;
+import com.cariochi.recordo.reflection.Fields;
+import com.cariochi.recordo.utils.Files;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -19,8 +23,16 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class VerifyAnnotationHandlerTest {
 
+    @Mock
+    private Files files;
+
     @Spy
     private final VerifyAnnotationHandler interceptor = new VerifyAnnotationHandler();
+
+    @BeforeEach
+    void setUp() {
+        Fields.of(interceptor).get("verifier").get("files").setValue(files);
+    }
 
     @Test
     @SneakyThrows
@@ -39,7 +51,7 @@ class VerifyAnnotationHandlerTest {
 
         run("extensible");
 
-        verify(interceptor, never()).writeJsonToFile(any(), any());
+        verify(files, never()).writeToFile(any(), any());
     }
 
     @Test
@@ -60,7 +72,7 @@ class VerifyAnnotationHandlerTest {
 
         assertThrows(AssertionError.class, () -> run("not_extensible"));
 
-        verify(interceptor, times(1)).writeJsonToFile(any(), any());
+        verify(files, times(1)).writeToFile(any(), any());
     }
 
     @Test
@@ -79,7 +91,7 @@ class VerifyAnnotationHandlerTest {
 
         run("included");
 
-        verify(interceptor, never()).writeJsonToFile(any(), any());
+        verify(files, never()).writeToFile(any(), any());
     }
 
     @Test
@@ -98,7 +110,7 @@ class VerifyAnnotationHandlerTest {
 
         run("excluded");
 
-        verify(interceptor, never()).writeJsonToFile(any(), any());
+        verify(files, never()).writeToFile(any(), any());
     }
 
     @Test
@@ -130,7 +142,7 @@ class VerifyAnnotationHandlerTest {
 
         run("list_extensible");
 
-        verify(interceptor, never()).writeJsonToFile(any(), any());
+        verify(files, never()).writeToFile(any(), any());
     }
 
     @Test
@@ -163,7 +175,7 @@ class VerifyAnnotationHandlerTest {
 
         assertThrows(AssertionError.class, () -> run("list_not_extensible"));
 
-        verify(interceptor, times(1)).writeJsonToFile(any(), any());
+        verify(files, times(1)).writeToFile(any(), any());
     }
 
     @Test
@@ -195,7 +207,7 @@ class VerifyAnnotationHandlerTest {
 
         run("list_included");
 
-        verify(interceptor, never()).writeJsonToFile(any(), any());
+        verify(files, never()).writeToFile(any(), any());
     }
 
     @Test
@@ -240,7 +252,7 @@ class VerifyAnnotationHandlerTest {
 
         run("list_not_strict_order");
 
-        verify(interceptor, never()).writeJsonToFile(any(), any());
+        verify(files, never()).writeToFile(any(), any());
     }
 
 
@@ -287,22 +299,22 @@ class VerifyAnnotationHandlerTest {
 
         assertThrows(AssertionError.class, () -> run("list_strict_order"));
 
-        verify(interceptor, times(1)).writeJsonToFile(any(), any());
+        verify(files, times(1)).writeToFile(any(), any());
     }
 
     @Test
     @SneakyThrows
     void file_not_found() {
         mockWriteJsonToFile();
-        doThrow(new FileNotFoundException()).when(interceptor).readJsonFromFile(any());
+        doThrow(new FileNotFoundException()).when(files).readFromFile(any());
         assertThrows(AssertionError.class, () -> run("extensible"));
-        verify(interceptor, times(1)).writeJsonToFile(any(), any());
+        verify(files, times(1)).writeToFile(any(), any());
     }
 
     @Test
     void null_object() {
         assertThrows(AssertionError.class, () -> run("null_object"));
-        verify(interceptor, never()).writeJsonToFile(any(), any());
+        verify(files, never()).writeToFile(any(), any());
     }
 
     @SneakyThrows
@@ -316,11 +328,11 @@ class VerifyAnnotationHandlerTest {
 
     @SneakyThrows
     public void mockExpectedFile(String json) {
-        doReturn(replace(json, "'", "\"")).when(interceptor).readJsonFromFile(any());
+        doReturn(replace(json, "'", "\"")).when(files).readFromFile(any());
     }
 
     public void mockWriteJsonToFile() {
-        doReturn(Optional.empty()).when(interceptor).writeJsonToFile(any(), any());
+        doReturn(Optional.empty()).when(files).writeToFile(any(), any());
     }
 
 }
