@@ -11,16 +11,14 @@ public final class ApacheClientAttachUtils {
     }
 
     public static RecordExecChain attachRecordExecChain(Object target) {
-        return Fields.of(target).all().stream()
-                .filter(field -> ClientExecChain.class.isAssignableFrom(field.getType()))
+        return Fields.of(target).withType(ClientExecChain.class).stream()
                 .findAny()
                 .map(ApacheClientAttachUtils::getRecordExecChain)
                 .orElse(null);
     }
 
     public static PlaybackExecChain attachPlaybackExecChain(Object target) {
-        return Fields.of(target).all().stream()
-                .filter(field -> ClientExecChain.class.isAssignableFrom(field.getType()))
+        return Fields.of(target).withType(ClientExecChain.class).stream()
                 .findAny()
                 .map(ApacheClientAttachUtils::getPlaybackExecChain)
                 .orElse(null);

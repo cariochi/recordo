@@ -5,7 +5,7 @@ import com.cariochi.recordo.utils.Files;
 import org.slf4j.Logger;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.lang.reflect.Type;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -26,12 +26,16 @@ public class GivenFileReader {
             return String.class.equals(parameterType)
                     ? json
                     : jsonConverter.fromJson(json, parameterType);
-        } catch (IOException e) {
+        } catch (FileNotFoundException e) {
             givenObject = randomDataGenerator.generateObject(parameterType);
             files.writeToFile(jsonConverter.toJson(givenObject), fileName)
                     .map(File::getAbsolutePath)
                     .ifPresent(file ->
-                            log.warn(e.getMessage() + "\nRandom '{}' value file was generated.", parameterName)
+                            log.warn(
+                                    e.getMessage() + "\nRandom '{}' value is generated.\n\t* {}",
+                                    parameterName,
+                                    file
+                            )
                     );
         }
         return givenObject;

@@ -30,7 +30,7 @@ public final class Properties {
         final String packageNme = replace(uncapitalize(testClass.getPackage().getName()), ".", "/");
         final String className = testClass.getSimpleName();
         final String[] values = new String[]{packageNme, className, method, field};
-        return replaceEach(pattern, FILE_NAME_VARIABLES, values);
+        return replaceEach(pattern, FILE_NAME_VARIABLES, values).replace("//", "/");
     }
 
     public static String resourcesFolderPath() {
@@ -41,12 +41,6 @@ public final class Properties {
         return Optional.ofNullable(pattern)
                 .filter(StringUtils::isNotBlank)
                 .orElseGet(() -> property("given.filename.pattern"));
-    }
-
-    public static String givenValueFileNamePattern(String pattern) {
-        return Optional.ofNullable(pattern)
-                .filter(StringUtils::isNotBlank)
-                .orElseGet(() -> property("given.value.filename.pattern"));
     }
 
     public static String verifyFileNamePattern(String pattern) {

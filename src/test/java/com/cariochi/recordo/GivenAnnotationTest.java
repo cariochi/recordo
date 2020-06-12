@@ -33,10 +33,10 @@ class GivenAnnotationTest {
             .setDateFormat(new StdDateFormat());
 
 
-    @Given(file = "/{package}/{class}/given-list.json")
+    @Given(file = "/{package}/{class}/given_list.json")
     private List<TestPojo> list;
 
-    @Given(file = "/{package}/{class}/given-object.json")
+    @Given(file = "/{package}/{class}/given_object.json")
     private TestPojo object;
 
     @Test
@@ -53,7 +53,7 @@ class GivenAnnotationTest {
 
     @Test
     void given_string(
-            @Given(file = "/{package}/{class}/given-string.json") String string,
+            @Given(file = "/{package}/{class}/given_string.json") String string,
             @Verify("object") Consumer<TestPojo> actual
     ) throws JsonProcessingException {
         final TestPojo value = objectMapper.readValue(string, TestPojo.class);
@@ -73,8 +73,8 @@ class GivenAnnotationTest {
 
     @Test
     void given_multiple(
-            @Given(file = "/{package}/{class}/given-object.json") TestPojo object,
-            @Given(file = "/{package}/{class}/given-list.json") List<TestPojo> list
+            @Given(file = "/{package}/{class}/given_object.json") TestPojo object,
+            @Given(file = "/{package}/{class}/given_list.json") List<TestPojo> list
     ) {
         assertEquals(EXPECTED_OBJECT, object);
         assertEquals(EXPECTED_LIST, list);

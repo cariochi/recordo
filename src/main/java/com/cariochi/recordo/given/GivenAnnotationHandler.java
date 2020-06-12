@@ -13,7 +13,8 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-import static com.cariochi.recordo.utils.Properties.*;
+import static com.cariochi.recordo.utils.Properties.fileName;
+import static com.cariochi.recordo.utils.Properties.givenFileNamePattern;
 import static com.cariochi.recordo.utils.Reflection.findAnnotation;
 
 public class GivenAnnotationHandler implements BeforeTestHandler {
@@ -23,28 +24,29 @@ public class GivenAnnotationHandler implements BeforeTestHandler {
     @Override
     public void beforeTest(Object testInstance, Method method) {
         ExceptionsSuppressor.of(RecordoError.class).executeAll(
-                Fields.of(testInstance).findAll(Given.class).stream()
-                        .map(field -> () -> processGivenOnField(method, field, field.getAnnotation(Given.class)))
+                Fields.of(testInstance).withAnnotation(Given.class).stream()
+                        .map(field -> () -> processGivenOnField(field.getAnnotation(Given.class), field))
         );
         ExceptionsSuppressor.of(RecordoError.class).executeAll(
                 findGivenAnnotations(method)
-                        .map(given -> () -> processGivenOnMethod(testInstance, method, given))
+                        .map(given -> () -> processGivenOnMethod(given, testInstance, method))
         );
     }
 
-    public void processGivenOnField(Method method, TargetField field, Given given) {
-        final String pattern = givenValueFileNamePattern(given.file());
-        processGiven(pattern, method, field);
+    public void processGivenOnField(Given given, TargetField field) {
+        final String pattern = givenFileNamePattern(given.file());
+        final String fileName = fileName(pattern, field.getTargetClass(), "", field.getName());
+        processGiven(fileName, field);
     }
 
-    public void processGivenOnMethod(Object testInstance, Method method, Given given) {
+    public void processGivenOnMethod(Given given, Object testInstance, Method method) {
         final TargetField field = Fields.of(testInstance).get(given.value());
         final String pattern = givenFileNamePattern(given.file());
-        processGiven(pattern, method, field);
+        final String fileName = fileName(pattern, field.getTargetClass(), method.getName(), field.getName());
+        processGiven(fileName, field);
     }
 
-    public void processGiven(String pattern, Method method, TargetField field) {
-        final String fileName = fileName(pattern, field.getTargetClass(), method.getName(), field.getName());
+    public void processGiven(String fileName, TargetField field) {
         field.setValue(givenFileReader.readFromFile(
                 fileName,
                 field.getGenericType(),

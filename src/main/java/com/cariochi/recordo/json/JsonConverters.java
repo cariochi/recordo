@@ -24,7 +24,7 @@ public final class JsonConverters {
 
     private static Optional<JsonConverter> jacksonConverter(Object testInstance) {
         return Fields.of(testInstance)
-                .findAny(ObjectMapper.class, RecordoJsonConverter.class)
+                .withTypeAndAnnotation(ObjectMapper.class, RecordoJsonConverter.class).stream().findAny()
                 .map(TargetField::getValue)
                 .map(ObjectMapper.class::cast)
                 .map(JacksonConverter::new);
@@ -34,7 +34,7 @@ public final class JsonConverters {
         try {
             Reflection.checkClassLoaded("com.google.gson.Gson");
             return Fields.of(testInstance)
-                    .findAny(Gson.class, RecordoJsonConverter.class)
+                    .withTypeAndAnnotation(Gson.class, RecordoJsonConverter.class).stream().findAny()
                     .map(TargetField::getValue)
                     .map(Gson.class::cast)
                     .map(GsonConverter::new);

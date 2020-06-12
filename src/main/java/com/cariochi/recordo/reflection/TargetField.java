@@ -34,7 +34,7 @@ public class TargetField {
     }
 
     public Class<?> getTargetClass() {
-        return getTarget().getClass();
+        return target.getClass();
     }
 
     public Type getGenericType() {
@@ -49,15 +49,15 @@ public class TargetField {
         return field.getDeclaredAnnotation(annotationClass);
     }
 
-    public <T> T getValue() {
+    public <V> V getValue() {
         try {
-            return (T) FieldUtils.readField(field, target, true);
+            return (V) FieldUtils.readField(field, target, true);
         } catch (IllegalAccessException e) {
             throw new RecordoError(e);
         }
     }
 
-    public <T> void setValue(T value) {
+    public <V> void setValue(V value) {
         try {
             FieldUtils.writeField(field, target, value, true);
         } catch (IllegalAccessException e) {

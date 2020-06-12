@@ -14,7 +14,7 @@ import com.cariochi.recordo.utils.Files;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -65,8 +65,9 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
             final String fileName = fileName(httpMocksFileNamePattern(), testInstance.getClass(), method.getName(), "");
             files.writeToFile(json, fileName)
                     .ifPresent(file -> log.info(
-                            "Record Http Mocks\n\t* {}\n{}",
-                            file.getAbsolutePath(), urlsOf(actualMocks)
+                            "Http mocks are recorded.\n\t* {}\n{}",
+                            file.getAbsolutePath(),
+                            urlsOf(actualMocks)
                     ));
         }
     }
@@ -93,7 +94,7 @@ public class HttpMockAnnotationHandler implements BeforeTestHandler, AfterTestHa
             expectedMocks = jsonConverter.fromJson(files.readFromFile(fileName), TYPE);
             expectedMocks.forEach(this::prepareForPlayback);
             log.info("Read Http Mocks.\n\t* {}\n{}", files.filePath(fileName), urlsOf(expectedMocks));
-        } catch (IOException e) {
+        } catch (FileNotFoundException e) {
             log.warn("{}", e.getMessage());
             expectedMocks = emptyList();
         }

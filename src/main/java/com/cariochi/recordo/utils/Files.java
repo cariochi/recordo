@@ -1,12 +1,12 @@
 package com.cariochi.recordo.utils;
 
+import com.cariochi.recordo.RecordoError;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
 import java.io.*;
 import java.util.Optional;
 
-import static com.cariochi.recordo.utils.Format.format;
 import static com.cariochi.recordo.utils.Properties.resourcesFolderPath;
 import static java.lang.System.getProperty;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -17,25 +17,28 @@ public class Files {
     private static final Logger log = getLogger(Files.class);
     public final String USER_DIR = getProperty("user.dir");
 
-    public String readFromFile(String fileName) throws IOException {
+    public String readFromFile(String fileName) throws FileNotFoundException {
         final Optional<File> folder = resourceFolder();
         return folder.isPresent()
                 ? readFromFile(new File(folder.get(), fileName))
                 : readFromResources(fileName);
     }
 
-    private String readFromResources(String fileName) throws IOException {
+    private String readFromResources(String fileName) {
         try (InputStream inputStream = Files.class.getResourceAsStream(fileName)) {
             return IOUtils.toString(inputStream, UTF_8);
+        } catch (IOException e) {
+            throw new RecordoError(e);
         }
     }
 
-    private String readFromFile(File file) throws IOException {
-        if (!file.exists()) {
-            throw new IOException(format("\nFile '{}' not found.", file.getAbsolutePath()));
-        }
+    private String readFromFile(File file) throws FileNotFoundException {
         try (InputStream inputStream = new FileInputStream(file)) {
             return IOUtils.toString(inputStream, UTF_8);
+        } catch (FileNotFoundException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new RecordoError(e);
         }
     }
 
@@ -58,7 +61,6 @@ public class Files {
     public String filePath(String fileName) {
         return findFile(fileName)
                 .map(File::getAbsolutePath)
-//                .map(path -> "file://" + path)
                 .orElse(fileName);
     }
 

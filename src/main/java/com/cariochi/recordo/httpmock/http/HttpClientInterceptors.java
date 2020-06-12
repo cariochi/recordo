@@ -26,7 +26,7 @@ public final class HttpClientInterceptors {
         try {
             checkClassLoaded("okhttp3.OkHttpClient");
             return Fields.of(testInstance)
-                    .findAny(OkHttpClientInterceptor.class, EnableHttpMocks.class)
+                    .withTypeAndAnnotation(OkHttpClientInterceptor.class, EnableHttpMocks.class).stream().findAny()
                     .map(TargetField::getValue)
                     .map(Optional::of)
                     .orElseGet(() -> okHttpClient(testInstance).map(OkHttpClientInterceptor::new))
@@ -40,7 +40,7 @@ public final class HttpClientInterceptors {
         try {
             checkClassLoaded("okhttp3.OkHttpClient");
             return Fields.of(testInstance)
-                    .findAny(OkHttpClient.class, EnableHttpMocks.class)
+                    .withTypeAndAnnotation(OkHttpClient.class, EnableHttpMocks.class).stream().findAny()
                     .map(TargetField::getValue);
         } catch (ClassNotFoundException e) {
             return Optional.empty();
@@ -51,7 +51,7 @@ public final class HttpClientInterceptors {
         try {
             checkClassLoaded("org.apache.http.client.HttpClient");
             return Fields.of(testInstance)
-                    .findAny(HttpClient.class, EnableHttpMocks.class)
+                    .withTypeAndAnnotation(HttpClient.class, EnableHttpMocks.class).stream().findAny()
                     .map(TargetField::getValue)
                     .map(HttpClient.class::cast)
                     .map(ApacheHttpClientInterceptor::new);

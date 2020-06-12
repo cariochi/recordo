@@ -12,7 +12,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.slf4j.Logger;
 
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -40,18 +40,25 @@ public class Verifier {
         final String actualJson = jsonConverter.toJson(actual, jsonFilter(verify));
         try {
             final String expectedJson = files.readFromFile(fileName);
-            log.debug("Asserting expected \n{} is equals to actual \n{}", expectedJson, actualJson);
+            log.debug("Verifying '{}'", parameterName);
             JSONAssert.assertEquals(expectedJson, actualJson, compareMode(verify));
             log.info("Actual '{}' value equals to expected.\n\t* {}", parameterName, files.filePath(fileName));
-        } catch (AssertionError | IOException e) {
+        } catch (AssertionError e) {
+            String newFileName = new StringBuilder(fileName).insert(fileName.lastIndexOf('/') + 1, "new-").toString();
+            files.writeToFile(actualJson, newFileName)
+                    .ifPresent(file -> log.info(
+                            e.getMessage() + "\nActual '{}' value is saved to file.\n\t* {}",
+                            parameterName,
+                            file.getAbsolutePath()
+                    ));
+            throw e;
+        } catch (FileNotFoundException e) {
             final String message = files.writeToFile(actualJson, fileName)
-                    .map(
-                            file -> format(
-                                    "\n'{}' assertion failed: {}" +
-                                    "\nExpected '{}' value file was saved to 'file://{}'",
-                                    parameterName, e.getMessage(), parameterName, file.getAbsolutePath()
-                            )
-                    )
+                    .map(file -> format(
+                            e.getMessage() + "\nExpected '{}' value is saved.\n\t* {}",
+                            parameterName,
+                            file.getAbsolutePath()
+                    ))
                     .orElse(e.getMessage());
             throw new AssertionError(message);
         } catch (JSONException e) {
