@@ -1,7 +1,8 @@
 package com.cariochi.recordo.httpmock.http.apache;
 
-import com.cariochi.recordo.httpmock.model.RecordoRequest;
-import com.cariochi.recordo.httpmock.model.RecordoResponse;
+import com.cariochi.recordo.httpmock.model.RequestMock;
+import com.cariochi.recordo.httpmock.model.ResponseMock;
+import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpExecutionAware;
@@ -14,19 +15,15 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Function;
 
-
+@RequiredArgsConstructor
 public class PlaybackExecChain implements ClientExecChain {
 
     private final ClientExecChain requestExecutor;
     private final ApacheMapper mapper = new ApacheMapper();
 
-    private Function<RecordoRequest, Optional<RecordoResponse>> onBeforeRequest;
+    private Function<RequestMock, Optional<ResponseMock>> onBeforeRequest;
 
-    public PlaybackExecChain(ClientExecChain requestExecutor) {
-        this.requestExecutor = requestExecutor;
-    }
-
-    public void init(Function<RecordoRequest, Optional<RecordoResponse>> onBeforeRequest) {
+    public void init(Function<RequestMock, Optional<ResponseMock>> onBeforeRequest) {
         this.onBeforeRequest = onBeforeRequest;
     }
 
@@ -35,7 +32,7 @@ public class PlaybackExecChain implements ClientExecChain {
                                          HttpRequestWrapper request,
                                          HttpClientContext context,
                                          HttpExecutionAware executionAware) throws IOException, HttpException {
-        final Optional<RecordoResponse> recordoResponse = onBeforeRequest.apply(mapper.toRecordoRequest(request));
+        final Optional<ResponseMock> recordoResponse = onBeforeRequest.apply(mapper.toRecordoRequest(request));
         return recordoResponse.isPresent()
                 ? mapper.fromRecordoResponse(recordoResponse.get())
                 : requestExecutor.execute(route, request, context, executionAware);

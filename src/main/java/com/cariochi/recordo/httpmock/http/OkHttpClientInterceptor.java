@@ -1,13 +1,11 @@
 package com.cariochi.recordo.httpmock.http;
 
 import com.cariochi.recordo.httpmock.http.okhttp.OkHttpMapper;
-import com.cariochi.recordo.httpmock.model.RecordoRequest;
-import com.cariochi.recordo.httpmock.model.RecordoResponse;
+import com.cariochi.recordo.httpmock.model.RequestMock;
+import com.cariochi.recordo.httpmock.model.ResponseMock;
 import com.cariochi.recordo.reflection.Fields;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,32 +20,29 @@ public class OkHttpClientInterceptor implements Interceptor, HttpClientIntercept
 
     private final OkHttpMapper mapper = new OkHttpMapper();
 
-    private Function<RecordoRequest, Optional<RecordoResponse>> onBeforeRequest;
-    private BiFunction<RecordoRequest, RecordoResponse, RecordoResponse> onAfterRequest;
-
-    public OkHttpClientInterceptor() {
-    }
+    private Function<RequestMock, Optional<ResponseMock>> onBeforeRequest;
+    private BiFunction<RequestMock, ResponseMock, ResponseMock> onAfterRequest;
 
     public OkHttpClientInterceptor(OkHttpClient httpClient) {
         attachToHttpClient(httpClient);
     }
 
     @Override
-    public void init(Function<RecordoRequest, Optional<RecordoResponse>> onBeforeRequest,
-                     BiFunction<RecordoRequest, RecordoResponse, RecordoResponse> onAfterRequest) {
+    public void init(Function<RequestMock, Optional<ResponseMock>> onBeforeRequest,
+                     BiFunction<RequestMock, ResponseMock, ResponseMock> onAfterRequest) {
         this.onBeforeRequest = onBeforeRequest;
         this.onAfterRequest = onAfterRequest;
     }
 
     @Override
-    public Response intercept(Chain chain) throws IOException {
-        final Request request = chain.request();
-        final RecordoRequest recordoRequest = mapper.toRecordoRequest(request);
-        final RecordoResponse recordoResponse = onBeforeRequest.apply(recordoRequest)
+    public okhttp3.Response intercept(Chain chain) throws IOException {
+        final okhttp3.Request request = chain.request();
+        final RequestMock recordoRequest = mapper.toRecordoRequest(request);
+        final ResponseMock response = onBeforeRequest.apply(recordoRequest)
                 .orElseGet(trying(
                         () -> onAfterRequest.apply(recordoRequest, mapper.toRecordoResponse(chain.proceed(request)))
                 ));
-        return mapper.fromRecordoResponse(request, recordoResponse);
+        return mapper.fromRecordoResponse(request, response);
     }
 
     private void attachToHttpClient(OkHttpClient httpClient) {

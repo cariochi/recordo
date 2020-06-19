@@ -1,8 +1,8 @@
 package com.cariochi.recordo.utils;
 
 import com.cariochi.recordo.RecordoError;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
 
 import java.io.*;
 import java.util.Optional;
@@ -10,11 +10,10 @@ import java.util.Optional;
 import static com.cariochi.recordo.utils.Properties.resourcesFolderPath;
 import static java.lang.System.getProperty;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.slf4j.LoggerFactory.getLogger;
 
+@Slf4j
 public class Files {
 
-    private static final Logger log = getLogger(Files.class);
     public final String USER_DIR = getProperty("user.dir");
 
     public String readFromFile(String fileName) throws FileNotFoundException {

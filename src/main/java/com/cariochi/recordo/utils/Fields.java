@@ -1,6 +1,7 @@
 package com.cariochi.recordo.utils;
 
 import com.cariochi.recordo.RecordoError;
+import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.lang.annotation.Annotation;
@@ -13,10 +14,8 @@ import static com.cariochi.recordo.utils.Format.format;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.*;
 
-public final class Fields {
-
-    private Fields() {
-    }
+@UtilityClass
+public class Fields {
 
     public static Optional<ObjectField> findObjectField(Object target, String fieldName) {
         if (target == null) {

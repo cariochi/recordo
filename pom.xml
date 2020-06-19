@@ -7,11 +7,10 @@
 
     <groupId>com.cariochi</groupId>
     <artifactId>recordo</artifactId>
-    <version>1.1.4</version>
+    <version>1.1.5</version>
     <name>Recordo</name>
     <description>
-        The JUnit 4/5 extension. It provides '@Given' and '@Verify' annotations
-        which allows making test input fields initialization and a test result verification in a declarative style.
+         Declarative testing library for JUnit 4 and 5.
     </description>
     <url>https://cariochi.com</url>
 
@@ -48,7 +47,7 @@
 
         <jsonassert.version>1.5.0</jsonassert.version>
         <commons-lang3.version>3.10</commons-lang3.version>
-        <commons-io.version>2.6</commons-io.version>
+        <commons-io.version>2.7</commons-io.version>
         <okhttp.version>4.7.2</okhttp.version>
         <httpclient.version>4.5.12</httpclient.version>
         <android-json.version>0.0.20131108.vaadin1</android-json.version>
@@ -65,21 +64,24 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit-jupiter-engine.version}</version>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
             <version>${junit-jupiter-engine.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -128,7 +130,6 @@
             <version>${slf4j-api.version}</version>
         </dependency>
 
-
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -149,7 +150,6 @@
             <version>${httpclient.version}</version>
             <scope>provided</scope>
         </dependency>
-
 
         <dependency>
             <groupId>org.mockito</groupId>
@@ -172,10 +172,22 @@
         </dependency>
 
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>test</scope>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>2.3.0.RELEASE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>5.2.6.RELEASE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>

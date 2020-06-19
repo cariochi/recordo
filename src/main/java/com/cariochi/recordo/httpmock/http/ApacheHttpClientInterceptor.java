@@ -2,8 +2,8 @@ package com.cariochi.recordo.httpmock.http;
 
 import com.cariochi.recordo.httpmock.http.apache.PlaybackExecChain;
 import com.cariochi.recordo.httpmock.http.apache.RecordExecChain;
-import com.cariochi.recordo.httpmock.model.RecordoRequest;
-import com.cariochi.recordo.httpmock.model.RecordoResponse;
+import com.cariochi.recordo.httpmock.model.RequestMock;
+import com.cariochi.recordo.httpmock.model.ResponseMock;
 import org.apache.http.client.HttpClient;
 
 import java.util.Optional;
@@ -24,11 +24,11 @@ public class ApacheHttpClientInterceptor implements HttpClientInterceptor {
     }
 
     @Override
-    public void init(Function<RecordoRequest, Optional<RecordoResponse>> onBeforeRequest,
-                     BiFunction<RecordoRequest, RecordoResponse, RecordoResponse> onAfterRequest) {
+    public void init(Function<RequestMock, Optional<ResponseMock>> onBeforeRequest,
+                     BiFunction<RequestMock, ResponseMock, ResponseMock> onAfterRequest) {
 
         playbackExecChain.init(request -> {
-            final Optional<RecordoResponse> response = onBeforeRequest.apply(request);
+            final Optional<ResponseMock> response = onBeforeRequest.apply(request);
             recordExecChain.setActive(!response.isPresent());
             return response;
         });

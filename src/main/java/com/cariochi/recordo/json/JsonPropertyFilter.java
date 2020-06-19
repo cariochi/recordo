@@ -1,5 +1,7 @@
 package com.cariochi.recordo.json;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -10,18 +12,12 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.apache.commons.lang3.StringUtils.substringBefore;
 
+@NoArgsConstructor
+@AllArgsConstructor
 public class JsonPropertyFilter {
 
     private List<String> included = new ArrayList<>();
     private List<String> excluded = new ArrayList<>();
-
-    public JsonPropertyFilter() {
-    }
-
-    public JsonPropertyFilter(List<String> included, List<String> excluded) {
-        this.included = included;
-        this.excluded = excluded;
-    }
 
     public JsonPropertyFilter next(String root) {
         return new JsonPropertyFilter(nextPaths(included, root), nextPaths(excluded, root));

@@ -1,9 +1,10 @@
 package com.cariochi.recordo;
 
+import com.cariochi.recordo.annotation.EnableRecordo;
 import com.cariochi.recordo.annotation.Given;
-import com.cariochi.recordo.annotation.RecordoJsonConverter;
 import com.cariochi.recordo.annotation.Verify;
 import com.cariochi.recordo.junit5.RecordoExtension;
+import com.cariochi.recordo.verify.Verifier;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
@@ -12,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 import static com.cariochi.recordo.TestPojo.pojo;
 import static java.util.Arrays.asList;
@@ -27,7 +27,7 @@ class GivenAnnotationTest {
             pojo(4).withChild(pojo(5)).withChild(pojo(6))
     );
 
-    @RecordoJsonConverter
+    @EnableRecordo
     private ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .setDateFormat(new StdDateFormat());
@@ -54,21 +54,21 @@ class GivenAnnotationTest {
     @Test
     void given_string(
             @Given(file = "/{package}/{class}/given_string.json") String string,
-            @Verify("object") Consumer<TestPojo> actual
+            @Verify("object") Verifier actual
     ) throws JsonProcessingException {
         final TestPojo value = objectMapper.readValue(string, TestPojo.class);
-        actual.accept(value);
+        actual.verify(value);
     }
 
     @Test
     void create_empty_json(@Given("object") TestPojo pojo,
                            @Given("list") List<TestPojo> givenList,
-                           @Verify("object") Consumer<TestPojo> objectVerifier,
-                           @Verify("list") Consumer<List<TestPojo>> listVerifier
+                           @Verify("object") Verifier objectVerifier,
+                           @Verify("list") Verifier listVerifier
     ) {
         // test logic
-        objectVerifier.accept(pojo);
-        listVerifier.accept(givenList);
+        objectVerifier.verify(pojo);
+        listVerifier.verify(givenList);
     }
 
     @Test

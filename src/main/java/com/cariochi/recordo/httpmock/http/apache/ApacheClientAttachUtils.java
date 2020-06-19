@@ -2,13 +2,12 @@ package com.cariochi.recordo.httpmock.http.apache;
 
 import com.cariochi.recordo.reflection.Fields;
 import com.cariochi.recordo.reflection.TargetField;
+import lombok.experimental.UtilityClass;
 import org.apache.http.impl.execchain.ClientExecChain;
 import org.apache.http.impl.execchain.MainClientExec;
 
-public final class ApacheClientAttachUtils {
-
-    private ApacheClientAttachUtils() {
-    }
+@UtilityClass
+public class ApacheClientAttachUtils {
 
     public static RecordExecChain attachRecordExecChain(Object target) {
         return Fields.of(target).withType(ClientExecChain.class).stream()
