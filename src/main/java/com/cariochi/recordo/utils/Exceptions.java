@@ -1,19 +1,33 @@
 package com.cariochi.recordo.utils;
 
 import com.cariochi.recordo.RecordoError;
+import lombok.experimental.UtilityClass;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public final class Exceptions {
+@UtilityClass
+public class Exceptions {
 
-    private Exceptions() {
+    public static ExceptionsCollector collectorOf(Class<? extends Throwable> exceptionType) {
+        return ExceptionsCollector.of(exceptionType);
     }
 
     public static <T> Supplier<T> trying(SupplierEx<T> supplier) {
         return () -> {
             try {
                 return supplier.get();
+            } catch (Exception e) {
+                throw new RecordoError(e);
+            }
+        };
+    }
+
+    public static <T> Consumer<T> trying(ConsumerEx<T> consumer) {
+        return t -> {
+            try {
+                consumer.accept(t);
             } catch (Exception e) {
                 throw new RecordoError(e);
             }
@@ -36,7 +50,12 @@ public final class Exceptions {
     }
 
     @FunctionalInterface
-    public static interface FunctionEx<T, R> {
+    public interface ConsumerEx<T> {
+        void accept(T value) throws Exception;
+    }
+
+    @FunctionalInterface
+    public interface FunctionEx<T, R> {
         R apply(T t) throws Exception;
     }
 }

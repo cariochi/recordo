@@ -13,20 +13,18 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Type;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 public class JacksonConverter implements JsonConverter {
 
     private final ObjectMapper objectMapper;
 
     public JacksonConverter() {
         this(new ObjectMapper().registerModule(new JavaTimeModule()).setDateFormat(new StdDateFormat()));
-    }
-
-    public JacksonConverter(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -36,6 +34,9 @@ public class JacksonConverter implements JsonConverter {
 
     @Override
     public String toJson(Object object, JsonPropertyFilter filter) {
+        if (object == null || object instanceof String) {
+            return (String) object;
+        }
         try {
             return objectMapper(filter).writerWithDefaultPrettyPrinter().writeValueAsString(object);
         } catch (JsonProcessingException e) {
@@ -45,6 +46,9 @@ public class JacksonConverter implements JsonConverter {
 
     @Override
     public <T> T fromJson(String json, Type type) {
+        if (json == null) {
+            return null;
+        }
         try {
             final JavaType valueType = objectMapper.getTypeFactory().constructType(type);
             return objectMapper.readValue(json, valueType);
@@ -63,15 +67,12 @@ public class JacksonConverter implements JsonConverter {
                 .orElse(objectMapper);
     }
 
+    @RequiredArgsConstructor
     static class RecordoFilter extends SimpleBeanPropertyFilter {
 
         public static final String NAME = "recordo-filter";
 
         private final JsonPropertyFilter filter;
-
-        public RecordoFilter(JsonPropertyFilter filter) {
-            this.filter = filter;
-        }
 
         @Override
         public void serializeAsField(Object pojo,
