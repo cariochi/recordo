@@ -1,6 +1,7 @@
 package com.cariochi.recordo.utils;
 
 import com.cariochi.recordo.RecordoError;
+import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -10,9 +11,11 @@ import java.util.Optional;
 
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.StringUtils.*;
+import static org.apache.commons.lang3.StringUtils.replace;
+import static org.apache.commons.lang3.StringUtils.replaceEach;
 
-public final class Properties {
+@UtilityClass
+public class Properties {
 
     private static final java.util.Properties defaultProperties = loadProperties("/recordo.default.properties");
     private static final java.util.Properties properties = loadProperties("/recordo.properties");
@@ -23,11 +26,11 @@ public final class Properties {
     public static final String FIELD = "{field}";
     public static final String[] FILE_NAME_VARIABLES = {PACKAGE, CLASS, METHOD, FIELD};
 
-    private Properties() {
-    }
-
     public static String fileName(String pattern, Class<?> testClass, String method, String field) {
-        final String packageNme = replace(uncapitalize(testClass.getPackage().getName()), ".", "/");
+        final String packageNme = Optional.ofNullable(testClass.getPackage())
+                .map(Package::getName)
+                .map(s -> replace(s, ".", "/"))
+                .orElse("");
         final String className = testClass.getSimpleName();
         final String[] values = new String[]{packageNme, className, method, field};
         return replaceEach(pattern, FILE_NAME_VARIABLES, values).replace("//", "/");

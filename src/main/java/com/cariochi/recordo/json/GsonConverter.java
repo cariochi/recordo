@@ -1,9 +1,11 @@
 package com.cariochi.recordo.json;
 
 import com.google.gson.*;
+import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Type;
 
+@RequiredArgsConstructor
 public class GsonConverter implements JsonConverter {
 
     private final Gson gson;
@@ -12,17 +14,19 @@ public class GsonConverter implements JsonConverter {
         this(new GsonBuilder().setPrettyPrinting().create());
     }
 
-    public GsonConverter(Gson gson) {
-        this.gson = gson;
-    }
-
     @Override
     public String toJson(Object object) {
+        if (object == null || object instanceof String) {
+            return (String) object;
+        }
         return gson.toJson(object);
     }
 
     @Override
     public String toJson(Object object, JsonPropertyFilter filter) {
+        if (object == null || object instanceof String) {
+            return (String) object;
+        }
         if (filter.hasProperties()) {
             final JsonElement jsonElement = gson.toJsonTree(object);
             applyFilter(jsonElement, filter);
@@ -34,6 +38,9 @@ public class GsonConverter implements JsonConverter {
 
     @Override
     public <T> T fromJson(String json, Type type) {
+        if (json == null) {
+            return null;
+        }
         return gson.fromJson(json, type);
     }
 

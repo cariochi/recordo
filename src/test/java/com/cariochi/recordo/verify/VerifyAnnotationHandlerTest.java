@@ -31,7 +31,7 @@ class VerifyAnnotationHandlerTest {
 
     @BeforeEach
     void setUp() {
-        Fields.of(interceptor).get("verifier").get("files").setValue(files);
+        Fields.of(interceptor).get("files").setValue(files);
     }
 
     @Test

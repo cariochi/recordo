@@ -1,21 +1,18 @@
 package com.cariochi.recordo.reflection;
 
 import com.cariochi.recordo.RecordoError;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
+@RequiredArgsConstructor
 public class TargetField {
 
     private final Object target;
     private final Field field;
-
-    public TargetField(Object target, Field field) {
-        this.target = target;
-        this.field = field;
-    }
 
     public Fields fields() {
         return Fields.of(getValue());
