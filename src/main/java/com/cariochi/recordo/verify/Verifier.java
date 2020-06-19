@@ -6,11 +6,12 @@ import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonConverters;
 import com.cariochi.recordo.json.JsonPropertyFilter;
 import com.cariochi.recordo.utils.Files;
+import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
-import org.slf4j.Logger;
 
 import java.io.FileNotFoundException;
 import java.lang.reflect.Method;
@@ -21,30 +22,33 @@ import static com.cariochi.recordo.utils.Format.format;
 import static com.cariochi.recordo.utils.Properties.fileName;
 import static com.cariochi.recordo.utils.Properties.verifyFileNamePattern;
 import static java.util.Arrays.asList;
-import static org.slf4j.LoggerFactory.getLogger;
 
+@Slf4j
+@Builder
 public class Verifier {
 
-    private static final Logger log = getLogger(Verifier.class);
+    private final Files files;
+    private final Verify annotation;
+    private final Object testInstance;
+    private final Method testMethod;
+    private final String parameterName;
 
-    private final Files files = new Files();
-
-    public void verify(Object actual, Verify verify, Object testInstance, Method method, String parameter) {
+    public void verify(Object actual) {
         final JsonConverter jsonConverter = JsonConverters.find(testInstance);
         final Class<?> testClass = testInstance.getClass();
-        final String parameterName = Optional.of(verify.value())
+        final String parameterName = Optional.of(annotation.value())
                 .filter(StringUtils::isNotBlank)
-                .orElse(parameter);
-        final String fileNamePattern = verifyFileNamePattern(verify.file());
-        final String fileName = fileName(fileNamePattern, testClass, method.getName(), parameterName);
-        final String actualJson = jsonConverter.toJson(actual, jsonFilter(verify));
+                .orElse(this.parameterName);
+        final String fileNamePattern = verifyFileNamePattern(annotation.file());
+        final String fileName = fileName(fileNamePattern, testClass, testMethod.getName(), parameterName);
+        final String actualJson = jsonConverter.toJson(actual, jsonFilter(annotation));
         try {
             final String expectedJson = files.readFromFile(fileName);
             log.debug("Verifying '{}'", parameterName);
-            JSONAssert.assertEquals(expectedJson, actualJson, compareMode(verify));
+            JSONAssert.assertEquals(expectedJson, actualJson, compareMode(annotation));
             log.info("Actual '{}' value equals to expected.\n\t* {}", parameterName, files.filePath(fileName));
         } catch (AssertionError e) {
-            String newFileName = new StringBuilder(fileName).insert(fileName.lastIndexOf('/') + 1, "new-").toString();
+            String newFileName = new StringBuilder(fileName).insert(fileName.lastIndexOf('/') + 1, "new_").toString();
             files.writeToFile(actualJson, newFileName)
                     .ifPresent(file -> log.info(
                             e.getMessage() + "\nActual '{}' value is saved to file.\n\t* {}",

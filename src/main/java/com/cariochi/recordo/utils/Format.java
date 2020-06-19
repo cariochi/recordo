@@ -1,11 +1,10 @@
 package com.cariochi.recordo.utils;
 
+import lombok.experimental.UtilityClass;
 import org.slf4j.helpers.MessageFormatter;
 
-public final class Format {
-
-    private Format() {
-    }
+@UtilityClass
+public class Format {
 
     public static String format(String format, Object... args) {
         return MessageFormatter.arrayFormat(format, args).getMessage();
