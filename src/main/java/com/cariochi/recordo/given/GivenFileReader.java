@@ -1,25 +1,31 @@
 package com.cariochi.recordo.given;
 
 import com.cariochi.recordo.json.JsonConverter;
+import com.cariochi.recordo.json.JsonConverters;
 import com.cariochi.recordo.utils.Files;
-import org.slf4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.Type;
 
-import static org.slf4j.LoggerFactory.getLogger;
+import static com.cariochi.recordo.utils.Properties.fileName;
+import static com.cariochi.recordo.utils.Properties.givenFileNamePattern;
 
+@Slf4j
 public class GivenFileReader {
 
-    private static final Logger log = getLogger(GivenFileReader.class);
     private final RandomDataGenerator randomDataGenerator = new RandomDataGenerator();
     private final Files files = new Files();
 
-    public Object readFromFile(final String fileName,
+    public Object readFromFile(Object testInstance,
+                               String methodName,
+                               String file,
                                Type parameterType,
-                               String parameterName,
-                               JsonConverter jsonConverter) {
+                               String parameterName) {
+        final JsonConverter jsonConverter = JsonConverters.find(testInstance);
+        final String pattern = givenFileNamePattern(file);
+        final String fileName = fileName(pattern, testInstance.getClass(), methodName, parameterName);
         Object givenObject;
         try {
             final String json = files.readFromFile(fileName);
@@ -28,13 +34,14 @@ public class GivenFileReader {
                     : jsonConverter.fromJson(json, parameterType);
         } catch (FileNotFoundException e) {
             givenObject = randomDataGenerator.generateObject(parameterType);
-            files.writeToFile(jsonConverter.toJson(givenObject), fileName)
+            final String json = givenObject instanceof String ? "{}" : jsonConverter.toJson(givenObject);
+            files.writeToFile(json, fileName)
                     .map(File::getAbsolutePath)
-                    .ifPresent(file ->
+                    .ifPresent(f ->
                             log.warn(
                                     e.getMessage() + "\nRandom '{}' value is generated.\n\t* {}",
                                     parameterName,
-                                    file
+                                    f
                             )
                     );
         }

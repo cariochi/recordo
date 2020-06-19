@@ -1,7 +1,7 @@
 package com.cariochi.recordo.httpmock.http.apache;
 
-import com.cariochi.recordo.httpmock.model.RecordoRequest;
-import com.cariochi.recordo.httpmock.model.RecordoResponse;
+import com.cariochi.recordo.httpmock.model.RequestMock;
+import com.cariochi.recordo.httpmock.model.ResponseMock;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.*;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -23,34 +23,33 @@ import static org.apache.commons.lang3.StringUtils.*;
 
 public class ApacheMapper {
 
-    public ApacheMapper() {
-    }
-
-    public RecordoRequest toRecordoRequest(HttpRequestWrapper wrapper) throws IOException {
+    public RequestMock toRecordoRequest(HttpRequestWrapper wrapper) throws IOException {
         final HttpRequest request = wrapper.getOriginal();
         final String body = request instanceof HttpEntityEnclosingRequest
                 ? bodyOf(((HttpEntityEnclosingRequest) request).getEntity())
                 : null;
-        return new RecordoRequest()
-                .setMethod(request.getRequestLine().getMethod())
-                .setUrl(request.getRequestLine().getUri())
-                .setHeaders(headersOf(request.getAllHeaders()))
-                .setBody(body);
+        return RequestMock.builder()
+                .method(request.getRequestLine().getMethod())
+                .url(request.getRequestLine().getUri())
+                .headers(headersOf(request.getAllHeaders()))
+                .body(body)
+                .build();
     }
 
-    public RecordoResponse toRecordoResponse(HttpResponse response) throws IOException {
-        return new RecordoResponse()
-                .setProtocol(response.getProtocolVersion().toString())
-                .setStatusCode(response.getStatusLine().getStatusCode())
-                .setStatusText(response.getStatusLine().getReasonPhrase())
-                .setHeaders(headersOf(response.getAllHeaders()))
-                .setBody(bodyOf(response.getEntity()));
+    public ResponseMock toRecordoResponse(HttpResponse response) throws IOException {
+        return ResponseMock.builder()
+                .protocol(response.getProtocolVersion().toString())
+                .statusCode(response.getStatusLine().getStatusCode())
+                .statusText(response.getStatusLine().getReasonPhrase())
+                .headers(headersOf(response.getAllHeaders()))
+                .body(bodyOf(response.getEntity()))
+                .build();
     }
 
-    public CloseableHttpResponse fromRecordoResponse(RecordoResponse response) {
+    public CloseableHttpResponse fromRecordoResponse(ResponseMock response) {
         final String protocol = substringBefore(response.getProtocol(), "/");
         final String[] version = substringAfter(response.getProtocol(), "/").split("\\.");
-        final Response newResponse = new Response(
+        final ResponseWrapper newResponse = new ResponseWrapper(
                 new ProtocolVersion(protocol, Integer.parseInt(version[0]), Integer.parseInt(version[1])),
                 response.getStatusCode(),
                 response.getStatusText()
@@ -90,9 +89,9 @@ public class ApacheMapper {
                 .orElse(new byte[0]);
     }
 
-    public static class Response extends BasicHttpResponse implements CloseableHttpResponse {
+    public static class ResponseWrapper extends BasicHttpResponse implements CloseableHttpResponse {
 
-        public Response(ProtocolVersion ver, int code, String reason) {
+        public ResponseWrapper(ProtocolVersion ver, int code, String reason) {
             super(ver, code, reason);
         }
 

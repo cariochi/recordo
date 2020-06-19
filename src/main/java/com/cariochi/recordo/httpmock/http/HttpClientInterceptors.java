@@ -1,8 +1,9 @@
 package com.cariochi.recordo.httpmock.http;
 
-import com.cariochi.recordo.annotation.EnableHttpMocks;
+import com.cariochi.recordo.annotation.EnableRecordo;
 import com.cariochi.recordo.reflection.Fields;
 import com.cariochi.recordo.reflection.TargetField;
+import lombok.experimental.UtilityClass;
 import okhttp3.OkHttpClient;
 import org.apache.http.client.HttpClient;
 
@@ -10,10 +11,8 @@ import java.util.Optional;
 
 import static com.cariochi.recordo.utils.Reflection.checkClassLoaded;
 
-public final class HttpClientInterceptors {
-
-    private HttpClientInterceptors() {
-    }
+@UtilityClass
+public class HttpClientInterceptors {
 
     public static HttpClientInterceptor of(Object testInstance) {
         return okHttpClientInterceptor(testInstance)
@@ -26,7 +25,7 @@ public final class HttpClientInterceptors {
         try {
             checkClassLoaded("okhttp3.OkHttpClient");
             return Fields.of(testInstance)
-                    .withTypeAndAnnotation(OkHttpClientInterceptor.class, EnableHttpMocks.class).stream().findAny()
+                    .withTypeAndAnnotation(OkHttpClientInterceptor.class, EnableRecordo.class).stream().findAny()
                     .map(TargetField::getValue)
                     .map(Optional::of)
                     .orElseGet(() -> okHttpClient(testInstance).map(OkHttpClientInterceptor::new))
@@ -40,7 +39,7 @@ public final class HttpClientInterceptors {
         try {
             checkClassLoaded("okhttp3.OkHttpClient");
             return Fields.of(testInstance)
-                    .withTypeAndAnnotation(OkHttpClient.class, EnableHttpMocks.class).stream().findAny()
+                    .withTypeAndAnnotation(OkHttpClient.class, EnableRecordo.class).stream().findAny()
                     .map(TargetField::getValue);
         } catch (ClassNotFoundException e) {
             return Optional.empty();
@@ -51,7 +50,7 @@ public final class HttpClientInterceptors {
         try {
             checkClassLoaded("org.apache.http.client.HttpClient");
             return Fields.of(testInstance)
-                    .withTypeAndAnnotation(HttpClient.class, EnableHttpMocks.class).stream().findAny()
+                    .withTypeAndAnnotation(HttpClient.class, EnableRecordo.class).stream().findAny()
                     .map(TargetField::getValue)
                     .map(HttpClient.class::cast)
                     .map(ApacheHttpClientInterceptor::new);

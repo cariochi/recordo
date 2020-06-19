@@ -1,6 +1,7 @@
 package com.cariochi.recordo.httpmock.assertion;
 
-import com.cariochi.recordo.httpmock.model.RecordoRequest;
+import com.cariochi.recordo.httpmock.model.RequestMock;
+import lombok.experimental.UtilityClass;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -16,16 +17,14 @@ import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.apache.commons.lang3.StringUtils.substringBefore;
 
-public final class RequestAssert {
+@UtilityClass
+public class RequestAssert {
 
     private static final String APPLICATION_FORM_URLENCODED = "application/x-www-form-urlencoded";
     private static final String APPLICATION_JSON = "application/json";
     private static final String CONTENT_TYPE = "content-type";
 
-    private RequestAssert() {
-    }
-
-    public static void assertEquals(RecordoRequest expected, RecordoRequest actual) {
+    public static void assertEquals(RequestMock expected, RequestMock actual) {
         assertStrings("method", expected.getMethod(), actual.getMethod());
         assertUrls(expected.getUrl(), actual.getUrl());
         assertMaps("headers", expected.getHeaders(), actual.getHeaders());
@@ -40,12 +39,12 @@ public final class RequestAssert {
         assertMaps("query", parseQuery(expectedUri.getQuery()), parseQuery(actualUri.getQuery()));
     }
 
-    private static void assertBodies(RecordoRequest expected, RecordoRequest actual) {
+    private static void assertBodies(RequestMock expected, RequestMock actual) {
         if (expected == null && actual == null) {
             return;
         }
-        final String expectedContent = String.valueOf(expected.getBody());
-        final String actualContent = String.valueOf(actual.getBody());
+        final String expectedContent = (String) expected.getBody();
+        final String actualContent = (String) actual.getBody();
         if (expectedContent == null && actualContent == null) {
             return;
         }

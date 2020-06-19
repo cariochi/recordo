@@ -1,9 +1,12 @@
 package com.cariochi.recordo.httpmock.http.okhttp;
 
 import com.cariochi.recordo.RecordoError;
-import com.cariochi.recordo.httpmock.model.RecordoRequest;
-import com.cariochi.recordo.httpmock.model.RecordoResponse;
-import okhttp3.*;
+import com.cariochi.recordo.httpmock.model.RequestMock;
+import com.cariochi.recordo.httpmock.model.ResponseMock;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.Protocol;
+import okhttp3.ResponseBody;
 import okio.Buffer;
 
 import java.io.IOException;
@@ -20,33 +23,32 @@ public class OkHttpMapper {
     public static final String CONTENT_TYPE = "Content-Type";
     private static final String DEFAULT_CONTENT_TYPE = "application/json; charset=utf-8";
 
-    public OkHttpMapper() {
+    public RequestMock toRecordoRequest(okhttp3.Request request) {
+        return  RequestMock.builder()
+                .method(request.method())
+                .url(request.url().url().toString())
+                .headers(headersOf(request.headers()))
+                .body(bodyOf(request))
+                .build();
     }
 
-    public RecordoRequest toRecordoRequest(Request request) {
-        return new RecordoRequest()
-                .setMethod(request.method())
-                .setUrl(request.url().url().toString())
-                .setHeaders(headersOf(request.headers()))
-                .setBody(bodyOf(request));
+    public ResponseMock toRecordoResponse(okhttp3.Response response) {
+        return  ResponseMock.builder()
+                .protocol(response.protocol().toString())
+                .headers(headersOf(response.headers()))
+                .statusCode(response.code())
+                .statusText(response.message())
+                .body(bodyOf(response))
+                .build();
     }
 
-    public RecordoResponse toRecordoResponse(Response response) {
-        return new RecordoResponse()
-                .setProtocol(response.protocol().toString())
-                .setHeaders(headersOf(response.headers()))
-                .setStatusCode(response.code())
-                .setStatusText(response.message())
-                .setBody(bodyOf(response));
-    }
-
-    public Response fromRecordoResponse(Request request, RecordoResponse response) throws IOException {
+    public okhttp3.Response fromRecordoResponse(okhttp3.Request request, ResponseMock response) throws IOException {
         final byte[] body = bytes(response.getBody());
         final ResponseBody responseBody = ResponseBody.create(
                 MediaType.parse(contentTypeOf(response.getHeaders())),
                 body
         );
-        return new Response.Builder()
+        return new okhttp3.Response.Builder()
                 .request(request)
                 .code(response.getStatusCode())
                 .message(response.getStatusText())
@@ -56,7 +58,7 @@ public class OkHttpMapper {
                 .build();
     }
 
-    private String bodyOf(Request request) {
+    private String bodyOf(okhttp3.Request request) {
         try {
             String requestContent = null;
             if (request.body() != null) {
@@ -70,7 +72,7 @@ public class OkHttpMapper {
         }
     }
 
-    private String bodyOf(Response response) {
+    private String bodyOf(okhttp3.Response response) {
         try {
             String responseContent = null;
             if (response.body() != null) {
