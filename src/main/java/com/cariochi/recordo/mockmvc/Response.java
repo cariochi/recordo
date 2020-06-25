@@ -15,6 +15,7 @@ import java.util.Map;
 public class Response<T> {
 
     private Integer statusCode;
+    @Builder.Default
     private Map<String, String> headers = new LinkedHashMap<>();
     private T body;
 

@@ -4,20 +4,17 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Optional;
 
 public class RecordoContext {
 
     private final Object testInstance;
-    private final Method testMethod;
     private final ParameterContext parameterContext;
 
     public RecordoContext(ParameterContext parameterContext, ExtensionContext extensionContext) {
         this.parameterContext = parameterContext;
         this.testInstance = extensionContext.getTestInstance().orElse(null);
-        this.testMethod = extensionContext.getTestMethod().orElse(null);
     }
 
     public boolean isAnnotated(Class<? extends Annotation> annotationClass) {
@@ -48,7 +45,4 @@ public class RecordoContext {
         return testInstance;
     }
 
-    public Method getTestMethod() {
-        return testMethod;
-    }
 }

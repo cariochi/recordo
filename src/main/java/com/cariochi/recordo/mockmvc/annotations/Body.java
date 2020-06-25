@@ -7,8 +7,6 @@ import java.lang.annotation.*;
 @Inherited
 public @interface Body {
 
-    String value() default "";
-
-    String file() default "";
+    String value();
 
 }

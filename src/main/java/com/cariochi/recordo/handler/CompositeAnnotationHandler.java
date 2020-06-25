@@ -1,7 +1,7 @@
 package com.cariochi.recordo.handler;
 
 import com.cariochi.recordo.given.GivenAnnotationHandler;
-import com.cariochi.recordo.httpmock.HttpMockAnnotationHandler;
+import com.cariochi.recordo.restmocks.RestMocksAnnotationHandler;
 import com.cariochi.recordo.verify.VerifyAnnotationHandler;
 
 import java.lang.reflect.Method;
@@ -16,7 +16,7 @@ public class CompositeAnnotationHandler implements BeforeTestHandler, AfterTestH
     public CompositeAnnotationHandler() {
         this.handlers = asList(
                 new GivenAnnotationHandler(),
-                new HttpMockAnnotationHandler(),
+                new RestMocksAnnotationHandler(),
                 new VerifyAnnotationHandler()
         );
     }

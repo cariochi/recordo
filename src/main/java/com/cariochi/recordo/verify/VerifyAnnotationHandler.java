@@ -4,11 +4,11 @@ import com.cariochi.recordo.RecordoError;
 import com.cariochi.recordo.annotation.Verifies;
 import com.cariochi.recordo.annotation.Verify;
 import com.cariochi.recordo.handler.AfterTestHandler;
+import com.cariochi.recordo.handler.BeforeTestHandler;
 import com.cariochi.recordo.reflection.Fields;
 import com.cariochi.recordo.reflection.TargetField;
 import com.cariochi.recordo.utils.Exceptions;
 import com.cariochi.recordo.utils.ExceptionsCollector;
-import com.cariochi.recordo.utils.Files;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -17,37 +17,56 @@ import java.util.stream.Stream;
 import static com.cariochi.recordo.utils.Format.format;
 import static com.cariochi.recordo.utils.Reflection.findAnnotation;
 
-public class VerifyAnnotationHandler implements AfterTestHandler {
+public class VerifyAnnotationHandler implements BeforeTestHandler, AfterTestHandler {
 
-    private final Files files = new Files();
+    @Override
+    public void beforeTest(Object testInstance, Method method) {
+        Fields.of(testInstance).withTypeAndAnnotation(Expected.class, Verify.class).forEach(
+                field -> createExpectedField(field.getAnnotation(Verify.class), testInstance, field)
+        );
+        findVerifyAnnotations(method).forEach(
+                verify -> createExpectedField(verify, testInstance, Fields.of(testInstance).get(verify.field()))
+        );
+    }
 
     @Override
     public void afterTest(Object testInstance, Method method) {
         final ExceptionsCollector ec = Exceptions.collectorOf(RecordoError.class);
         findVerifyAnnotations(method).forEach(
                 ec.consumer(
-                        verify -> verifyTestResult(verify, method, testInstance)
+                        verify -> verifyTestResult(verify, testInstance)
                 ));
         if (ec.hasExceptions()) {
             throw new RecordoError(ec.getMessage());
         }
     }
 
-    private void verifyTestResult(Verify verify, Method method, Object testInstance) {
-        final TargetField field = Fields.of(testInstance).get(verify.value());
-        final Object actual = field.getValue();
-        if (actual == null) {
-            throw new AssertionError(format("Actual '{}' value should not be null", verify.value()));
+    private void createExpectedField(Verify verify, Object testInstance, TargetField field) {
+        if (!(Expected.class.isAssignableFrom(field.getType()))) {
+            return;
         }
-        field.setValue(null);
-        Verifier.builder()
-                .files(files)
+        final Expected<Object> expected = Expected.builder()
                 .annotation(verify)
                 .testInstance(testInstance)
-                .testMethod(method)
-                .parameterName(field.getName())
+                .build();
+        field.setValue(expected);
+    }
+
+    private void verifyTestResult(Verify verify, Object testInstance) {
+        final TargetField field = Fields.of(testInstance).get(verify.field());
+        if (Expected.class.isAssignableFrom(field.getType())) {
+            return;
+        }
+        final Object actual = field.getValue();
+        if (actual == null) {
+            throw new AssertionError(format("Actual '{}' value should not be null", verify.field()));
+        }
+        field.setValue(null);
+        Expected.builder()
+                .annotation(verify)
+                .testInstance(testInstance)
                 .build()
-                .verify(actual);
+                .assertEquals(actual);
     }
 
     private Stream<Verify> findVerifyAnnotations(Method method) {
