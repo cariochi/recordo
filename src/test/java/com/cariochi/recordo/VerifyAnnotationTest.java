@@ -1,7 +1,9 @@
 package com.cariochi.recordo;
 
+import com.cariochi.recordo.annotation.Resources;
 import com.cariochi.recordo.annotation.Verify;
 import com.cariochi.recordo.junit5.RecordoExtension;
+import lombok.experimental.FieldNameConstants;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -11,31 +13,30 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.reverse;
 import static java.util.Collections.shuffle;
 
+@FieldNameConstants
 @ExtendWith(RecordoExtension.class)
+@Resources("/verify_annotation_test")
 public class VerifyAnnotationTest {
 
-    private TestPojo object;
-    private List<TestPojo> list;
+    private TestObject object;
+    private List<TestObject> list;
 
     @Test
-    @Verify(
-            value = "object",
-            file = "/expected/custom_result.json",
-            extensible = true
-    )
+    @Verify(value = "/object.json", field = Fields.object, extensible = true)
     void extensible() {
         object = actualObject(1);
     }
 
     @Test
-    @Verify("object")
+    @Verify(value = "/object.json", field = Fields.object)
     void not_extensible() {
         object = actualObject(1);
     }
 
     @Test
     @Verify(
-            value = "object",
+            value = "/short_object.json",
+            field = Fields.object,
             included = {"id", "text", "children.id", "children.text"}
     )
     void included() {
@@ -44,7 +45,8 @@ public class VerifyAnnotationTest {
 
     @Test
     @Verify(
-            value = "object",
+            value = "/short_object.json",
+            field = Fields.object,
             excluded = {"strings", "date", "children.strings", "children.date", "children.children"}
     )
     void excluded() {
@@ -52,20 +54,21 @@ public class VerifyAnnotationTest {
     }
 
     @Test
-    @Verify(value = "list", extensible = true)
+    @Verify(value = "/list.json", field = Fields.list, extensible = true)
     void list_extensible() {
         list = actualList();
     }
 
     @Test
-    @Verify("list")
+    @Verify(value = "/list.json", field = Fields.list)
     void list_not_extensible() {
         list = actualList();
     }
 
     @Test
     @Verify(
-            value = "list",
+            value = "/short_list.json",
+            field = Fields.list,
             included = {"id", "text", "children.id", "children.text"}
     )
     void list_included() {
@@ -74,7 +77,8 @@ public class VerifyAnnotationTest {
 
     @Test
     @Verify(
-            value = "list",
+            value = "/short_list.json",
+            field = Fields.list,
             excluded = {"strings", "date", "children.strings", "children.date", "children.children"}
     )
     void list_excluded() {
@@ -82,14 +86,14 @@ public class VerifyAnnotationTest {
     }
 
     @Test
-    @Verify("list")
+    @Verify(value = "/list_strict_order.json", field = Fields.list)
     void list_strict_order() {
         list = actualList();
         reverse(list.get(0).getChildren());
     }
 
     @Test
-    @Verify(value = "list", strictOrder = false)
+    @Verify(value = "/list.json", field = Fields.list, strictOrder = false)
     void list_not_strict_order() {
         list = actualList();
         shuffle(list.get(0).getChildren());
@@ -98,26 +102,18 @@ public class VerifyAnnotationTest {
     }
 
     @Test
-    @Verify("object")
-    @Verify("list")
+    @Verify(value = "/object.json", field = Fields.object)
+    @Verify(value = "/list.json", field = Fields.list)
     void multiple() {
         object = actualObject(1);
         list = actualList();
     }
 
-    /**
-     * "This method is for {@link com.cariochi.recordo.handler.VerifyInterceptorTest }."
-     */
-    @Verify("object")
-    void null_object() {
-        object = null;
+    private TestObject actualObject(int id) {
+        return TestObject.pojo(id).withChild(TestObject.pojo(id + 1)).withChild(TestObject.pojo(id + 2));
     }
 
-    private TestPojo actualObject(int id) {
-        return TestPojo.pojo(id).withChild(TestPojo.pojo(id + 1)).withChild(TestPojo.pojo(id + 2));
-    }
-
-    private List<TestPojo> actualList() {
+    private List<TestObject> actualList() {
         return asList(actualObject(1), actualObject(4));
     }
 

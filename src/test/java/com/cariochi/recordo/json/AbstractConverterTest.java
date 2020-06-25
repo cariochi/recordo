@@ -1,19 +1,19 @@
 package com.cariochi.recordo.json;
 
-import com.cariochi.recordo.TestPojo;
+import com.cariochi.recordo.TestObject;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-import static com.cariochi.recordo.TestPojo.pojo;
+import static com.cariochi.recordo.TestObject.pojo;
 import static java.util.Arrays.asList;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 
 @RequiredArgsConstructor
 abstract class AbstractConverterTest {
 
-    private static final TestPojo GIVEN_OBJECT = pojo(1).withChild(pojo(2));
+    private static final TestObject GIVEN_OBJECT = pojo(1).withChild(pojo(2));
 
     private static final String EXPECTED_JSON = "{" +
                                                 "    \"id\" : 1," +
