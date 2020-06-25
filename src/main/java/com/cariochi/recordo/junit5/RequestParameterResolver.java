@@ -1,7 +1,7 @@
 package com.cariochi.recordo.junit5;
 
 import com.cariochi.recordo.annotation.EnableRecordo;
-import com.cariochi.recordo.given.GivenFileReader;
+import com.cariochi.recordo.given.GivenObject;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonConverters;
 import com.cariochi.recordo.mockmvc.Request;
@@ -9,7 +9,6 @@ import com.cariochi.recordo.mockmvc.Response;
 import com.cariochi.recordo.mockmvc.annotations.*;
 import com.cariochi.recordo.reflection.Fields;
 import com.cariochi.recordo.reflection.TargetField;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -17,16 +16,14 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.apache.commons.lang3.StringUtils.substringBefore;
+import static org.springframework.http.HttpMethod.*;
 
 public class RequestParameterResolver implements ParamResolver {
-
-    private final GivenFileReader givenFileReader = new GivenFileReader();
 
     @Override
     public boolean supports(RecordoContext context) {
@@ -40,21 +37,21 @@ public class RequestParameterResolver implements ParamResolver {
     @Override
     public Object resolveParameter(RecordoContext context) {
         if (context.isAnnotated(Get.class)) {
-            return processRequest("GET", context.getAnnotation(Get.class).value(), context);
+            return processRequest(GET, context.getAnnotation(Get.class).value(), context);
         } else if (context.isAnnotated(Post.class)) {
-            return processRequest("POST", context.getAnnotation(Post.class).value(), context);
+            return processRequest(POST, context.getAnnotation(Post.class).value(), context);
         } else if (context.isAnnotated(Put.class)) {
-            return processRequest("PUT", context.getAnnotation(Put.class).value(), context);
+            return processRequest(PUT, context.getAnnotation(Put.class).value(), context);
         } else if (context.isAnnotated(Patch.class)) {
-            return processRequest("PATCH", context.getAnnotation(Patch.class).value(), context);
+            return processRequest(PATCH, context.getAnnotation(Patch.class).value(), context);
         } else if (context.isAnnotated(Delete.class)) {
-            return processRequest("DELETE", context.getAnnotation(Delete.class).value(), context);
+            return processRequest(HttpMethod.DELETE, context.getAnnotation(Delete.class).value(), context);
         } else {
             return null;
         }
     }
 
-    private Object processRequest(String method, String path, RecordoContext context) {
+    private Object processRequest(HttpMethod method, String path, RecordoContext context) {
         final Object testInstance = context.getTestInstance();
         final JsonConverter jsonConverter = JsonConverters.find(testInstance);
         final MockMvc mockMvc = mockMvc(testInstance);
@@ -67,7 +64,7 @@ public class RequestParameterResolver implements ParamResolver {
         final Request.RequestBuilder<Object> requestBuilder = Request.builder()
                 .mockMvc(mockMvc)
                 .jsonConverter(jsonConverter)
-                .method(HttpMethod.resolve(method))
+                .method(method)
                 .path(path)
                 .headers(headers)
                 .body(body);
@@ -75,12 +72,13 @@ public class RequestParameterResolver implements ParamResolver {
     }
 
     public String getBodyFromFile(Body annotation, RecordoContext context) {
-        final String parameterName =
-                Optional.of(annotation.value()).filter(StringUtils::isNotBlank).orElseGet(context::getParameterName);
         final Object testInstance = context.getTestInstance();
-        final String methodName = context.getTestMethod().getName();
-        return (String) givenFileReader.readFromFile(testInstance, methodName, annotation.file(), String.class,
-                parameterName);
+        return (String) GivenObject.builder()
+                .testInstance(testInstance)
+                .file(annotation.value())
+                .parameterType(String.class)
+                .build()
+                .get();
     }
 
     private Object executeRequest(Request.RequestBuilder<Object> requestBuilder, RecordoContext context) {
