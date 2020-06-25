@@ -1,9 +1,0 @@
-{
-  "id" : 1,
-  "author" : {
-    "id" : 1,
-    "firstName" : "William",
-    "lastName" : "Shakespeare"
-  },
-  "title" : "Othello"
-}

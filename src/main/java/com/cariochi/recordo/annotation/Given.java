@@ -8,8 +8,8 @@ import java.lang.annotation.*;
 @Inherited
 public @interface Given {
 
-    String value() default "";
+    String value();
 
-    String file() default "";
+    String field() default "";
 
 }

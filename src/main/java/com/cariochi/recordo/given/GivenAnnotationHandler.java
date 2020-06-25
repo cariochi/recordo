@@ -17,32 +17,29 @@ import static com.cariochi.recordo.utils.Reflection.findAnnotation;
 
 public class GivenAnnotationHandler implements BeforeTestHandler {
 
-    private final GivenFileReader givenFileReader = new GivenFileReader();
-
     @Override
     public void beforeTest(Object testInstance, Method method) {
         final ExceptionsCollector ec = Exceptions.collectorOf(RecordoError.class);
         Fields.of(testInstance).withAnnotation(Given.class).forEach(
                 ec.consumer(
-                        field -> processGiven(field.getAnnotation(Given.class), "", field)
+                        field -> processGiven(field.getAnnotation(Given.class), field)
                 ));
         findGivenAnnotations(method).forEach(
                 ec.consumer(
-                        given -> processGiven(given, method.getName(), Fields.of(testInstance).get(given.value()))
+                        given -> processGiven(given, Fields.of(testInstance).get(given.field()))
                 ));
         if (ec.hasExceptions()) {
             throw new RecordoError(ec.getMessage());
         }
     }
 
-    public void processGiven(Given given, String methodName, TargetField field) {
-        final Object value = givenFileReader.readFromFile(
-                field.getTarget(),
-                methodName,
-                given.file(),
-                field.getGenericType(),
-                field.getName()
-        );
+    public void processGiven(Given given, TargetField field) {
+        final Object value = GivenObject.builder()
+                .testInstance(field.getTarget())
+                .file(given.value())
+                .parameterType(field.getGenericType())
+                .build()
+                .get();
         field.setValue(value);
     }
 

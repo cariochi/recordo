@@ -15,6 +15,10 @@ public class Reflection {
         return Optional.ofNullable(getAnnotation(method, annotationClass, true, true));
     }
 
+    public static <A extends Annotation> Optional<A> findAnnotation(Class<?> type, Class<A> annotationClass) {
+        return Optional.ofNullable(type.getAnnotation(annotationClass));
+    }
+
     public static void checkClassLoaded(String className) throws ClassNotFoundException {
         Class.forName(className, false, Reflection.class.getClassLoader());
     }
