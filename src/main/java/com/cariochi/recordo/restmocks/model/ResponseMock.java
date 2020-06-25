@@ -1,22 +1,22 @@
-package com.cariochi.recordo.mockmvc;
+package com.cariochi.recordo.restmocks.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Data
 @Builder
+@With
 @NoArgsConstructor
 @AllArgsConstructor
-public class Response<T> {
+public class ResponseMock {
 
+    private String protocol;
     private Integer statusCode;
+    private String statusText;
     @Builder.Default
     private Map<String, String> headers = new LinkedHashMap<>();
-    private T body;
+    private Object body;
 
 }
