@@ -37,9 +37,13 @@ public class GsonConverter implements JsonConverter {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T fromJson(String json, Type type) {
         if (json == null) {
             return null;
+        }
+        if (String.class.equals(type)) {
+            return (T) json;
         }
         return gson.fromJson(json, type);
     }

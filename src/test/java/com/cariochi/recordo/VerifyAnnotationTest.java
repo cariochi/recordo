@@ -1,9 +1,8 @@
 package com.cariochi.recordo;
 
-import com.cariochi.recordo.annotation.Resources;
-import com.cariochi.recordo.annotation.Verify;
-import com.cariochi.recordo.junit5.RecordoExtension;
-import lombok.experimental.FieldNameConstants;
+import com.cariochi.recordo.dto.TestDto;
+import com.cariochi.recordo.verify.Expected;
+import com.cariochi.recordo.verify.Verify;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -13,108 +12,111 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.reverse;
 import static java.util.Collections.shuffle;
 
-@FieldNameConstants
 @ExtendWith(RecordoExtension.class)
-@Resources("/verify_annotation_test")
 public class VerifyAnnotationTest {
 
-    private TestObject object;
-    private List<TestObject> list;
-
     @Test
-    @Verify(value = "/object.json", field = Fields.object, extensible = true)
-    void extensible() {
-        object = actualObject(1);
+    void extensible(
+            @Verify(value = "/verify_annotation_test/dto.json", extensible = true) Expected<TestDto> expected
+    ) {
+        expected.assertEquals(dto(1));
     }
 
     @Test
-    @Verify(value = "/object.json", field = Fields.object)
-    void not_extensible() {
-        object = actualObject(1);
+    void not_extensible(
+            @Verify("/verify_annotation_test/dto.json") Expected<TestDto> expected
+    ) {
+        expected.assertEquals(dto(1));
     }
 
     @Test
-    @Verify(
-            value = "/short_object.json",
-            field = Fields.object,
-            included = {"id", "text", "children.id", "children.text"}
-    )
-    void included() {
-        object = actualObject(1);
+    void included(
+            @Verify(
+                    value = "/verify_annotation_test/short_dto.json",
+                    included = {"id", "text", "children.id", "children.text"}
+            ) Expected<TestDto> expected
+    ) {
+        expected.assertEquals(dto(1));
     }
 
     @Test
-    @Verify(
-            value = "/short_object.json",
-            field = Fields.object,
-            excluded = {"strings", "date", "children.strings", "children.date", "children.children"}
-    )
-    void excluded() {
-        object = actualObject(1);
+    void excluded(
+            @Verify(
+                    value = "/verify_annotation_test/short_dto.json",
+                    excluded = {"strings", "date", "children.strings", "children.date", "children.children"}
+            ) Expected<TestDto> expected
+    ) {
+        expected.assertEquals(dto(1));
     }
 
     @Test
-    @Verify(value = "/list.json", field = Fields.list, extensible = true)
-    void list_extensible() {
-        list = actualList();
+    void list_extensible(
+            @Verify(value = "/verify_annotation_test/list.json", extensible = true) Expected<List<TestDto>> expected
+    ) {
+        expected.assertEquals(list());
     }
 
     @Test
-    @Verify(value = "/list.json", field = Fields.list)
-    void list_not_extensible() {
-        list = actualList();
+    void list_not_extensible(
+            @Verify("/verify_annotation_test/list.json") Expected<List<TestDto>> expected
+    ) {
+        expected.assertEquals(list());
     }
 
     @Test
-    @Verify(
-            value = "/short_list.json",
-            field = Fields.list,
-            included = {"id", "text", "children.id", "children.text"}
-    )
-    void list_included() {
-        list = actualList();
+    void list_included(
+            @Verify(value = "/verify_annotation_test/short_list.json", included = {"id", "text", "children.id",
+                    "children.text"})
+                    Expected<List<TestDto>> expected
+    ) {
+        expected.assertEquals(list());
     }
 
     @Test
-    @Verify(
-            value = "/short_list.json",
-            field = Fields.list,
-            excluded = {"strings", "date", "children.strings", "children.date", "children.children"}
-    )
-    void list_excluded() {
-        list = actualList();
+    void list_excluded(
+            @Verify(
+                    value = "/verify_annotation_test/short_list.json",
+                    excluded = {"strings", "date", "children.strings", "children.date", "children.children"}
+            ) Expected<List<TestDto>> expected
+    ) {
+        expected.assertEquals(list());
     }
 
     @Test
-    @Verify(value = "/list_strict_order.json", field = Fields.list)
-    void list_strict_order() {
-        list = actualList();
+    void list_strict_order(
+            @Verify("/verify_annotation_test/list_strict_order.json") Expected<List<TestDto>> expected
+    ) {
+        final List<TestDto> list = list();
         reverse(list.get(0).getChildren());
+        expected.assertEquals(list);
     }
 
     @Test
-    @Verify(value = "/list.json", field = Fields.list, strictOrder = false)
-    void list_not_strict_order() {
-        list = actualList();
+    void list_not_strict_order(
+            @Verify(value = "/verify_annotation_test/list.json", strictOrder = false) Expected<List<TestDto>> expected
+    ) {
+        final List<TestDto> list = list();
         shuffle(list.get(0).getChildren());
         shuffle(list.get(1).getChildren());
         shuffle(list);
+        expected.assertEquals(list);
     }
 
     @Test
-    @Verify(value = "/object.json", field = Fields.object)
-    @Verify(value = "/list.json", field = Fields.list)
-    void multiple() {
-        object = actualObject(1);
-        list = actualList();
+    void multiple(
+            @Verify("/verify_annotation_test/dto.json") Expected<TestDto> expectedObject,
+            @Verify("/verify_annotation_test/list.json") Expected<List<TestDto>> expectedList
+    ) {
+        expectedObject.assertEquals(dto(1));
+        expectedList.assertEquals(list());
     }
 
-    private TestObject actualObject(int id) {
-        return TestObject.pojo(id).withChild(TestObject.pojo(id + 1)).withChild(TestObject.pojo(id + 2));
+    private TestDto dto(int id) {
+        return TestDto.dto(id).withChild(TestDto.dto(id + 1)).withChild(TestDto.dto(id + 2));
     }
 
-    private List<TestObject> actualList() {
-        return asList(actualObject(1), actualObject(4));
+    private List<TestDto> list() {
+        return asList(dto(1), dto(4));
     }
 
 }
