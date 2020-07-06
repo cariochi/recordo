@@ -1,34 +1,31 @@
 package com.cariochi.recordo;
 
-import com.cariochi.recordo.annotation.EnableRecordo;
-import com.cariochi.recordo.annotation.Given;
-import com.cariochi.recordo.annotation.Resources;
-import com.cariochi.recordo.annotation.Verify;
-import com.cariochi.recordo.junit5.RecordoExtension;
+import com.cariochi.recordo.dto.TestDto;
+import com.cariochi.recordo.given.Given;
 import com.cariochi.recordo.verify.Expected;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.cariochi.recordo.verify.Verify;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.SneakyThrows;
 import lombok.experimental.FieldNameConstants;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 
-import static com.cariochi.recordo.TestObject.pojo;
+import static com.cariochi.recordo.dto.TestDto.dto;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @FieldNameConstants
 @ExtendWith(RecordoExtension.class)
-@Resources("/given_annotation_test")
 class GivenAnnotationTest {
 
-    private static final TestObject EXPECTED_OBJECT = pojo(1).withChild(pojo(2)).withChild(pojo(3));
-    private static final List<TestObject> EXPECTED_LIST = asList(
-            pojo(1).withChild(pojo(2)).withChild(pojo(3)),
-            pojo(4).withChild(pojo(5)).withChild(pojo(6))
+    private static final TestDto EXPECTED_DTO = dto(1).withChild(dto(2)).withChild(dto(3));
+    private static final List<TestDto> EXPECTED_LIST = asList(
+            dto(1).withChild(dto(2)).withChild(dto(3)),
+            dto(4).withChild(dto(5)).withChild(dto(6))
     );
 
     @EnableRecordo
@@ -37,53 +34,48 @@ class GivenAnnotationTest {
             .setDateFormat(new StdDateFormat());
 
 
-    @Given("/list.json")
-    private List<TestObject> list;
+    @Given("/given_annotation_test/dto.json")
+    private TestDto givenDto;
 
-    @Given("/object.json")
-    private TestObject object;
-
-    private Expected<TestObject> expectedObject;
-
-    @Verify("/list.json")
-    private Expected<List<TestObject>> expectedList;
+    @Given("/given_annotation_test/list.json")
+    private List<TestDto> givenList;
 
     @Test
-    @Verify(value = "/object.json", field = Fields.expectedObject)
-    void given() {
-        expectedObject.assertEquals(object);
+    void given(@Verify("/given_annotation_test/dto.json") Expected<TestDto> expected) {
+        expected.assertEquals(givenDto);
     }
 
     @Test
-    void given_list() {
-        expectedList.assertEquals(list);
+    void given_list(@Verify("/given_annotation_test/list.json") Expected<List<TestDto>> expected) {
+        expected.assertEquals(givenList);
     }
 
     @Test
+    @SneakyThrows
     void given_string(
-            @Given("/string.json") String string,
-            @Verify("/object.json") Expected<TestObject> expected
-    ) throws JsonProcessingException {
-        final TestObject value = objectMapper.readValue(string, TestObject.class);
+            @Given("/given_annotation_test/string.json") String string,
+            @Verify("/given_annotation_test/dto.json") Expected<TestDto> expected
+    ) {
+        final TestDto value = objectMapper.readValue(string, TestDto.class);
         expected.assertEquals(value);
     }
 
     @Test
-    void create_empty_json(@Given("/object.json") TestObject pojo,
-                           @Given("/list.json") List<TestObject> givenList,
-                           @Verify("/object.json") Expected<TestObject> objectExpected,
-                           @Verify("/list.json") Expected<List<TestObject>> listExpected
+    void generated_json_test(@Given("/given_annotation_test/generated_dto.json") TestDto dto,
+                           @Given("/given_annotation_test/generated_list.json") List<TestDto> givenList,
+                           @Verify("/given_annotation_test/generated_dto.json") Expected<TestDto> expectedDto,
+                           @Verify("/given_annotation_test/generated_list.json") Expected<List<TestDto>> expectedList
     ) {
-        objectExpected.assertEquals(pojo);
-        listExpected.assertEquals(givenList);
+        expectedDto.assertEquals(dto);
+        expectedList.assertEquals(givenList);
     }
 
     @Test
     void given_multiple(
-            @Given("/object.json") TestObject object,
-            @Given("/list.json") List<TestObject> list
+            @Given("/given_annotation_test/dto.json") TestDto dto,
+            @Given("/given_annotation_test/list.json") List<TestDto> list
     ) {
-        assertEquals(EXPECTED_OBJECT, object);
+        assertEquals(EXPECTED_DTO, dto);
         assertEquals(EXPECTED_LIST, list);
     }
 
