@@ -1,9 +1,9 @@
 package com.cariochi.recordo.json;
 
-import com.cariochi.recordo.annotation.EnableRecordo;
-import com.cariochi.recordo.reflection.Fields;
-import com.cariochi.recordo.reflection.TargetField;
-import com.cariochi.recordo.utils.Reflection;
+import com.cariochi.recordo.EnableRecordo;
+import com.cariochi.recordo.utils.reflection.ClassLoaders;
+import com.cariochi.recordo.utils.reflection.Fields;
+import com.cariochi.recordo.utils.reflection.TargetField;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import lombok.experimental.UtilityClass;
@@ -13,14 +13,14 @@ import java.util.Optional;
 @UtilityClass
 public class JsonConverters {
 
-    public static JsonConverter find(Object testInstance) {
+    public  JsonConverter find(Object testInstance) {
         return jacksonConverter(testInstance)
                 .map(Optional::of)
                 .orElseGet(() -> gsonConverter(testInstance))
                 .orElseGet(JacksonConverter::new);
     }
 
-    private static Optional<JsonConverter> jacksonConverter(Object testInstance) {
+    private  Optional<JsonConverter> jacksonConverter(Object testInstance) {
         return Fields.of(testInstance)
                 .withTypeAndAnnotation(ObjectMapper.class, EnableRecordo.class).stream().findAny()
                 .map(TargetField::getValue)
@@ -28,9 +28,9 @@ public class JsonConverters {
                 .map(JacksonConverter::new);
     }
 
-    private static Optional<JsonConverter> gsonConverter(Object testInstance) {
+    private  Optional<JsonConverter> gsonConverter(Object testInstance) {
         try {
-            Reflection.checkClassLoaded("com.google.gson.Gson");
+            ClassLoaders.checkClassLoaded("com.google.gson.Gson");
             return Fields.of(testInstance)
                     .withTypeAndAnnotation(Gson.class, EnableRecordo.class).stream().findAny()
                     .map(TargetField::getValue)

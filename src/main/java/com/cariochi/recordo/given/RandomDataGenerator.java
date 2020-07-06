@@ -11,15 +11,16 @@ public class RandomDataGenerator {
 
     private final PodamFactory factory = new PodamFactoryImpl(new DataProviderStrategy());
 
-    public Object generateObject(Type type) {
+    @SuppressWarnings("unchecked")
+    public <T> T generateObject(Type type) {
         if (type instanceof ParameterizedType) {
             final ParameterizedType parameterizedType = (ParameterizedType) type;
-            return factory.manufacturePojo(
+            return (T) factory.manufacturePojo(
                     (Class<?>) parameterizedType.getRawType(),
                     parameterizedType.getActualTypeArguments()
             );
         } else if (type instanceof Class) {
-            return factory.manufacturePojo((Class<?>) type);
+            return (T) factory.manufacturePojo((Class<?>) type);
         } else {
             return null;
         }

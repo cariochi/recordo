@@ -45,9 +45,13 @@ public class JacksonConverter implements JsonConverter {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T fromJson(String json, Type type) {
         if (json == null) {
             return null;
+        }
+        if (String.class.equals(type)) {
+            return (T) json;
         }
         try {
             final JavaType valueType = objectMapper.getTypeFactory().constructType(type);
