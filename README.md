@@ -1,5 +1,5 @@
 # Overview
-`Recordo` is a pretty original and innovative JUnit 4/5 extension.
+`Recordo` is a pretty original and innovative JUnit extension.
 
 It provides `@Verify` and `@Given` annotations, which allows making test field initialization and a test result verification in a declarative style.
 

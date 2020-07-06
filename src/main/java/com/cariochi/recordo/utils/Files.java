@@ -1,80 +1,56 @@
 package com.cariochi.recordo.utils;
 
 import com.cariochi.recordo.RecordoError;
+import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
-import static com.cariochi.recordo.utils.Properties.resourcesRootFolder;
 import static java.lang.System.getProperty;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-@Slf4j
 @UtilityClass
 public class Files {
 
-    public final String USER_DIR = getProperty("user.dir");
+    public final Path USER_DIR = Paths.get(getProperty("user.dir"));
 
-    public String readFromFile(String fileName) throws FileNotFoundException {
-        final Optional<File> folder = resourceRootFolder();
-        return folder.isPresent()
-                ? readFromFile(new File(folder.get(), fileName))
-                : readFromResources(fileName);
-    }
-
-    public Optional<File> writeToFile(String json, String fileName) {
-        final Optional<File> fileOptional = findFile(fileName);
-        if (fileOptional.isPresent()) {
-            try {
-                final File file = fileOptional.get();
-                file.getParentFile().mkdirs();
-                try (OutputStream out = new FileOutputStream(file)) {
-                    IOUtils.write(json + '\n', out, UTF_8);
-                }
-            } catch (IOException e) {
-                log.error("Cannot write file", e);
-            }
-        }
-        return fileOptional;
-    }
-
-    public String filePath(String fileName) {
-        return findFile(fileName)
-                .map(File::getAbsolutePath)
-                .orElse(fileName);
-    }
-
-    private Optional<File> findFile(String fileName) {
-        return resourceRootFolder()
-                .map(folder -> new File(folder, fileName));
-    }
-
-    private String readFromResources(String fileName) {
-        try (InputStream inputStream = Files.class.getResourceAsStream(fileName)) {
-            return IOUtils.toString(inputStream, UTF_8);
-        } catch (IOException e) {
-            throw new RecordoError(e);
-        }
-    }
-
-    private String readFromFile(File file) throws FileNotFoundException {
-        try (InputStream inputStream = new FileInputStream(file)) {
-            return IOUtils.toString(inputStream, UTF_8);
-        } catch (FileNotFoundException e) {
+    public String read(String file) throws NoSuchFileException {
+        try {
+            return new String(java.nio.file.Files.readAllBytes(path(file)), UTF_8);
+        } catch (NoSuchFileException e) {
             throw e;
         } catch (IOException e) {
             throw new RecordoError(e);
         }
     }
 
-    private Optional<File> resourceRootFolder() {
-        return Optional.of(resourcesRootFolder())
-                .map(folder -> new File(USER_DIR, folder))
-                .filter(File::exists);
+    public Optional<Path> write(String json, String file) {
+        if (!java.nio.file.Files.exists(USER_DIR)) {
+            return Optional.empty();
+        }
+        final Path path = path(file);
+        try {
+            java.nio.file.Files.createDirectories(path.getParent());
+            java.nio.file.Files.write(path, json.getBytes(UTF_8));
+        } catch (IOException e) {
+            throw new RecordoError(e);
+        }
+        return Optional.of(path);
     }
 
+    @SneakyThrows
+    public Path path(String file) {
+        return java.nio.file.Files.exists(USER_DIR)
+                ? Paths.get(resourceRootFolder().toString(), file).toAbsolutePath()
+                : Paths.get(ClassLoader.getSystemResource(file).toURI());
+    }
+
+    private Path resourceRootFolder() {
+        return Paths.get(USER_DIR.toString(), Properties.resourcesRootFolder());
+    }
 
 }
