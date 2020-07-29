@@ -90,10 +90,10 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
 ```java
     @Test
     void should_get_books(
-            @Get("/users/{id}/books?sort={sort}") @Headers("locale: UA") Request<List<Book>> request
+            @Get("/users/{id}/books?sort={sort}") @Headers("locale: UA") Request<Page<Book>> request
     ) {
-        Response<List<Book>> response = request.execute(1, "name");
-        List<Book> books = response.getContent();
+        Response<Page<Book>> response = request.execute(1, "name");
+        Page<Book> books = response.getContent();
         // assertions
     }
 ```
@@ -101,9 +101,9 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
 ```java
     @Test
     void should_get_books(
-           @Get("/users/1/books?sort=name") @Headers("locale: UA") Response<List<Book>> response
+           @Get("/users/1/books?sort=name") @Headers("locale: UA") Response<Page<Book>> response
     ) {
-        List<Book> books = response.getContent();
+        Page<Book> books = response.getContent();
         // assertions
     }
 ```
@@ -111,7 +111,7 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
 ```java
     @Test
     void should_get_books(
-           @Get("/users/1/books?sort=name") @Headers("locale: UA") List<Book> books
+           @Get("/users/1/books?sort=name") @Headers("locale: UA") Page<Book> books
     ) {
         // assertions
     }
