@@ -1,153 +1,152 @@
-# Overview
-`Recordo` is a pretty original and innovative JUnit extension.
+# Recordo
+`Recordo` is a declarative testing JUnit 5 extension for fast, deterministic, and accurate tests.
 
-It provides `@Verify` and `@Given` annotations, which allows making test field initialization and a test result verification in a declarative style.
-
-### @Given
-The `@Given` annotation allows initializing a test field from a `json` file.
-If a file is absent - `Recordo` will generate a new file with random data for the test field according to its type.
-
-
-### @Verify
-The `@Verify` annotation allows asserting the expected value is equal to an actual one. 
-`Recordo` records an expected value automatically at the first test run or if a file is absent. 
-A developer can specify fields that should be included or excluded, comparison rules (`strictOrder` for arrays and `extensible` for objects), and a file name.
-
-# Getting started
-
-### Add maven dependency
+# Usage
+1. Add maven dependency
+2. Extend the test class with @ExtendWith(RecordoExtension.class)
 ```
 <dependency>
     <groupId>com.cariochi</groupId>
     <artifactId>recordo</artifactId>
-    <version>1.0.4</version>
+    <version>1.1.5</version>
     <scope>test</scope>
 </dependency>
 ```
-### Add Recordo extension/rule to your test
-###### JUnit 4
-```java
-public class BookServiceTest {
 
-	@Rule
-	public RecordoRule recordoRule = new RecordoRule();
-	
-	...
-} 
+## Data preparation
+Load test input data from resources. 
+
+Annotations: `@Given`.
+
+- If the file is absent, a new file with a randomly generated object will be created.
+#### Usage
 ```
-###### JUnit 5
-```java
-@ExtendWith(RecordoExtension.class)
-class BookServiceTest {
-    ...
-} 
-```
-### Define test fields
-```java
-    private Author author;
-    private Book book;
-```
-### Annotate your test method with @Given or @Verify annotation
-```java
     @Test
-    @Given("author")
-    @Verify("books")
-    void should_get_books_by_author() {
-        books = bookService.findAllByAuthor(author);
+    void should_create_book(
+        @Given("/books/new_book.json") Book book
+    ) {
+        Book created = bookService.create(book);
+        // assertions
     }
-
-```
-### Test Sample:
-```java
-@ExtendWith(MockitoExtension.class)
-@ExtendWith(RecordoExtension.class)
-class BookServiceTest {
-
-    @Mock
-    private AuthorService authorService;
-
-    @InjectMocks
-    private BookService bookService;
-
-    private Author author;
-    private Book book;
-    private List<Book> books;
-
-    @Test
-    @Verify("book")
-    void should_get_book_by_id() {
-        book = bookService.findById(1L);
-    }
-
-    @Test
-    @Given("author")
-    @Verify(value = "books", included = {"id", "title", "author.id"})
-    void should_get_books_by_author() {
-        books = bookService.findAllByAuthor(author);
-    }
-
-    @Test
-    @Given("book")
-    @Given("author")
-    @Verify(value = "book", excluded = "id")
-    void should_create_book() {
-        when(authorService.findById(book.getAuthor().getId()))
-		.thenReturn(author);
-        book = bookService.create(book);
-    }
-
-    @Test
-    @Given("book")
-    @Given("books")
-    @Verify("books")
-    void should_add_book_to_shelf() {
-        books = bookService.merge(books, book);
-    }
-}
 ```
 
-# How it works
+## Assertions 
+Assert actual value in a test equals to expected.
 
-### @Given annotation
-1. Create a test and annotate it with `@Given`.
-1. Run it the first time.
-1. The test fails because the file is absent.
-1. `Recordo` generates a new `json` file with random data according to the test field type.
-1. You can modify the file if needed.
-1. The test is ready.
+Annotations: `@Verify`. 
 
-### @Verify annotation
-1. Create a test and annotate it with `@Verify`.
-1. Run it the first time.
-1. The test fails because the expected file is absent.
-1. `Recordo` saves the current actual test result as expected.
-1. You verify the saved file.
-1. The test is ready.
-1. If you change code, and the actual value is changed - the test will fail with an assertion error. 
-`Recordo` will overwrite the expected file with the new actual value. 
-You can compare what was changed in IDE (e.g. compare with a committed version or local history) 
-and can reverse the file if it was a bug or leave a new version if it was a valid logic change.
+The expected object is loaded from a resource.  
+- If a file is absent, the actual result will be saved as expected.
+- If an assertion fails new "actual" object file will be created.
+#### Usage
+```
+    @Test
+    void should_get_book_by_id(
+            @Verify("/books/book.json") Expected<Book> expected
+    ) {
+        Book actual = bookService.findById(1L);
+        expected.assertEquals(actual);
+    }
+```
+## Mocking HTTP resources
+`@MockHttp` annotation is used to automatically record and replay HTTP network interaction.
+#### Initialization
+- OkHttp
+```
+    @EnableRecordo
+    private OkHttpClient client;
+```
+- Apache HttpClient
+```
+    @EnableRecordo
+    private HttpClient httpClient;
+```
+#### Usage
+```
+    @Test
+    @MockHttp("/mockhttp/should_retrieve_gists.rest.json")
+    void should_retrieve_gists() {
+        final List<GistResponse> gists = gitHubClient.getGists();
+    }
+```
+## Declarative MockMvc
+Use Spring MockMvc in declarative way.
 
-# Configuration
-You can overwrite the default `Recordo` configuration.
-For doing that you need to create the `recordo.properties` and define properties that you want to overwrite.
-
-|Property|Description|
-|---|---|
-|`resources.folder`|Path to the `resorces` folder|
-|`given.filename.pattern`|File name pattern for `@Given` annotation|
-|`verify.filename.pattern`|File name pattern for `@Verify` annotation|
-
-#### File name pattern placeholders
-* {package}
-* {class}
-* {method}
-* {field}
-
-#### Default properties
-```properties
-resources.folder=/src/test/resources
-given.filename.pattern=/{package}/{class}/{method}/given-{field}.json
-verify.filename.pattern=/{package}/{class}/{method}/verify-{field}.json
-
+Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
+#### Initialization
+```
+    @EnableRecordo
+    private MockMvc mockMvc;
+```
+#### Usage
+- GET Request
+```
+    @Test
+    void should_get_books(
+            @Get("/users/{id}/books?sort={sort}") @Headers("locale: UA") Request<List<Book>> request
+    ) {
+        Response<List<Book>> response = request.execute(1, "name");
+        List<Book> books = response.getContent();
+        // assertions
+    }
+```
+- GET Response 
+```
+    @Test
+    void should_get_books(
+           @Get("/users/1/books?sort=name") @Headers("locale: UA") Response<List<Book>> response
+    ) {
+        List<Book> books = response.getContent();
+        // assertions
+    }
+```
+- GET Response Body 
+```
+    @Test
+    void should_get_books(
+           @Get("/users/1/books?sort=name") @Headers("locale: UA") List<Book> books
+    ) {
+        // assertions
+    }
+```
+- POST Request 
+```
+    @Test
+    void should_save_book(
+            @Post("/books") Request<Book> request
+    ) {
+        Response<Book> response = request.withBody(new Book()).execute();
+        Book book = response.getContent();
+        // assertions
+    }
+```
+- POST Request 
+```
+    @Test
+    void should_save_book(
+            @Post("/books") @Body("/mockmvc/new_book.json") Request<Book> request
+    ) {
+        Response<Book> response = request.execute();
+        Book book = response.getContent();
+        // assertions
+    }
+```
+- POST Response 
+```
+    @Test
+    void should_save_book(
+            @Post("/books") @Body("/mockmvc/new_book.json") Response<Book> response
+    ) {
+        Book book = response.getContent();
+        // assertions
+    }
+```
+- POST Response Body 
+```
+    @Test
+    void should_save_book(
+            @Post("/books") @Body("/mockmvc/new_book.json") Book savedBook
+    ) {
+        // assertions
+    }
 ```
