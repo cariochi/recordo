@@ -32,13 +32,13 @@ public class Expected<T> {
             JSONAssert.assertEquals(expectedJson, actualJson, compareMode(annotation));
         } catch (AssertionError e) {
             String newFileName =
-                    new StringBuilder(fileName).insert(fileName.lastIndexOf('/') + 1, "ACTUAL: ").toString();
+                    new StringBuilder(fileName).insert(fileName.lastIndexOf('.') + 1, "ACTUAL.").toString();
             Files.write(actualJson, newFileName)
-                    .ifPresent(file -> log.info(e.getMessage() + "\nActual value is saved: {}", file));
+                    .ifPresent(file -> log.info(e.getMessage() + "\nActual value is saved to file://{}", file));
             throw e;
         } catch (NoSuchFileException e) {
             final String message = Files.write(actualJson, fileName)
-                    .map(file -> format(e.getMessage() + "\nExpected value is saved: {}", file))
+                    .map(file -> format(e.getMessage() + "\nExpected value is saved to file://{}", file))
                     .orElse(e.getMessage());
             throw new AssertionError(message);
         } catch (JSONException e) {

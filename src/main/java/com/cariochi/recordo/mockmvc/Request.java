@@ -2,10 +2,13 @@ package com.cariochi.recordo.mockmvc;
 
 import com.cariochi.recordo.RecordoError;
 import com.cariochi.recordo.json.JsonConverter;
+import com.cariochi.recordo.mockmvc.dto.PageDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.With;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -57,7 +60,7 @@ public class Request<RESP> {
                     .headers(headersOf(response))
                     .body(Optional.of(contentAsString)
                             .filter(StringUtils::isNotBlank)
-                            .map(c -> jsonConverter.<RESP>fromJson(c, responseType))
+                            .map(fromJson())
                             .orElse(null)
                     )
                     .build();
@@ -65,6 +68,12 @@ public class Request<RESP> {
         } catch (Exception e) {
             throw new RecordoError(e);
         }
+    }
+
+    @NotNull
+    private Function<String, RESP> fromJson() {
+        final Type type = responseType.equals(Page.class) ? PageDto.class : responseType;
+        return json -> jsonConverter.fromJson(json, type);
     }
 
 

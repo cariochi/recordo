@@ -9,9 +9,7 @@
     <artifactId>recordo</artifactId>
     <version>1.1.5</version>
     <name>Recordo</name>
-    <description>
-         JUnit 5 extension for declarative testing.
-    </description>
+    <description>JUnit 5 extension for declarative testing.</description>
     <url>https://cariochi.com</url>
 
     <licenses>
@@ -166,6 +164,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <version>2.3.0.RELEASE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-commons</artifactId>
             <version>2.3.0.RELEASE</version>
         </dependency>
 
