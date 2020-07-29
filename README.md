@@ -13,13 +13,14 @@
 </dependency>
 ```
 
-## Data preparation
-Load test input data from resources. 
+# Data preparation
+Load objects from json files. 
 
 Annotations: `@Given`.
 
-- If the file is absent, a new file with a randomly generated object will be created.
+- If the file is absent, a new random data file will be created.
 #### Usage
+
 ```
     @Test
     void should_create_book(
@@ -30,14 +31,14 @@ Annotations: `@Given`.
     }
 ```
 
-## Assertions 
-Assert actual value in a test equals to expected.
+# Assertions 
+Assert that actual value equals to expected.
 
 Annotations: `@Verify`. 
 
-The expected object is loaded from a resource.  
 - If a file is absent, the actual result will be saved as expected.
 - If an assertion fails new "actual" object file will be created.
+
 #### Usage
 ```
     @Test
@@ -48,8 +49,11 @@ The expected object is loaded from a resource.
         expected.assertEquals(actual);
     }
 ```
-## Mocking HTTP resources
-`@MockHttp` annotation is used to automatically record and replay HTTP network interaction.
+# Mocking HTTP resources
+Record and replay HTTP network interaction for a test.
+
+Annotations: `@MockHttp`.
+
 #### Initialization
 - OkHttp
 ```
@@ -69,10 +73,13 @@ The expected object is loaded from a resource.
         final List<GistResponse> gists = gitHubClient.getGists();
     }
 ```
-## Declarative MockMvc
+
+# Declarative MockMvc
+
 Use Spring MockMvc in declarative way.
 
 Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
+
 #### Initialization
 ```
     @EnableRecordo
