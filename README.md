@@ -4,7 +4,7 @@
 # Usage
 1. Add maven dependency
 2. Extend the test class with @ExtendWith(RecordoExtension.class)
-```
+```xml
 <dependency>
     <groupId>com.cariochi</groupId>
     <artifactId>recordo</artifactId>
@@ -21,7 +21,7 @@ Annotations: `@Given`.
 - If the file is absent, a new random data file will be created.
 #### Usage
 
-```
+```java
     @Test
     void should_create_book(
         @Given("/books/new_book.json") Book book
@@ -40,7 +40,7 @@ Annotations: `@Verify`.
 - If an assertion fails new "actual" object file will be created.
 
 #### Usage
-```
+```java
     @Test
     void should_get_book_by_id(
             @Verify("/books/book.json") Expected<Book> expected
@@ -56,17 +56,17 @@ Annotations: `@MockHttp`.
 
 #### Initialization
 - OkHttp
-```
+```java
     @EnableRecordo
     private OkHttpClient client;
 ```
 - Apache HttpClient
-```
+```java
     @EnableRecordo
     private HttpClient httpClient;
 ```
 #### Usage
-```
+```java
     @Test
     @MockHttp("/mockhttp/should_retrieve_gists.rest.json")
     void should_retrieve_gists() {
@@ -81,13 +81,13 @@ Use Spring MockMvc in declarative way.
 Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
 
 #### Initialization
-```
+```java
     @EnableRecordo
     private MockMvc mockMvc;
 ```
 #### Usage
 - GET Request
-```
+```java
     @Test
     void should_get_books(
             @Get("/users/{id}/books?sort={sort}") @Headers("locale: UA") Request<List<Book>> request
@@ -98,7 +98,7 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
     }
 ```
 - GET Response 
-```
+```java
     @Test
     void should_get_books(
            @Get("/users/1/books?sort=name") @Headers("locale: UA") Response<List<Book>> response
@@ -108,7 +108,7 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
     }
 ```
 - GET Response Body 
-```
+```java
     @Test
     void should_get_books(
            @Get("/users/1/books?sort=name") @Headers("locale: UA") List<Book> books
@@ -117,7 +117,7 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
     }
 ```
 - POST Request 
-```
+```java
     @Test
     void should_save_book(
             @Post("/books") Request<Book> request
@@ -128,7 +128,7 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
     }
 ```
 - POST Request 
-```
+```java
     @Test
     void should_save_book(
             @Post("/books") @Body("/mockmvc/new_book.json") Request<Book> request
@@ -139,7 +139,7 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
     }
 ```
 - POST Response 
-```
+```java
     @Test
     void should_save_book(
             @Post("/books") @Body("/mockmvc/new_book.json") Response<Book> response
@@ -149,7 +149,7 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
     }
 ```
 - POST Response Body 
-```
+```java
     @Test
     void should_save_book(
             @Post("/books") @Body("/mockmvc/new_book.json") Book savedBook
