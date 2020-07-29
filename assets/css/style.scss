@@ -3,8 +3,7 @@
 
 @import "{{ site.theme }}";
 
-@media screen and (min-width: 64em)
-.main-content {
+@media screen and (min-width: 64em) .main-content {
     font-size: 0.9rem;
 }
 
