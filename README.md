@@ -2,7 +2,7 @@
 `Recordo` is a declarative testing JUnit 5 extension for fast, deterministic, and accurate tests.
 
 # Usage
-###Add maven dependency
+### Add maven dependency
 ```xml
 <dependency>
     <groupId>com.cariochi</groupId>
