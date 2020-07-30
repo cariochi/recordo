@@ -2,9 +2,7 @@
 `Recordo` is a declarative testing JUnit 5 extension for fast, deterministic, and accurate tests.
 
 # Usage
-1. Add maven dependency
-2. Extend the test class with @ExtendWith(RecordoExtension.class)
-
+###Add maven dependency
 ```xml
 <dependency>
     <groupId>com.cariochi</groupId>
@@ -12,6 +10,31 @@
     <version>1.1.5</version>
     <scope>test</scope>
 </dependency>
+```
+
+### Add annotation
+
+```java
+@ExtendWith(RecordoExtension.class)
+class BookServiceTest {
+    ...
+}
+```
+
+### Enable Json Converter to be used in Recordo (Optional)  
+
+#### Jackson Mapper
+
+```java
+    @EnableRecordo
+    private ObjectMapper objectMapper;
+```
+
+#### Gson
+
+```java
+    @EnableRecordo
+    private Gson gson;
 ```
 
 # Data preparation
@@ -22,7 +45,7 @@ Annotations: `@Given`.
 
 - If the file is absent, a new random data file will be created.
 
-#### Example
+### Example
 
 ```java
     @Test
@@ -43,7 +66,7 @@ Annotations: `@Verify`.
 - If a file is absent, the actual result will be saved as expected.
 - If an assertion fails new "actual" object file will be created.
 
-#### Example
+### Example
 
 ```java
     @Test
@@ -61,23 +84,23 @@ Record and replay HTTP network interaction for a test.
 
 Annotations: `@MockHttp`.
 
-#### Initialization
+### Initialization
 
-- OkHttp
+#### OkHttp
 
 ```java
     @EnableRecordo
     private OkHttpClient client;
 ```
 
-- Apache HttpClient
+#### Apache HttpClient
 
 ```java
     @EnableRecordo
     private HttpClient httpClient;
 ```
 
-#### Example
+### Example
 
 ```java
     @Test
@@ -93,13 +116,13 @@ Use Spring MockMvc in declarative way.
 
 Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
 
-#### Initialization
+### Initialization
 ```java
     @EnableRecordo
     private MockMvc mockMvc;
 ```
 
-#### Examples
+### Examples
 
 ```java
     @Test
