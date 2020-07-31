@@ -2,9 +2,8 @@
 `Recordo` is a declarative testing JUnit 5 extension for fast, deterministic, and accurate tests.
 
 # Usage
-1. Add maven dependency
-2. Extend the test class with @ExtendWith(RecordoExtension.class)
-```
+### Add maven dependency
+```xml
 <dependency>
     <groupId>com.cariochi</groupId>
     <artifactId>recordo</artifactId>
@@ -13,14 +12,42 @@
 </dependency>
 ```
 
-## Data preparation
-Load test input data from resources. 
+### Add annotation
+
+```java
+@ExtendWith(RecordoExtension.class)
+class BookServiceTest {
+    ...
+}
+```
+
+### Enable Json Converter to be used in Recordo (Optional)  
+
+#### Jackson Mapper
+
+```java
+    @EnableRecordo
+    private ObjectMapper objectMapper;
+```
+
+#### Gson
+
+```java
+    @EnableRecordo
+    private Gson gson;
+```
+
+# Data preparation
+
+Load objects from json files. 
 
 Annotations: `@Given`.
 
-- If the file is absent, a new file with a randomly generated object will be created.
-#### Usage
-```
+- If the file is absent, a new random data file will be created.
+
+### Example
+
+```java
     @Test
     void should_create_book(
         @Given("/books/new_book.json") Book book
@@ -30,16 +57,18 @@ Annotations: `@Given`.
     }
 ```
 
-## Assertions 
-Assert actual value in a test equals to expected.
+# Assertions 
+
+Assert that actual value equals to expected.
 
 Annotations: `@Verify`. 
 
-The expected object is loaded from a resource.  
 - If a file is absent, the actual result will be saved as expected.
 - If an assertion fails new "actual" object file will be created.
-#### Usage
-```
+
+### Example
+
+```java
     @Test
     void should_get_book_by_id(
             @Verify("/books/book.json") Expected<Book> expected
@@ -48,69 +77,84 @@ The expected object is loaded from a resource.
         expected.assertEquals(actual);
     }
 ```
-## Mocking HTTP resources
-`@MockHttp` annotation is used to automatically record and replay HTTP network interaction.
-#### Initialization
-- OkHttp
-```
+
+# Mocking HTTP resources
+
+Record and replay HTTP network interaction for a test.
+
+Annotations: `@MockHttp`.
+
+### Initialization
+
+#### OkHttp
+
+```java
     @EnableRecordo
     private OkHttpClient client;
 ```
-- Apache HttpClient
-```
+
+#### Apache HttpClient
+
+```java
     @EnableRecordo
     private HttpClient httpClient;
 ```
-#### Usage
-```
+
+### Example
+
+```java
     @Test
     @MockHttp("/mockhttp/should_retrieve_gists.rest.json")
     void should_retrieve_gists() {
         final List<GistResponse> gists = gitHubClient.getGists();
     }
 ```
-## Declarative MockMvc
+
+# Declarative MockMvc
+
 Use Spring MockMvc in declarative way.
 
 Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
-#### Initialization
-```
+
+### Initialization
+```java
     @EnableRecordo
     private MockMvc mockMvc;
 ```
-#### Usage
-- GET Request
-```
+
+### Examples
+
+```java
     @Test
     void should_get_books(
-            @Get("/users/{id}/books?sort={sort}") @Headers("locale: UA") Request<List<Book>> request
+            @Get("/users/{id}/books?sort={sort}") @Headers("locale: UA") Request<Page<Book>> request
     ) {
-        Response<List<Book>> response = request.execute(1, "name");
-        List<Book> books = response.getContent();
+        Response<Page<Book>> response = request.execute(1, "name");
+        Page<Book> books = response.getContent();
         // assertions
     }
 ```
-- GET Response 
-```
+
+```java
     @Test
     void should_get_books(
-           @Get("/users/1/books?sort=name") @Headers("locale: UA") Response<List<Book>> response
+           @Get("/users/1/books?sort=name") @Headers("locale: UA") Response<Page<Book>> response
     ) {
-        List<Book> books = response.getContent();
+        Page<Book> books = response.getContent();
         // assertions
     }
 ```
-- GET Response Body 
-```
+
+```java
     @Test
     void should_get_books(
-           @Get("/users/1/books?sort=name") @Headers("locale: UA") List<Book> books
+           @Get("/users/1/books?sort=name") @Headers("locale: UA") Page<Book> books
     ) {
         // assertions
     }
 ```
-- POST Request 
-```
+
+```java
     @Test
     void should_save_book(
             @Post("/books") Request<Book> request
@@ -120,8 +164,8 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
         // assertions
     }
 ```
-- POST Request 
-```
+
+```java
     @Test
     void should_save_book(
             @Post("/books") @Body("/mockmvc/new_book.json") Request<Book> request
@@ -131,8 +175,8 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
         // assertions
     }
 ```
-- POST Response 
-```
+
+```java
     @Test
     void should_save_book(
             @Post("/books") @Body("/mockmvc/new_book.json") Response<Book> response
@@ -141,8 +185,8 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
         // assertions
     }
 ```
-- POST Response Body 
-```
+
+```java
     @Test
     void should_save_book(
             @Post("/books") @Body("/mockmvc/new_book.json") Book savedBook
