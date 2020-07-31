@@ -2,7 +2,7 @@ package com.cariochi.recordo.mockmvc;
 
 import com.cariochi.recordo.RecordoError;
 import com.cariochi.recordo.json.JsonConverter;
-import com.cariochi.recordo.mockmvc.dto.PageDto;
+import com.cariochi.recordo.mockmvc.dto.PageBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.With;
@@ -15,11 +15,13 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static com.google.gson.reflect.TypeToken.getParameterized;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request;
@@ -72,10 +74,18 @@ public class Request<RESP> {
 
     @NotNull
     private Function<String, RESP> fromJson() {
-        final Type type = responseType.equals(Page.class) ? PageDto.class : responseType;
-        return json -> jsonConverter.fromJson(json, type);
+        return json -> {
+            if (responseType instanceof ParameterizedType) {
+                ParameterizedType parameterizedType = (ParameterizedType) responseType;
+                if (parameterizedType.getRawType().equals(Page.class)) {
+                    Type type = getParameterized(PageBuilder.class, parameterizedType.getActualTypeArguments()[0]).getType();
+                    final PageBuilder<?> pageBuilder = jsonConverter.fromJson(json, type);
+                    return (RESP) pageBuilder.build();
+                }
+            }
+            return jsonConverter.fromJson(json, responseType);
+        };
     }
-
 
     private Map<String, String> headersOf(MockHttpServletResponse response) {
         return response.getHeaderNames().stream()

@@ -7,7 +7,7 @@
 <dependency>
     <groupId>com.cariochi</groupId>
     <artifactId>recordo</artifactId>
-    <version>1.1.5</version>
+    <version>1.1.6</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -114,7 +114,7 @@ Annotations: `@MockHttp`.
 
 Use Spring MockMvc in declarative way.
 
-Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
+Annotations: `@GET`, `@POST`, `@PUT`, `@PATCH`, `@DELETE`, `@Headers`, `@Body`.
 
 ### Initialization
 ```java
@@ -127,7 +127,7 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
 ```java
     @Test
     void should_get_books(
-            @Get("/users/{id}/books?sort={sort}") @Headers("locale: UA") Request<Page<Book>> request
+            @GET("/users/{id}/books?sort={sort}") @Headers("locale: UA") Request<Page<Book>> request
     ) {
         Response<Page<Book>> response = request.execute(1, "name");
         Page<Book> books = response.getContent();
@@ -138,7 +138,7 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
 ```java
     @Test
     void should_get_books(
-           @Get("/users/1/books?sort=name") @Headers("locale: UA") Response<Page<Book>> response
+           @GET("/users/1/books?sort=name") @Headers("locale: UA") Response<Page<Book>> response
     ) {
         Page<Book> books = response.getContent();
         // assertions
@@ -148,7 +148,7 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
 ```java
     @Test
     void should_get_books(
-           @Get("/users/1/books?sort=name") @Headers("locale: UA") Page<Book> books
+           @GET("/users/1/books?sort=name") @Headers("locale: UA") Page<Book> books
     ) {
         // assertions
     }
@@ -157,7 +157,7 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
 ```java
     @Test
     void should_save_book(
-            @Post("/books") Request<Book> request
+            @POST("/books") Request<Book> request
     ) {
         Response<Book> response = request.withBody(new Book()).execute();
         Book book = response.getContent();
@@ -168,7 +168,7 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
 ```java
     @Test
     void should_save_book(
-            @Post("/books") @Body("/mockmvc/new_book.json") Request<Book> request
+            @POST("/books") @Body("/mockmvc/new_book.json") Request<Book> request
     ) {
         Response<Book> response = request.execute();
         Book book = response.getContent();
@@ -179,7 +179,7 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
 ```java
     @Test
     void should_save_book(
-            @Post("/books") @Body("/mockmvc/new_book.json") Response<Book> response
+            @POST("/books") @Body("/mockmvc/new_book.json") Response<Book> response
     ) {
         Book book = response.getContent();
         // assertions
@@ -189,7 +189,7 @@ Annotations: `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, `@Headers`, `@Body`.
 ```java
     @Test
     void should_save_book(
-            @Post("/books") @Body("/mockmvc/new_book.json") Book savedBook
+            @POST("/books") @Body("/mockmvc/new_book.json") Book savedBook
     ) {
         // assertions
     }
