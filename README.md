@@ -106,7 +106,9 @@ Annotations: `@MockHttp`.
     @Test
     @MockHttp("/mockhttp/should_retrieve_gists.rest.json")
     void should_retrieve_gists() {
+        ...
         final List<GistResponse> gists = gitHubClient.getGists();
+        ...
     }
 ```
 
@@ -129,13 +131,12 @@ Annotations: `@GET`, `@POST`, `@PUT`, `@PATCH`, `@DELETE`, `@Headers`, `@Body`.
     void should_get_books(
             @GET("/users/{id}/books?sort={sort}") @Headers("locale: UA") Request<Page<Book>> request
     ) {
+        ...
         Response<Page<Book>> response = request.execute(1, "name");
         Page<Book> books = response.getContent();
         // assertions
     }
-```
 
-```java
     @Test
     void should_get_books(
            @GET("/users/1/books?sort=name") @Headers("locale: UA") Response<Page<Book>> response
@@ -143,29 +144,24 @@ Annotations: `@GET`, `@POST`, `@PUT`, `@PATCH`, `@DELETE`, `@Headers`, `@Body`.
         Page<Book> books = response.getContent();
         // assertions
     }
-```
 
-```java
     @Test
     void should_get_books(
            @GET("/users/1/books?sort=name") @Headers("locale: UA") Page<Book> books
     ) {
         // assertions
     }
-```
 
-```java
     @Test
     void should_save_book(
             @POST("/books") Request<Book> request
     ) {
+        ...
         Response<Book> response = request.withBody(new Book()).execute();
         Book book = response.getContent();
         // assertions
     }
-```
 
-```java
     @Test
     void should_save_book(
             @POST("/books") @Body("/mockmvc/new_book.json") Request<Book> request
@@ -174,9 +170,7 @@ Annotations: `@GET`, `@POST`, `@PUT`, `@PATCH`, `@DELETE`, `@Headers`, `@Body`.
         Book book = response.getContent();
         // assertions
     }
-```
 
-```java
     @Test
     void should_save_book(
             @POST("/books") @Body("/mockmvc/new_book.json") Response<Book> response
@@ -184,13 +178,42 @@ Annotations: `@GET`, `@POST`, `@PUT`, `@PATCH`, `@DELETE`, `@Headers`, `@Body`.
         Book book = response.getContent();
         // assertions
     }
-```
 
-```java
     @Test
     void should_save_book(
-            @POST("/books") @Body("/mockmvc/new_book.json") Book savedBook
+            @POST("/books") @Body("/mockmvc/new_book.json") Book book
     ) {
         // assertions
     }
+
+    @Test
+    void should_update_book(
+            @PUT("/books") @Body("/mockmvc/changed_book.json") Book book
+    ) {
+         // assertions
+    }
+
+    @Test
+    void should_patch_book(
+            @PATCH("/books/1") @Body("/mockmvc/book.json") Book book
+    ) {
+        // assertions
+    }
+
+    @Test
+    void should_delete_book(
+            @DELETE("/users/1") Request<Void> request
+    ) {
+        ...
+        Response<Void> response = request.execute();
+        // assertions
+    }
+
+    @Test
+    void should_delete_book(
+            @DELETE("/users/1") Response<Void> response
+    ) {
+        // assertions
+    }
+
 ```
