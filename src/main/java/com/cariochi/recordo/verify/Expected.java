@@ -32,7 +32,7 @@ public class Expected<T> {
             JSONAssert.assertEquals(expectedJson, actualJson, compareMode(annotation));
         } catch (AssertionError e) {
             String newFileName =
-                    new StringBuilder(fileName).insert(fileName.lastIndexOf('.') + 1, "ACTUAL.").toString();
+                    new StringBuilder(fileName).insert(fileName.lastIndexOf('/') + 1, "ACTUAL/").toString();
             Files.write(actualJson, newFileName)
                     .ifPresent(file -> log.info(e.getMessage() + "\nActual value is saved to file://{}", file));
             throw e;
