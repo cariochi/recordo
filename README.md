@@ -127,9 +127,12 @@ Annotations: `@GET`, `@POST`, `@PUT`, `@PATCH`, `@DELETE`, `@Headers`, `@Body`.
 ### Examples
 
 ```java
+
     @Test
     void should_get_books(
-            @GET("/users/{id}/books?sort={sort}") @Headers("locale: UA") Request<Page<Book>> request
+            @GET("/users/{id}/books?sort={sort}")                                                   
+            @Headers("locale: UA") 
+            Request<Page<Book>> request
     ) {
         ...
         Response<Page<Book>> response = request.execute(1, "name");
@@ -139,7 +142,9 @@ Annotations: `@GET`, `@POST`, `@PUT`, `@PATCH`, `@DELETE`, `@Headers`, `@Body`.
 
     @Test
     void should_get_books(
-           @GET("/users/1/books?sort=name") @Headers("locale: UA") Response<Page<Book>> response
+            @GET("/users/1/books?sort=name") 
+            @Headers("locale: UA") 
+            Response<Page<Book>> response
     ) {
         Page<Book> books = response.getContent();
         // assertions
@@ -147,14 +152,17 @@ Annotations: `@GET`, `@POST`, `@PUT`, `@PATCH`, `@DELETE`, `@Headers`, `@Body`.
 
     @Test
     void should_get_books(
-           @GET("/users/1/books?sort=name") @Headers("locale: UA") Page<Book> books
+            @GET("/users/1/books?sort=name") 
+            @Headers("locale: UA") 
+            Page<Book> books
     ) {
         // assertions
     }
 
     @Test
     void should_save_book(
-            @POST("/books") Request<Book> request
+            @POST("/books") 
+            Request<Book> request
     ) {
         ...
         Response<Book> response = request.withBody(new Book()).execute();
@@ -164,7 +172,9 @@ Annotations: `@GET`, `@POST`, `@PUT`, `@PATCH`, `@DELETE`, `@Headers`, `@Body`.
 
     @Test
     void should_save_book(
-            @POST("/books") @Body("/mockmvc/new_book.json") Request<Book> request
+            @POST("/books") 
+            @Body("/mockmvc/new_book.json") 
+            Request<Book> request
     ) {
         Response<Book> response = request.execute();
         Book book = response.getContent();
@@ -173,7 +183,9 @@ Annotations: `@GET`, `@POST`, `@PUT`, `@PATCH`, `@DELETE`, `@Headers`, `@Body`.
 
     @Test
     void should_save_book(
-            @POST("/books") @Body("/mockmvc/new_book.json") Response<Book> response
+            @POST("/books") 
+            @Body("/mockmvc/new_book.json") 
+            Response<Book> response
     ) {
         Book book = response.getContent();
         // assertions
@@ -181,28 +193,35 @@ Annotations: `@GET`, `@POST`, `@PUT`, `@PATCH`, `@DELETE`, `@Headers`, `@Body`.
 
     @Test
     void should_save_book(
-            @POST("/books") @Body("/mockmvc/new_book.json") Book book
+            @POST("/books") 
+            @Body("/mockmvc/new_book.json") 
+            Book book
     ) {
         // assertions
     }
 
     @Test
     void should_update_book(
-            @PUT("/books") @Body("/mockmvc/changed_book.json") Book book
+            @PUT("/books") 
+            @Body("/mockmvc/changed_book.json") 
+            Book book
     ) {
          // assertions
     }
 
     @Test
     void should_patch_book(
-            @PATCH("/books/1") @Body("/mockmvc/book.json") Book book
+            @PATCH("/books/1") 
+            @Body("/mockmvc/book.json") 
+            Book book
     ) {
         // assertions
     }
 
     @Test
     void should_delete_book(
-            @DELETE("/users/1") Request<Void> request
+            @DELETE("/users/1") 
+            Request<Void> request
     ) {
         ...
         Response<Void> response = request.execute();
@@ -211,7 +230,8 @@ Annotations: `@GET`, `@POST`, `@PUT`, `@PATCH`, `@DELETE`, `@Headers`, `@Body`.
 
     @Test
     void should_delete_book(
-            @DELETE("/users/1") Response<Void> response
+            @DELETE("/users/1") 
+            Response<Void> response
     ) {
         // assertions
     }
