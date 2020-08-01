@@ -59,9 +59,7 @@ import com.cariochi.recordo.given.Given;
 
 ```java
 @Test
-void should_create_book(
-    @Given("/books/new_book.json") Book book
-) {
+void should_create_book(@Given("/books/new_book.json") Book book) {
     Book created = bookService.create(book);
     // assertions
 }
