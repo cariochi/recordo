@@ -13,6 +13,9 @@
 ```
 
 ### Add annotation
+```java
+import com.cariochi.recordo.RecordoExtension;
+```
 
 ```java
 @ExtendWith(RecordoExtension.class)
@@ -24,6 +27,10 @@ class BookServiceTest {
 ### Enable Json Converter to be used in Recordo (Optional)  
 
 #### Jackson Mapper
+
+```java
+import com.cariochi.recordo.EnableRecordo;
+```
 
 ```java
     @EnableRecordo
@@ -46,6 +53,9 @@ Annotations: `@Given`.
 - If the file is absent, a new random data file will be created.
 
 ### Example
+```java
+import com.cariochi.recordo.given.Given;
+```
 
 ```java
     @Test
@@ -69,11 +79,50 @@ Annotations: `@Verify`.
 ### Example
 
 ```java
+import com.cariochi.recordo.verify.Verify;
+import com.cariochi.recordo.verify.Expected;
+```
+
+```java
     @Test
     void should_get_book_by_id(
             @Verify("/books/book.json") Expected<Book> expected
     ) {
         Book actual = bookService.findById(1L);
+        expected.assertEquals(actual);
+    }
+
+    @Test
+    void should_get_book_by_id(
+            @Verify(value ="/books/book.json", extensible = true) Expected<Book> expected
+    ) {
+        Book actual = bookService.findById(1L);
+        expected.assertEquals(actual);
+    }
+
+    @Test
+    void should_get_books(
+            @Verify(
+                    value = "/books/book.json",
+                    included = {"id", "title", "author.id", "author.name"},
+                    strictOrder = false
+            ) 
+            Expected<List<Book>> expected
+    ) {
+        List<Book> actual = bookService.findAll();
+        expected.assertEquals(actual);
+    }
+
+    @Test
+    void should_get_books(
+            @Verify(
+                    value = "/books/book.json",
+                    excluded = {"description", "author.comments"},
+                    strictOrder = false
+            ) 
+            Expected<List<Book>> expected
+    ) {
+        List<Book> actual = bookService.findAll();
         expected.assertEquals(actual);
     }
 ```
@@ -85,6 +134,11 @@ Record and replay HTTP network interaction for a test.
 Annotations: `@MockHttp`.
 
 ### Initialization
+
+```java
+import com.cariochi.recordo.EnableRecordo;
+import com.cariochi.recordo.mockhttp.MockHttp;
+```
 
 #### OkHttp
 
@@ -125,6 +179,19 @@ Annotations: `@GET`, `@POST`, `@PUT`, `@PATCH`, `@DELETE`, `@Headers`, `@Body`.
 ```
 
 ### Examples
+
+```java
+import com.cariochi.recordo.EnableRecordo;
+import com.cariochi.recordo.mockmvc.GET;
+import com.cariochi.recordo.mockmvc.POST;
+import com.cariochi.recordo.mockmvc.PUT;
+import com.cariochi.recordo.mockmvc.PATCH;
+import com.cariochi.recordo.mockmvc.DELETE;
+import com.cariochi.recordo.mockmvc.Headers;
+import com.cariochi.recordo.mockmvc.Body;
+import com.cariochi.recordo.mockmvc.Request;
+import com.cariochi.recordo.mockmvc.Response;
+```
 
 ```java
 
