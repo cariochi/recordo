@@ -1,5 +1,6 @@
 package com.cariochi.recordo.given;
 
+import com.cariochi.recordo.Given;
 import com.cariochi.recordo.RecordoError;
 import com.cariochi.recordo.json.JsonConverters;
 import com.cariochi.recordo.utils.exceptions.Exceptions;

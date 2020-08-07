@@ -1,6 +1,7 @@
 package com.cariochi.recordo.verify;
 
 import com.cariochi.recordo.RecordoError;
+import com.cariochi.recordo.Verify;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonPropertyFilter;
 import com.cariochi.recordo.utils.Files;

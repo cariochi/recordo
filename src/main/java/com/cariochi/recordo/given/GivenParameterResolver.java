@@ -1,5 +1,6 @@
 package com.cariochi.recordo.given;
 
+import com.cariochi.recordo.Given;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonConverters;
 import org.junit.jupiter.api.extension.ExtensionContext;

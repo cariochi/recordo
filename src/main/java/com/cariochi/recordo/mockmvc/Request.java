@@ -3,6 +3,8 @@ package com.cariochi.recordo.mockmvc;
 import com.cariochi.recordo.RecordoError;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.mockmvc.dto.PageBuilder;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.With;
@@ -14,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -21,10 +24,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static com.google.gson.reflect.TypeToken.getParameterized;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request;
 
 @Builder
 @With
@@ -41,7 +42,7 @@ public class Request<RESP> {
 
     public Response<RESP> execute(Object... params) {
         try {
-            final MockHttpServletRequestBuilder requestBuilder = request(method, path, params);
+            final MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.request(method, path, params);
 
             if (body != null) {
                 requestBuilder.contentType(MediaType.APPLICATION_JSON);
@@ -78,13 +79,19 @@ public class Request<RESP> {
             if (responseType instanceof ParameterizedType) {
                 ParameterizedType parameterizedType = (ParameterizedType) responseType;
                 if (parameterizedType.getRawType().equals(Page.class)) {
-                    Type type = getParameterized(PageBuilder.class, parameterizedType.getActualTypeArguments()[0]).getType();
-                    final PageBuilder<?> pageBuilder = jsonConverter.fromJson(json, type);
-                    return (RESP) pageBuilder.build();
+                    return pageFromJson(json, parameterizedType);
                 }
             }
             return jsonConverter.fromJson(json, responseType);
         };
+    }
+
+    private RESP pageFromJson(String json, ParameterizedType parameterizedType) {
+        final TypeFactory typeFactory = TypeFactory.defaultInstance();
+        final JavaType pageItemType = typeFactory.constructType(parameterizedType.getActualTypeArguments()[0]);
+        final JavaType pageType = typeFactory.constructParametricType(PageBuilder.class, pageItemType);
+        final PageBuilder pageBuilder = jsonConverter.fromJson(json, pageType);
+        return (RESP) pageBuilder.build();
     }
 
     private Map<String, String> headersOf(MockHttpServletResponse response) {
