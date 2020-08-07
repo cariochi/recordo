@@ -12,7 +12,7 @@
     <scope>test</scope>
 </dependency>
 ```
-### Import
+### Imports
 
 ```java
 import com.cariochi.recordo.RecordoExtension;
@@ -29,7 +29,7 @@ class BookServiceTest {
 
 ### Enable Json Converter to be used in Recordo (Optional)  
 
-#### Import
+#### Imports
 
 ```java
 import com.cariochi.recordo.EnableRecordo;
@@ -55,7 +55,7 @@ Load objects from json files.
 
 - If the file is absent, a new random data file will be created.
 
-### Import
+### Imports
 
 ```java
 import com.cariochi.recordo.Given;
@@ -80,7 +80,7 @@ Assert that actual value equals to expected.
 - If a file is absent, the actual result will be saved as expected.
 - If an assertion fails new "actual" object file will be created.
 
-### Import
+### Imports
 
 ```java
 import com.cariochi.recordo.Verify;
@@ -138,7 +138,7 @@ void should_get_books(
 Record and replay HTTP network interaction for a test.
 
 
-### Import
+### Imports
 
 ```java
 import com.cariochi.recordo.EnableRecordo;
@@ -177,7 +177,7 @@ void should_retrieve_gists() {
 
 Use Spring MockMvc in declarative way.
 
-### Import
+### Imports
 
 ```java
 import com.cariochi.recordo.EnableRecordo;
