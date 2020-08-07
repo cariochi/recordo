@@ -2,6 +2,7 @@
 `Recordo` is a declarative testing JUnit 5 extension for fast, deterministic, and accurate tests.
 
 # Usage
+
 ### Add maven dependency
 ```xml
 <dependency>
@@ -11,11 +12,13 @@
     <scope>test</scope>
 </dependency>
 ```
+### Import
 
-### Add annotation
 ```java
 import com.cariochi.recordo.RecordoExtension;
 ```
+
+### Initialization
 
 ```java
 @ExtendWith(RecordoExtension.class)
@@ -26,11 +29,13 @@ class BookServiceTest {
 
 ### Enable Json Converter to be used in Recordo (Optional)  
 
-#### Jackson Mapper
+#### Import
 
 ```java
 import com.cariochi.recordo.EnableRecordo;
 ```
+
+#### Jackson Mapper
 
 ```java
 @EnableRecordo
@@ -48,14 +53,15 @@ private Gson gson;
 
 Load objects from json files. 
 
-Annotations: `@Given`.
-
 - If the file is absent, a new random data file will be created.
 
-### Example
+### Import
+
 ```java
 import com.cariochi.recordo.Given;
 ```
+
+### Example
 
 ```java
 @Test
@@ -71,17 +77,17 @@ void should_create_book(
 
 Assert that actual value equals to expected.
 
-Annotations: `@Verify`. 
-
 - If a file is absent, the actual result will be saved as expected.
 - If an assertion fails new "actual" object file will be created.
 
-### Example
+### Import
 
 ```java
 import com.cariochi.recordo.Verify;
 import com.cariochi.recordo.verify.Expected;
 ```
+
+### Example
 
 ```java
 @Test
@@ -131,14 +137,15 @@ void should_get_books(
 
 Record and replay HTTP network interaction for a test.
 
-Annotations: `@MockHttp`.
 
-### Initialization
+### Import
 
 ```java
 import com.cariochi.recordo.EnableRecordo;
 import com.cariochi.recordo.MockHttp;
 ```
+
+### Initialization
 
 #### OkHttp
 
@@ -170,15 +177,7 @@ void should_retrieve_gists() {
 
 Use Spring MockMvc in declarative way.
 
-Annotations: `@GET`, `@POST`, `@PUT`, `@PATCH`, `@DELETE`, `@Headers`, `@Body`.
-
-### Initialization
-```java
-@EnableRecordo
-private MockMvc mockMvc;
-```
-
-### Examples
+### Import
 
 ```java
 import com.cariochi.recordo.EnableRecordo;
@@ -192,6 +191,14 @@ import com.cariochi.recordo.mockmvc.Body;
 import com.cariochi.recordo.mockmvc.Request;
 import com.cariochi.recordo.mockmvc.Response;
 ```
+
+### Initialization
+
+```java
+@EnableRecordo
+private MockMvc mockMvc;
+```
+### Examples
 
 ```java
 
