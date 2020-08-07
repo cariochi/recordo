@@ -54,7 +54,7 @@ Annotations: `@Given`.
 
 ### Example
 ```java
-import com.cariochi.recordo.given.Given;
+import com.cariochi.recordo.Given;
 ```
 
 ```java
@@ -79,7 +79,7 @@ Annotations: `@Verify`.
 ### Example
 
 ```java
-import com.cariochi.recordo.verify.Verify;
+import com.cariochi.recordo.Verify;
 import com.cariochi.recordo.verify.Expected;
 ```
 
@@ -137,7 +137,7 @@ Annotations: `@MockHttp`.
 
 ```java
 import com.cariochi.recordo.EnableRecordo;
-import com.cariochi.recordo.mockhttp.MockHttp;
+import com.cariochi.recordo.MockHttp;
 ```
 
 #### OkHttp
