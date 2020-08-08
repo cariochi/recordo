@@ -29,20 +29,18 @@ class BookServiceTest {
 
 ### Enable Json Converter to be used in Recordo (Optional)  
 
-#### Imports
-
 ```java
 import com.cariochi.recordo.EnableRecordo;
 ```
 
-#### Jackson Mapper
+- Jackson Mapper
 
 ```java
 @EnableRecordo
 private ObjectMapper objectMapper;
 ```
 
-#### Gson
+- Gson
 
 ```java
 @EnableRecordo
@@ -87,7 +85,7 @@ import com.cariochi.recordo.Verify;
 import com.cariochi.recordo.verify.Expected;
 ```
 
-### Example
+### Examples
 
 ```java
 @Test
@@ -137,7 +135,6 @@ void should_get_books(
 
 Record and replay HTTP network interaction for a test.
 
-
 ### Imports
 
 ```java
@@ -147,14 +144,14 @@ import com.cariochi.recordo.MockHttp;
 
 ### Initialization
 
-#### OkHttp
+- OkHttp
 
 ```java
 @EnableRecordo
 private OkHttpClient client;
 ```
 
-#### Apache HttpClient
+- Apache HttpClient
 
 ```java
 @EnableRecordo
@@ -198,15 +195,14 @@ import com.cariochi.recordo.mockmvc.Response;
 @EnableRecordo
 private MockMvc mockMvc;
 ```
+
 ### Examples
 
 ```java
 
 @Test
 void should_get_books(
-        @GET("/users/{id}/books?sort={sort}")                                                   
-        @Headers("locale: UA") 
-        Request<Page<Book>> request
+        @GET("/users/{id}/books?sort={sort}") @Headers("locale: UA") Request<Page<Book>> request
 ) {
     ...
     Response<Page<Book>> response = request.execute(1, "name");
@@ -216,9 +212,7 @@ void should_get_books(
 
 @Test
 void should_get_books(
-        @GET("/users/1/books?sort=name") 
-        @Headers("locale: UA") 
-        Response<Page<Book>> response
+        @GET("/users/1/books?sort=name") @Headers("locale: UA") Response<Page<Book>> response
 ) {
     Page<Book> books = response.getContent();
     // assertions
@@ -226,17 +220,14 @@ void should_get_books(
 
 @Test
 void should_get_books(
-        @GET("/users/1/books?sort=name") 
-        @Headers("locale: UA") 
-        Page<Book> books
+        @GET("/users/1/books?sort=name") @Headers("locale: UA") Page<Book> books
 ) {
     // assertions
 }
 
 @Test
 void should_save_book(
-        @POST("/books") 
-        Request<Book> request
+        @POST("/books") Request<Book> request
 ) {
     ...
     Response<Book> response = request.withBody(new Book()).execute();
@@ -246,9 +237,7 @@ void should_save_book(
 
 @Test
 void should_save_book(
-        @POST("/books") 
-        @Body("/mockmvc/new_book.json") 
-        Request<Book> request
+        @POST("/books") @Body("/mockmvc/new_book.json") Request<Book> request
 ) {
     Response<Book> response = request.execute();
     Book book = response.getContent();
@@ -257,9 +246,7 @@ void should_save_book(
 
 @Test
 void should_save_book(
-        @POST("/books") 
-        @Body("/mockmvc/new_book.json") 
-        Response<Book> response
+        @POST("/books") @Body("/mockmvc/new_book.json") Response<Book> response
 ) {
     Book book = response.getContent();
     // assertions
@@ -267,35 +254,28 @@ void should_save_book(
 
 @Test
 void should_save_book(
-        @POST("/books") 
-        @Body("/mockmvc/new_book.json") 
-        Book book
+        @POST("/books") @Body("/mockmvc/new_book.json") Book book
 ) {
     // assertions
 }
 
 @Test
 void should_update_book(
-        @PUT("/books") 
-        @Body("/mockmvc/changed_book.json") 
-        Book book
+        @PUT("/books") @Body("/mockmvc/changed_book.json") Book book
 ) {
      // assertions
 }
 
 @Test
 void should_patch_book(
-        @PATCH("/books/1") 
-        @Body("/mockmvc/book.json") 
-        Book book
+        @PATCH("/books/1") @Body("/mockmvc/book.json") Book book
 ) {
     // assertions
 }
 
 @Test
 void should_delete_book(
-        @DELETE("/users/1") 
-        Request<Void> request
+        @DELETE("/users/1") Request<Void> request
 ) {
     ...
     Response<Void> response = request.execute();
@@ -304,8 +284,7 @@ void should_delete_book(
 
 @Test
 void should_delete_book(
-        @DELETE("/users/1") 
-        Response<Void> response
+        @DELETE("/users/1") Response<Void> response
 ) {
     // assertions
 }
