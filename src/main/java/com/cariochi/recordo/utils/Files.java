@@ -35,7 +35,7 @@ public class Files {
         final Path path = path(file);
         try {
             java.nio.file.Files.createDirectories(path.getParent());
-            java.nio.file.Files.write(path, json.getBytes(UTF_8));
+            java.nio.file.Files.write(path, (json + '\n').getBytes(UTF_8));
         } catch (IOException e) {
             throw new RecordoError(e);
         }

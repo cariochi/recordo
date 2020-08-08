@@ -30,7 +30,7 @@ public class GivenObjectProvider {
         T givenObject = randomDataGenerator.generateObject(parameterType);
         final String json = givenObject instanceof String ? "{}" : jsonConverter.toJson(givenObject);
         Files.write(json, file)
-                .ifPresent(path -> log.warn(e.getMessage() + "\nRandom value is generated: {}", path));
+                .ifPresent(path -> log.warn(e.getMessage() + "\nRandom value is generated: file://{}", path));
         return givenObject;
     }
 }

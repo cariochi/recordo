@@ -1,5 +1,6 @@
 package com.cariochi.recordo.verify;
 
+import com.cariochi.recordo.Verify;
 import com.cariochi.recordo.json.JsonConverters;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;

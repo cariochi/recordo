@@ -2,7 +2,6 @@ package com.cariochi.recordo;
 
 import com.cariochi.recordo.dto.TestDto;
 import com.cariochi.recordo.verify.Expected;
-import com.cariochi.recordo.verify.Verify;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 

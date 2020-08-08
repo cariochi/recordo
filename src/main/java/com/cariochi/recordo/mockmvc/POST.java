@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 @Target({ElementType.PARAMETER, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface Post {
+public @interface POST {
 
     String value();
 

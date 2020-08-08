@@ -1,9 +1,7 @@
 package com.cariochi.recordo;
 
 import com.cariochi.recordo.dto.TestDto;
-import com.cariochi.recordo.given.Given;
 import com.cariochi.recordo.verify.Expected;
-import com.cariochi.recordo.verify.Verify;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

@@ -1,5 +1,6 @@
 package com.cariochi.recordo.mockhttp;
 
+import com.cariochi.recordo.MockHttp;
 import com.cariochi.recordo.mockhttp.interceptors.HttpClientInterceptors;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterEachCallback;

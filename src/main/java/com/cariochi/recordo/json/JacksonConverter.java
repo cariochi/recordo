@@ -18,13 +18,20 @@ import lombok.RequiredArgsConstructor;
 import java.lang.reflect.Type;
 import java.util.Optional;
 
+import static com.fasterxml.jackson.databind.MapperFeature.SORT_PROPERTIES_ALPHABETICALLY;
+
 @RequiredArgsConstructor
 public class JacksonConverter implements JsonConverter {
 
     private final ObjectMapper objectMapper;
 
     public JacksonConverter() {
-        this(new ObjectMapper().registerModule(new JavaTimeModule()).setDateFormat(new StdDateFormat()));
+        this(
+                new ObjectMapper()
+                        .configure(SORT_PROPERTIES_ALPHABETICALLY, true)
+                        .registerModule(new JavaTimeModule())
+                        .setDateFormat(new StdDateFormat())
+        );
     }
 
     @Override
@@ -54,7 +61,7 @@ public class JacksonConverter implements JsonConverter {
             return (T) json;
         }
         try {
-            final JavaType valueType = objectMapper.getTypeFactory().constructType(type);
+            final JavaType valueType = objectMapper.constructType(type);
             return objectMapper.readValue(json, valueType);
         } catch (JsonProcessingException e) {
             throw new RecordoError(e);
