@@ -66,7 +66,7 @@ public class MockHttpContext implements AutoCloseable {
             final String json = jsonConverter.toJson(mocksToRecord);
 
             Files.write(json, fileName)
-                    .ifPresent(file -> log.info("Http mocks are recorded to file {}:\n{}", file, urlsOf(actualMocks)));
+                    .ifPresent(file -> log.info("Http mocks are recorded to file://{}:\n{}", file, urlsOf(actualMocks)));
         }
     }
 
