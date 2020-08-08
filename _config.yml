@@ -1,3 +1,3 @@
-theme: jekyll-theme-cayman
+theme: jekyll-theme-modernist
 title: Cariochi::Recordo
 description: Declarative testing JUnit 5 extension for fast, deterministic, and accurate tests.
