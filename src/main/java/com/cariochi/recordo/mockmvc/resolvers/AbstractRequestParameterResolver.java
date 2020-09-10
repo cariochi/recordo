@@ -1,7 +1,7 @@
 package com.cariochi.recordo.mockmvc.resolvers;
 
 import com.cariochi.recordo.EnableRecordo;
-import com.cariochi.recordo.given.GivenObjectProvider;
+import com.cariochi.recordo.given.GivenObjectReader;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonConverters;
 import com.cariochi.recordo.mockmvc.Body;
@@ -52,7 +52,8 @@ public abstract class AbstractRequestParameterResolver implements ParameterResol
     }
 
     public String getBodyFromFile(Body annotation, Object testInstance) {
-        return new GivenObjectProvider(JsonConverters.find(testInstance)).get(annotation.value(), String.class);
+        final JsonConverter jsonConverter = JsonConverters.find(testInstance);
+        return  GivenObjectReader.read(annotation.value(), String.class, jsonConverter);
     }
 
     private Object executeRequest(Request.RequestBuilder<Object> requestBuilder, ParameterContext parameter) {

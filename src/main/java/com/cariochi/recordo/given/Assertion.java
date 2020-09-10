@@ -1,36 +1,60 @@
-package com.cariochi.recordo.verify;
+package com.cariochi.recordo.given;
 
 import com.cariochi.recordo.RecordoError;
-import com.cariochi.recordo.Verify;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonPropertyFilter;
 import com.cariochi.recordo.utils.Files;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.nio.file.NoSuchFileException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static com.cariochi.recordo.utils.Format.format;
 import static java.util.Arrays.asList;
 
 @Slf4j
+@Accessors(fluent = true)
 @RequiredArgsConstructor
-public class Expected<T> {
+public class Assertion<T> {
 
-    private final Verify annotation;
+    private final String fileName;
     private final JsonConverter jsonConverter;
 
-    public void assertEquals(T actual) {
-        final String fileName = annotation.value();
-        final JsonPropertyFilter jsonFilter = jsonFilter(annotation);
+    @Setter
+    private boolean extensible = false;
+    @Setter
+    private boolean strictOrder = true;
+
+    private final List<String> included = new ArrayList<>();
+    private final List<String> excluded = new ArrayList<>();
+
+
+    public Assertion<T> included(String... fields) {
+        included.clear();
+        included.addAll(asList(fields));
+        return this;
+    }
+
+    public Assertion<T> excluded(String... fields) {
+        excluded.clear();
+        excluded.addAll(asList(fields));
+        return this;
+    }
+
+    public void assertAsExpected(T actual) {
+        final JsonPropertyFilter jsonFilter = jsonFilter();
         final String actualJson = jsonConverter.toJson(actual, jsonFilter);
         try {
             final String expectedJson = Files.read(fileName);
-            JSONAssert.assertEquals(expectedJson, actualJson, compareMode(annotation));
+            JSONAssert.assertEquals(expectedJson, actualJson, compareMode());
         } catch (AssertionError e) {
             String newFileName =
                     new StringBuilder(fileName).insert(fileName.lastIndexOf('/') + 1, "ACTUAL/").toString();
@@ -47,14 +71,14 @@ public class Expected<T> {
         }
     }
 
-    private JsonPropertyFilter jsonFilter(Verify verify) {
-        return new JsonPropertyFilter(asList(verify.included()), asList(verify.excluded()));
+    private JsonPropertyFilter jsonFilter() {
+        return new JsonPropertyFilter(included, excluded);
     }
 
-    private JSONCompareMode compareMode(Verify verify) {
+    private JSONCompareMode compareMode() {
         return Stream.of(JSONCompareMode.values())
-                .filter(mode -> mode.isExtensible() == verify.extensible())
-                .filter(mode -> mode.hasStrictOrder() == verify.strictOrder())
+                .filter(mode -> mode.isExtensible() == extensible)
+                .filter(mode -> mode.hasStrictOrder() == strictOrder)
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("Compare mode not found"));
     }

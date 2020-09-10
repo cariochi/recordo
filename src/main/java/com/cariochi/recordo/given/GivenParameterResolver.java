@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 
 public class GivenParameterResolver implements ParameterResolver {
@@ -22,11 +23,25 @@ public class GivenParameterResolver implements ParameterResolver {
     public Object resolveParameter(ParameterContext parameterContext,
                                    ExtensionContext extensionContext) throws ParameterResolutionException {
         return parameterContext.findAnnotation(Given.class)
-                .map(annotation -> {
-                    final Type parameterType = parameterContext.getParameter().getParameterizedType();
-                    final JsonConverter jsonConverter = JsonConverters.find(extensionContext.getRequiredTestInstance());
-                    return new GivenObjectProvider(jsonConverter).get(annotation.value(), parameterType);
-                })
+                .map(Given::value)
+                .map(fileName -> resolveParameter(
+                        fileName,
+                        parameterContext.getParameter(),
+                        JsonConverters.find(extensionContext.getRequiredTestInstance())
+                ))
                 .orElse(null);
+    }
+
+    private Object resolveParameter(String fileName, Parameter parameter, JsonConverter jsonConverter) {
+        if (isExpected(parameter)) {
+            return new Assertion<>(fileName, jsonConverter);
+        } else {
+            final Type parameterType = parameter.getParameterizedType();
+            return GivenObjectReader.read(fileName, parameterType, jsonConverter);
+        }
+    }
+
+    private boolean isExpected(Parameter parameter) {
+        return Assertion.class.isAssignableFrom(parameter.getType());
     }
 }

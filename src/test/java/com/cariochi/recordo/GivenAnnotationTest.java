@@ -1,7 +1,7 @@
 package com.cariochi.recordo;
 
 import com.cariochi.recordo.dto.TestDto;
-import com.cariochi.recordo.verify.Expected;
+import com.cariochi.recordo.given.Assertion;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -31,41 +31,41 @@ class GivenAnnotationTest {
             .registerModule(new JavaTimeModule())
             .setDateFormat(new StdDateFormat());
 
-
-    @Given("/given_annotation_test/dto.json")
-    private TestDto givenDto;
-
-    @Given("/given_annotation_test/list.json")
-    private List<TestDto> givenList;
-
     @Test
-    void given(@Verify("/given_annotation_test/dto.json") Expected<TestDto> expected) {
-        expected.assertEquals(givenDto);
+    void given(
+            @Given("/given_annotation_test/dto.json") TestDto dto,
+            @Given("/given_annotation_test/dto.json") Assertion<TestDto> assertion
+    ) {
+        assertion.assertAsExpected(dto);
     }
 
     @Test
-    void given_list(@Verify("/given_annotation_test/list.json") Expected<List<TestDto>> expected) {
-        expected.assertEquals(givenList);
+    void given_list(
+            @Given("/given_annotation_test/list.json") List<TestDto> list,
+            @Given("/given_annotation_test/list.json") Assertion<List<TestDto>> assertion
+    ) {
+        assertion.assertAsExpected(list);
     }
 
     @Test
     @SneakyThrows
     void given_string(
             @Given("/given_annotation_test/string.json") String string,
-            @Verify("/given_annotation_test/dto.json") Expected<TestDto> expected
+            @Given("/given_annotation_test/dto.json") Assertion<TestDto> assertion
     ) {
         final TestDto value = objectMapper.readValue(string, TestDto.class);
-        expected.assertEquals(value);
+        assertion.assertAsExpected(value);
     }
 
     @Test
-    void generated_json_test(@Given("/given_annotation_test/generated_dto.json") TestDto dto,
-                           @Given("/given_annotation_test/generated_list.json") List<TestDto> givenList,
-                           @Verify("/given_annotation_test/generated_dto.json") Expected<TestDto> expectedDto,
-                           @Verify("/given_annotation_test/generated_list.json") Expected<List<TestDto>> expectedList
+    void generated_json_test(
+            @Given("/given_annotation_test/generated_dto.json") TestDto dto,
+            @Given("/given_annotation_test/generated_list.json") List<TestDto> givenList,
+            @Given("/given_annotation_test/generated_dto.json") Assertion<TestDto> dtoAssertion,
+            @Given("/given_annotation_test/generated_list.json") Assertion<List<TestDto>> listAssertion
     ) {
-        expectedDto.assertEquals(dto);
-        expectedList.assertEquals(givenList);
+        dtoAssertion.assertAsExpected(dto);
+        listAssertion.assertAsExpected(givenList);
     }
 
     @Test

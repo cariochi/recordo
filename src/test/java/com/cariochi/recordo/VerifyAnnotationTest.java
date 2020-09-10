@@ -1,12 +1,13 @@
 package com.cariochi.recordo;
 
 import com.cariochi.recordo.dto.TestDto;
-import com.cariochi.recordo.verify.Expected;
+import com.cariochi.recordo.given.Assertion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 
+import static com.cariochi.recordo.dto.TestDto.dto;
 import static java.util.Arrays.asList;
 import static java.util.Collections.reverse;
 import static java.util.Collections.shuffle;
@@ -16,106 +17,126 @@ public class VerifyAnnotationTest {
 
     @Test
     void extensible(
-            @Verify(value = "/verify_annotation_test/dto.json", extensible = true) Expected<TestDto> expected
+            @Given("/verify_annotation_test/dto.json") Assertion<TestDto> assertion
     ) {
-        expected.assertEquals(dto(1));
+        assertion
+                .extensible(true)
+                .assertAsExpected(testDto(1));
     }
 
     @Test
     void not_extensible(
-            @Verify("/verify_annotation_test/dto.json") Expected<TestDto> expected
+            @Given("/verify_annotation_test/dto.json") Assertion<TestDto> assertion
     ) {
-        expected.assertEquals(dto(1));
+        assertion
+                .assertAsExpected(testDto(1));
     }
 
     @Test
     void included(
-            @Verify(
-                    value = "/verify_annotation_test/short_dto.json",
-                    included = {"id", "text", "children.id", "children.text"}
-            ) Expected<TestDto> expected
+            @Given("/verify_annotation_test/short_dto.json") Assertion<TestDto> assertion
     ) {
-        expected.assertEquals(dto(1));
+        assertion
+                .included("id", "text", "children.id", "children.text")
+                .assertAsExpected(testDto(1));
     }
 
     @Test
     void excluded(
-            @Verify(
-                    value = "/verify_annotation_test/short_dto.json",
-                    excluded = {"strings", "date", "children.strings", "children.date", "children.children"}
-            ) Expected<TestDto> expected
+            @Given("/verify_annotation_test/short_dto.json") Assertion<TestDto> assertion
     ) {
-        expected.assertEquals(dto(1));
+        final TestDto dto1 = dto(1);
+        final TestDto dto2 = dto(2).withParent(dto1);
+        final TestDto dto3 = dto(3).withParent(dto2);
+        final TestDto actual = dto1.withChild(dto2.withChild(dto3));
+        assertion
+                .excluded(
+                        "strings",
+                        "date",
+                        "parent",
+                        "children.strings",
+                        "children.date",
+                        "children.parent",
+                        "children.children.strings",
+                        "children.children.date",
+                        "children.children.parent"
+                )
+                .assertAsExpected(actual);
     }
 
     @Test
     void list_extensible(
-            @Verify(value = "/verify_annotation_test/list.json", extensible = true) Expected<List<TestDto>> expected
+            @Given("/verify_annotation_test/list.json") Assertion<List<TestDto>> assertion
     ) {
-        expected.assertEquals(list());
+        assertion
+                .extensible(true)
+                .assertAsExpected(list());
     }
 
     @Test
     void list_not_extensible(
-            @Verify("/verify_annotation_test/list.json") Expected<List<TestDto>> expected
+            @Given("/verify_annotation_test/list.json") Assertion<List<TestDto>> assertion
     ) {
-        expected.assertEquals(list());
+        assertion.assertAsExpected(list());
     }
 
     @Test
     void list_included(
-            @Verify(value = "/verify_annotation_test/short_list.json", included = {"id", "text", "children.id",
-                    "children.text"})
-                    Expected<List<TestDto>> expected
+            @Given("/verify_annotation_test/short_list.json") Assertion<List<TestDto>> assertion
     ) {
-        expected.assertEquals(list());
+        assertion
+                .included("id", "text", "children.id", "children.text")
+                .assertAsExpected(list());
     }
 
     @Test
     void list_excluded(
-            @Verify(
-                    value = "/verify_annotation_test/short_list.json",
-                    excluded = {"strings", "date", "children.strings", "children.date", "children.children"}
-            ) Expected<List<TestDto>> expected
+            @Given("/verify_annotation_test/short_list.json") Assertion<List<TestDto>> assertion
     ) {
-        expected.assertEquals(list());
+        assertion
+                .excluded("strings", "date", "children.strings", "children.date", "children.children")
+                .assertAsExpected(list());
     }
 
     @Test
     void list_strict_order(
-            @Verify("/verify_annotation_test/list_strict_order.json") Expected<List<TestDto>> expected
+            @Given("/verify_annotation_test/list_strict_order.json") Assertion<List<TestDto>> assertion
     ) {
         final List<TestDto> list = list();
         reverse(list.get(0).getChildren());
-        expected.assertEquals(list);
+        assertion.assertAsExpected(list);
     }
 
     @Test
     void list_not_strict_order(
-            @Verify(value = "/verify_annotation_test/list.json", strictOrder = false) Expected<List<TestDto>> expected
+            @Given("/verify_annotation_test/list.json") Assertion<List<TestDto>> assertion
     ) {
         final List<TestDto> list = list();
         shuffle(list.get(0).getChildren());
         shuffle(list.get(1).getChildren());
         shuffle(list);
-        expected.assertEquals(list);
+        assertion
+                .strictOrder(false)
+                .assertAsExpected(list);
     }
 
     @Test
     void multiple(
-            @Verify("/verify_annotation_test/dto.json") Expected<TestDto> expectedObject,
-            @Verify("/verify_annotation_test/list.json") Expected<List<TestDto>> expectedList
+            @Given("/verify_annotation_test/dto.json") Assertion<TestDto> objectAssertion,
+            @Given("/verify_annotation_test/list.json") Assertion<List<TestDto>> listAssertion
     ) {
-        expectedObject.assertEquals(dto(1));
-        expectedList.assertEquals(list());
+        objectAssertion.assertAsExpected(testDto(1));
+        listAssertion.assertAsExpected(list());
     }
 
-    private TestDto dto(int id) {
-        return TestDto.dto(id).withChild(TestDto.dto(id + 1)).withChild(TestDto.dto(id + 2));
+    private TestDto testDto(int id) {
+        return dto(id)
+                .withChild(dto(id + 1))
+                .withChild(dto(id + 2));
     }
 
     private List<TestDto> list() {
-        return asList(dto(1), dto(4));
+        return asList(testDto(1), testDto(4));
     }
 
 }
