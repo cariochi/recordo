@@ -5,7 +5,6 @@ import com.cariochi.recordo.given.GivenParameterResolver;
 import com.cariochi.recordo.mockhttp.HttpMocksAnnotationHandler;
 import com.cariochi.recordo.mockhttp.MockHttpParameterResolver;
 import com.cariochi.recordo.mockmvc.resolvers.*;
-import com.cariochi.recordo.verify.VerifyParameterResolver;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.*;
 
@@ -24,7 +23,6 @@ public class RecordoExtension implements BeforeEachCallback, AfterEachCallback, 
 
     private final List<ParameterResolver> parameterResolvers = asList(
             new GivenParameterResolver(),
-            new VerifyParameterResolver(),
             new GetParameterResolver(),
             new PostParameterResolver(),
             new PutParameterResolver(),

@@ -8,7 +8,7 @@
 <dependency>
     <groupId>com.cariochi</groupId>
     <artifactId>recordo</artifactId>
-    <version>1.1.6</version>
+    <version>1.1.7</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -81,8 +81,8 @@ Assert that actual value equals to expected.
 ### Imports
 
 ```java
-import com.cariochi.recordo.Verify;
-import com.cariochi.recordo.verify.Expected;
+
+
 ```
 
 ### Examples
