@@ -1,5 +1,6 @@
 package com.cariochi.recordo.given;
 
+import com.cariochi.recordo.generator.EmptyInstanceGenerator;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.utils.Files;
 import lombok.experimental.UtilityClass;
@@ -12,9 +13,9 @@ import java.nio.file.NoSuchFileException;
 @UtilityClass
 public class GivenObjectReader {
 
-    private final RandomDataGenerator randomDataGenerator = new RandomDataGenerator();
+    private final EmptyInstanceGenerator EMPTY_INSTANCE_GENERATOR = new EmptyInstanceGenerator();
 
-    public <T> T read(String file, Type parameterType, JsonConverter jsonConverter) {
+    public Object read(String file, Type parameterType, JsonConverter jsonConverter) {
         try {
             return jsonConverter.fromJson(Files.read(file), parameterType);
         } catch (NoSuchFileException e) {
@@ -22,11 +23,11 @@ public class GivenObjectReader {
         }
     }
 
-    private <T> T generate(String file, Type parameterType, JsonConverter jsonConverter, String errorMessage) {
-        T givenObject = randomDataGenerator.generateObject(parameterType);
-        final String json = givenObject instanceof String ? "{}" : jsonConverter.toJson(givenObject);
+    private Object generate(String file, Type parameterType, JsonConverter jsonConverter, String errorMessage) {
+        Object givenObject = EMPTY_INSTANCE_GENERATOR.createInstance(parameterType, 3);
+        final String json = givenObject == null ? "{}" : jsonConverter.toJson(givenObject);
         Files.write(json, file)
-                .ifPresent(path -> log.warn(errorMessage + "\nRandom value is generated: file://{}", path));
+                .ifPresent(path -> log.warn(errorMessage + "\nEmpty json is generated: file://{}", path));
         return givenObject;
     }
 }

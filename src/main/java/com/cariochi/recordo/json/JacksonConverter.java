@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonStreamContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
@@ -16,19 +17,21 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-
-import static com.fasterxml.jackson.databind.MapperFeature.SORT_PROPERTIES_ALPHABETICALLY;
 
 @RequiredArgsConstructor
 public class JacksonConverter implements JsonConverter {
 
     private final ObjectMapper objectMapper;
+    private final JacksonPrinter printer = new JacksonPrinter();
 
     public JacksonConverter() {
         this(
+
                 new ObjectMapper()
-                        .configure(SORT_PROPERTIES_ALPHABETICALLY, true)
+                        .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
                         .registerModule(new JavaTimeModule())
                         .setDateFormat(new StdDateFormat())
         );
@@ -45,7 +48,7 @@ public class JacksonConverter implements JsonConverter {
             return (String) object;
         }
         try {
-            return objectMapper(filter).writerWithDefaultPrettyPrinter().writeValueAsString(object);
+            return objectMapper(filter).writer(printer).writeValueAsString(object);
         } catch (JsonProcessingException e) {
             throw new RecordoError(e);
         }
@@ -90,21 +93,26 @@ public class JacksonConverter implements JsonConverter {
                                      JsonGenerator jgen,
                                      SerializerProvider provider,
                                      PropertyWriter writer) throws Exception {
-            if (!filterOfContext(jgen.getOutputContext().getParent(), filter).shouldExclude(writer.getName())) {
+            String path = path(jgen.getOutputContext().getParent(), writer.getName());
+            if (filter.shouldInclude(path)) {
                 super.serializeAsField(pojo, jgen, provider, writer);
             }
         }
 
-        private JsonPropertyFilter filterOfContext(JsonStreamContext context, JsonPropertyFilter filter) {
-            if (context == null) {
-                return filter;
+        private String path(JsonStreamContext context, String field) {
+            final List<String> path = new ArrayList<>();
+            JsonStreamContext current = context;
+            while (current != null) {
+                if (current.getCurrentName() != null) {
+                    path.add(0, current.getCurrentName());
+                }
+                current = current.getParent();
             }
-            final JsonPropertyFilter nextFilter = Optional.ofNullable(context.getCurrentName())
-                    .map(filter::next)
-                    .orElse(filter);
-            return filterOfContext(context.getParent(), nextFilter);
+            path.add(field);
+            return String.join(".", path);
         }
     }
+
 
     @JsonFilter(RecordoFilter.NAME)
     static class PropertyFilterMixIn {

@@ -138,8 +138,8 @@ Record and replay HTTP network interaction for a test.
 ### Imports
 
 ```java
-import com.cariochi.recordo.EnableRecordo;
-import com.cariochi.recordo.MockHttp;
+
+
 ```
 
 ### Initialization
@@ -177,16 +177,8 @@ Use Spring MockMvc in declarative way.
 ### Imports
 
 ```java
-import com.cariochi.recordo.EnableRecordo;
-import com.cariochi.recordo.mockmvc.GET;
-import com.cariochi.recordo.mockmvc.POST;
-import com.cariochi.recordo.mockmvc.PUT;
-import com.cariochi.recordo.mockmvc.PATCH;
-import com.cariochi.recordo.mockmvc.DELETE;
-import com.cariochi.recordo.mockmvc.Headers;
-import com.cariochi.recordo.mockmvc.Body;
-import com.cariochi.recordo.mockmvc.Request;
-import com.cariochi.recordo.mockmvc.Response;
+
+
 ```
 
 ### Initialization

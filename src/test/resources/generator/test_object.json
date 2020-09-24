@@ -1,0 +1,59 @@
+{
+  "integer": 0,
+  "anEnum": "FIRST",
+  "anInt": 0,
+  "bool": false,
+  "ints": [
+    0
+  ],
+  "strings": [
+    ""
+  ],
+  "object": {
+    "anInt": 0,
+    "bool": false
+  },
+  "objects": [
+    {
+      "anInt": 0,
+      "bool": false
+    }
+  ],
+  "objectList": [
+    {
+      "anInt": 0,
+      "bool": false
+    }
+  ],
+  "objectSet": [
+    {
+      "anInt": 0,
+      "bool": false
+    }
+  ],
+  "map": {
+    "": {
+      "anInt": 0,
+      "bool": false
+    }
+  },
+  "linkedHashMap": {
+    "": 0
+  },
+  "treeSet": [
+    0.0
+  ],
+  "stringListMap": {
+    "": [
+      {
+        "anInt": 0,
+        "bool": false
+      }
+    ]
+  },
+  "enumSet": [
+    "FIRST"
+  ],
+  "adouble": 0.0,
+  "aboolean": false
+}

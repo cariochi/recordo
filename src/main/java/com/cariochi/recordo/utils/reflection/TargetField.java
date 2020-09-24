@@ -6,6 +6,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
 @RequiredArgsConstructor
@@ -40,6 +41,22 @@ public class TargetField {
 
     public Class<?> getType() {
         return field.getType();
+    }
+
+    public boolean isStatic() {
+        return Modifier.isStatic(field.getModifiers());
+    }
+
+    public boolean isFinal() {
+        return Modifier.isFinal(field.getModifiers());
+    }
+
+    public boolean isTransient() {
+        return  Modifier.isTransient(field.getModifiers());
+    }
+
+    public boolean isPrimitive() {
+        return getType().isPrimitive();
     }
 
     public <A extends Annotation> A getAnnotation(Class<A> annotationClass) {

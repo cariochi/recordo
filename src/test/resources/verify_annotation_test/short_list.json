@@ -1,21 +1,30 @@
-[ {
-  "id" : 1,
-  "text" : "Test Object 1",
-  "children" : [ {
-    "id" : 2,
-    "text" : "Test Object 2"
-  }, {
-    "id" : 3,
-    "text" : "Test Object 3"
-  } ]
-}, {
-  "id" : 4,
-  "text" : "Test Object 4",
-  "children" : [ {
-    "id" : 5,
-    "text" : "Test Object 5"
-  }, {
-    "id" : 6,
-    "text" : "Test Object 6"
-  } ]
-} ]
+[
+  {
+    "id": 1,
+    "text": "Test Object 1",
+    "children": [
+      {
+        "id": 2,
+        "text": "Test Object 2"
+      },
+      {
+        "id": 3,
+        "text": "Test Object 3"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "text": "Test Object 4",
+    "children": [
+      {
+        "id": 5,
+        "text": "Test Object 5"
+      },
+      {
+        "id": 6,
+        "text": "Test Object 6"
+      }
+    ]
+  }
+]
