@@ -1,13 +1,14 @@
 {
-  "children" : [ {
-    "children" : [ {
-      "children" : [ ],
-      "id" : 3,
-      "text" : "Test Object 3"
-    } ],
-    "id" : 2,
-    "text" : "Test Object 2"
-  } ],
-  "id" : 1,
-  "text" : "Test Object 1"
+  "id": 1,
+  "text": "Test Object 1",
+  "children": [
+    {
+      "id": 2,
+      "text": "Test Object 2"
+    },
+    {
+      "id": 3,
+      "text": "Test Object 3"
+    }
+  ]
 }

@@ -2,9 +2,9 @@ package com.cariochi.recordo;
 
 import com.cariochi.recordo.given.GivenAnnotationHandler;
 import com.cariochi.recordo.given.GivenParameterResolver;
-import com.cariochi.recordo.mockhttp.HttpMocksAnnotationHandler;
-import com.cariochi.recordo.mockhttp.MockHttpParameterResolver;
-import com.cariochi.recordo.mockmvc.resolvers.*;
+import com.cariochi.recordo.mockhttp.client.resolvers.*;
+import com.cariochi.recordo.mockhttp.server.HttpMocksAnnotationHandler;
+import com.cariochi.recordo.mockhttp.server.MockHttpParameterResolver;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.*;
 
@@ -23,11 +23,13 @@ public class RecordoExtension implements BeforeEachCallback, AfterEachCallback, 
 
     private final List<ParameterResolver> parameterResolvers = asList(
             new GivenParameterResolver(),
+            new RequestParameterResolver(),
             new GetParameterResolver(),
             new PostParameterResolver(),
             new PutParameterResolver(),
             new PatchParameterResolver(),
             new DeleteParameterResolver(),
+            new MockMvcClientParameterResolver(),
             new MockHttpParameterResolver()
     );
 
