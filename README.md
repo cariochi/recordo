@@ -8,7 +8,7 @@
 <dependency>
     <groupId>com.cariochi</groupId>
     <artifactId>recordo</artifactId>
-    <version>1.1.7</version>
+    <version>1.1.6</version>
     <scope>test</scope>
 </dependency>
 ```
