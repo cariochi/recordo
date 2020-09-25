@@ -12,18 +12,34 @@ public class HierarchyAssertionTest {
     void should_assert_hierarchy(
             @Given("/hierarchy_test/hierarchy.json") Assertion<Category> assertion
     ) {
-        Category hierarchy = new Category("Category 1")
-                .subcategory("Subcategory 1")
-                .attribute("Attribute 11").next()
-                .attribute("Attribute 12").next()
-                .next()
-                .subcategory("Subcategory 2")
-                .attribute("Attribute 21").next()
-                .attribute("Attribute 22").next()
-                .next();
-
         assertion
                 .excluded("subcategories.category", "subcategories.attributes.subcategory")
-                .assertAsExpected(hierarchy);
+                .assertAsExpected(hierarchy());
+    }
+
+    @Test
+    void should_include_full_attributes(
+            @Given("/hierarchy_test/hierarchy_include_full_attributes.json") Assertion<Category> assertion
+    ) {
+        assertion
+                .included("name", "subcategories.name", "subcategories.attributes")
+                .excluded("subcategories.attributes.subcategory")
+                .assertAsExpected(hierarchy());
+    }
+
+    @Test
+    void should_include_categories_without_attributes(
+            @Given("/hierarchy_test/hierarchy_without_attributes.json") Assertion<Category> assertion
+    ) {
+        assertion
+                .included("name", "subcategories")
+                .excluded("subcategories.category", "subcategories.attributes")
+                .assertAsExpected(hierarchy());
+    }
+
+    private Category hierarchy() {
+        return new Category("Category 1")
+                .subcategory("Subcategory 1").attribute("Attribute 11").attribute("Attribute 12").next()
+                .subcategory("Subcategory 2").attribute("Attribute 21").attribute("Attribute 22").next();
     }
 }

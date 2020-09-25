@@ -21,6 +21,7 @@ public class Category {
         final Subcategory subcategory = new Subcategory();
         subcategory.setCategory(this);
         subcategory.setName(name);
+        subcategory.setId(subcategories.size() + 1);
         subcategories.add(subcategory);
         return subcategory;
     }

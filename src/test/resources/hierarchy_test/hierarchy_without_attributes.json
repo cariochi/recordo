@@ -1,0 +1,13 @@
+{
+  "name": "Category 1",
+  "subcategories": [
+    {
+      "id": 1,
+      "name": "Subcategory 1"
+    },
+    {
+      "id": 2,
+      "name": "Subcategory 2"
+    }
+  ]
+}

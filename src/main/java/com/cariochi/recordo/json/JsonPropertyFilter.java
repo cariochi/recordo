@@ -22,7 +22,8 @@ public class JsonPropertyFilter {
         if (included.isEmpty()) {
             return true;
         }
-        return included.stream().anyMatch(f -> f.equals(field) || f.startsWith(field + "."));
+        return included.stream()
+                .anyMatch(f -> f.equals(field) || f.startsWith(field + ".") || field.startsWith(f + "."));
     }
 
     private boolean isExcluded(String field) {
