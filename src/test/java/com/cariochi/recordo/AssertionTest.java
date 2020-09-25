@@ -84,6 +84,15 @@ public class AssertionTest {
     }
 
     @Test
+    void list_included_full_children(
+            @Given("/verify_annotation_test/short_list_with_full_children.json") Assertion<List<TestDto>> assertion
+    ) {
+        assertion
+                .included("id", "text", "children")
+                .assertAsExpected(list());
+    }
+
+    @Test
     void list_excluded(
             @Given("/verify_annotation_test/short_list.json") Assertion<List<TestDto>> assertion
     ) {

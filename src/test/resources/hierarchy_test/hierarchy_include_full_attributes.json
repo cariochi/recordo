@@ -1,0 +1,31 @@
+{
+  "name": "Category 1",
+  "subcategories": [
+    {
+      "name": "Subcategory 1",
+      "attributes": [
+        {
+          "id": 101,
+          "name": "Attribute 11"
+        },
+        {
+          "id": 102,
+          "name": "Attribute 12"
+        }
+      ]
+    },
+    {
+      "name": "Subcategory 2",
+      "attributes": [
+        {
+          "id": 201,
+          "name": "Attribute 21"
+        },
+        {
+          "id": 202,
+          "name": "Attribute 22"
+        }
+      ]
+    }
+  ]
+}
