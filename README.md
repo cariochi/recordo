@@ -3,12 +3,12 @@
 
 # Usage
 
-### Add maven dependency
+### Maven dependency
 ```xml
 <dependency>
     <groupId>com.cariochi</groupId>
     <artifactId>recordo</artifactId>
-    <version>1.1.6</version>
+    <version>1.1.8</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -27,31 +27,20 @@ class BookServiceTest {
 }
 ```
 
-### Enable Json Converter to be used in Recordo (Optional)  
+### Enable ObjectMapper to be used by Recordo (Optional)  
 
 ```java
 import com.cariochi.recordo.EnableRecordo;
 ```
-
-- Jackson Mapper
 
 ```java
 @EnableRecordo
 private ObjectMapper objectMapper;
 ```
 
-- Gson
-
-```java
-@EnableRecordo
-private Gson gson;
-```
-
-# Data preparation
+# Test resources loading
 
 Load objects from json files. 
-
-- If the file is absent, a new random data file will be created.
 
 ### Imports
 
@@ -59,21 +48,28 @@ Load objects from json files.
 import com.cariochi.recordo.Given;
 ```
 
-### Example
+### Examples
 
 ```java
 @Test
 void should_create_book(
-    @Given("/books/new_book.json") Book book
+    @Given("/books/book.json") Book book
 ) {
-    Book created = bookService.create(book);
-    // assertions
+    ...
 }
 ```
 
+```java
+@Test
+void should_create_book(
+    @Given("/books/books.json") List<Book> books
+) {
+    ...
+}
+```
 # Assertions 
 
-Assert that actual value equals to expected.
+Assert that actual value is equal to expected.
 
 - If a file is absent, the actual result will be saved as expected.
 - If an assertion fails new "actual" object file will be created.
@@ -81,8 +77,8 @@ Assert that actual value equals to expected.
 ### Imports
 
 ```java
-
-
+import com.cariochi.recordo.Given;
+import com.cariochi.recordo.given.Assertion;
 ```
 
 ### Examples
@@ -90,44 +86,37 @@ Assert that actual value equals to expected.
 ```java
 @Test
 void should_get_book_by_id(
-        @Verify("/books/book.json") Expected<Book> expected
+        @Given("/books/book.json") Assertion<Book> assertion
 ) {
-    Book actual = bookService.findById(1L);
-    expected.assertEquals(actual);
+    final Book actual = bookService.findById(1L);
+    assertion.assertAsExpected(actual);
 }
+```
 
+```java
 @Test
-void should_get_book_by_id(
-        @Verify(value ="/books/book.json", extensible = true) Expected<Book> expected
+void should_get_books_by_author(
+        @Given("/books/author.json") Author author,
+        @Given("/books/short_books.json") Assertion<Page<Book>> assertion
 ) {
-    Book actual = bookService.findById(1L);
-    expected.assertEquals(actual);
+    Page<Book> actual = bookService.findAllByAuthor(author);
+    assertion
+            .included("content.id", "content.title", "content.author.id")
+            .extensible(true)
+            .assertAsExpected(aclual);
 }
+```
 
+```java
 @Test
-void should_get_books(
-        @Verify(
-                value = "/books/book.json",
-                included = {"id", "title", "author.id", "author.name"},
-                strictOrder = false
-        ) 
-        Expected<List<Book>> expected
+void should_get_all_books(
+        @Given("/books/all_books.json") Assertion<List<Book>> assertion
 ) {
     List<Book> actual = bookService.findAll();
-    expected.assertEquals(actual);
-}
-
-@Test
-void should_get_books(
-        @Verify(
-                value = "/books/book.json",
-                excluded = {"description", "author.comments"},
-                strictOrder = false
-        ) 
-        Expected<List<Book>> expected
-) {
-    List<Book> actual = bookService.findAll();
-    expected.assertEquals(actual);
+    assertion
+            .excluded("description", "author.comments")
+            .strictOrder(false)
+            .assertAsExpected(actual);
 }
 ```
 
@@ -138,8 +127,8 @@ Record and replay HTTP network interaction for a test.
 ### Imports
 
 ```java
-
-
+import com.cariochi.recordo.EnableRecordo;
+import com.cariochi.recordo.MockHttpServer;
 ```
 
 ### Initialization
@@ -162,7 +151,7 @@ private HttpClient httpClient;
 
 ```java
 @Test
-@MockHttp("/mockhttp/should_retrieve_gists.rest.json")
+@MockHttpServer("/mockhttp/should_retrieve_gists.rest.json")
 void should_retrieve_gists() {
     ...
     final List<GistResponse> gists = gitHubClient.getGists();
@@ -177,8 +166,17 @@ Use Spring MockMvc in declarative way.
 ### Imports
 
 ```java
+import com.cariochi.recordo.mockhttp.client.MockHttpRequest;
+import com.cariochi.recordo.mockhttp.client.MockHttpGet;
+import com.cariochi.recordo.mockhttp.client.MockHttpPost;
+import com.cariochi.recordo.mockhttp.client.MockHttpPut;
+import com.cariochi.recordo.mockhttp.client.MockHttpPatch;
+import com.cariochi.recordo.mockhttp.client.MockHttpDelete;
 
-
+import com.cariochi.recordo.mockhttp.client.MockHttpClient;
+import com.cariochi.recordo.mockhttp.client.Request;
+import com.cariochi.recordo.mockhttp.client.Response;
+import com.cariochi.recordo.mockhttp.client.RequestInterceptor;
 ```
 
 ### Initialization
@@ -191,94 +189,83 @@ private MockMvc mockMvc;
 ### Examples
 
 ```java
-
 @Test
 void should_get_books(
-        @GET("/users/{id}/books?sort={sort}") @Headers("locale: UA") Request<Page<Book>> request
+        @MockHttpGet("/users/1/books") Page<Book> books
+) {
+   ...
+}
+```
+
+```java
+@Test
+void should_get_books(
+        @MockHttpGet(value = "/users/{id}/books?sort={sort}", headers="locale=UA") Request<Page<Book>> request
 ) {
     ...
-    Response<Page<Book>> response = request.execute(1, "name");
+    Response<Page<Book>> response = request.parameters(1, "name").execute();
     Page<Book> books = response.getContent();
-    // assertions
+    ...
 }
+```
 
-@Test
-void should_get_books(
-        @GET("/users/1/books?sort=name") @Headers("locale: UA") Response<Page<Book>> response
-) {
-    Page<Book> books = response.getContent();
-    // assertions
-}
-
-@Test
-void should_get_books(
-        @GET("/users/1/books?sort=name") @Headers("locale: UA") Page<Book> books
-) {
-    // assertions
-}
-
+```java
 @Test
 void should_save_book(
-        @POST("/books") Request<Book> request
+        @MockHttpPost("/books") Request<Book> request
 ) {
     ...
-    Response<Book> response = request.withBody(new Book()).execute();
+    Response<Book> response = request.body(new Book()).execute();
     Book book = response.getContent();
     // assertions
 }
+```
 
+```java
 @Test
 void should_save_book(
-        @POST("/books") @Body("/mockmvc/new_book.json") Request<Book> request
+        @MockHttpPost(value = "/books", body = "/mockmvc/new_book.json") Request<Book> createBookRequest
 ) {
-    Response<Book> response = request.execute();
-    Book book = response.getContent();
-    // assertions
+    ...
+    Book createdBook = createBookRequest.execute().getContent();
+    ...
 }
+```
 
+```java
 @Test
 void should_save_book(
-        @POST("/books") @Body("/mockmvc/new_book.json") Response<Book> response
+        @MockHttpPost(value = "/books", body = "/mockmvc/new_book.json") Book createdBook
 ) {
-    Book book = response.getContent();
-    // assertions
+    ...
 }
+```
 
-@Test
-void should_save_book(
-        @POST("/books") @Body("/mockmvc/new_book.json") Book book
-) {
-    // assertions
-}
-
+```java
 @Test
 void should_update_book(
-        @PUT("/books") @Body("/mockmvc/changed_book.json") Book book
+        @MockHttpPost(value = "/books", body = "/mockmvc/new_book.json") Book updatedBook
 ) {
-     // assertions
+     ...
 }
+```
 
+```java
 @Test
 void should_patch_book(
-        @PATCH("/books/1") @Body("/mockmvc/book.json") Book book
+        @MockHttpPatch(value = "/books/1", body = "/mockmvc/book.json") Book patchedBook
 ) {
-    // assertions
+    ...
 }
+```
 
+```java
 @Test
 void should_delete_book(
-        @DELETE("/users/1") Request<Void> request
+        @MockHttpDelete("/books/1") Request<Void> request
 ) {
     ...
     Response<Void> response = request.execute();
-    // assertions
+    ...
 }
-
-@Test
-void should_delete_book(
-        @DELETE("/users/1") Response<Void> response
-) {
-    // assertions
-}
-
 ```
