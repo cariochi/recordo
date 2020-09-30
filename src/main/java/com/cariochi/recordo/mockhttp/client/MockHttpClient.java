@@ -99,7 +99,8 @@ public class MockHttpClient {
     public <RESP> Response<RESP> execute(Request<RESP> request) {
         try {
             final MockHttpServletRequestBuilder requestBuilder =
-                    MockMvcRequestBuilders.request(request.method(), request.path(), request.parameters());
+                    MockMvcRequestBuilders.request(request.method(), request.path(), request.getUriVars())
+                            .params(request.params());
 
             if (request.body() != null) {
                 requestBuilder.contentType(MediaType.APPLICATION_JSON);

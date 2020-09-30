@@ -7,7 +7,7 @@
 
     <groupId>com.cariochi</groupId>
     <artifactId>recordo</artifactId>
-    <version>1.1.8</version>
+    <version>1.1.9</version>
     <name>Recordo</name>
     <description>JUnit 5 extension for declarative testing.</description>
     <url>https://cariochi.com</url>
