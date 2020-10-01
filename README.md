@@ -1,10 +1,14 @@
-# Recordo
+# What is Recordo
+
+## Recordo
+
 `Recordo` is a declarative testing JUnit 5 extension for fast, deterministic, and accurate tests.
 
-# Usage
+## Usage
 
 ### Maven dependency
-```xml
+
+```markup
 <dependency>
     <groupId>com.cariochi</groupId>
     <artifactId>recordo</artifactId>
@@ -12,6 +16,7 @@
     <scope>test</scope>
 </dependency>
 ```
+
 ### Imports
 
 ```java
@@ -27,7 +32,7 @@ class BookServiceTest {
 }
 ```
 
-### Enable ObjectMapper to be used by Recordo (Optional)  
+### Enable ObjectMapper to be used by Recordo \(Optional\)
 
 ```java
 import com.cariochi.recordo.EnableRecordo;
@@ -38,9 +43,9 @@ import com.cariochi.recordo.EnableRecordo;
 private ObjectMapper objectMapper;
 ```
 
-# Test resources loading
+## Test resources loading
 
-Load objects from json files. 
+Load objects from json files.
 
 ### Imports
 
@@ -67,12 +72,13 @@ void should_create_book(
     ...
 }
 ```
-# Assertions 
+
+## Assertions
 
 Assert that actual value is equal to expected.
 
-- If a file is absent, the actual result will be saved as expected.
-- If an assertion fails new "actual" object file will be created.
+* If a file is absent, the actual result will be saved as expected.
+* If an assertion fails new "actual" object file will be created.
 
 ### Imports
 
@@ -120,7 +126,7 @@ void should_get_all_books(
 }
 ```
 
-# Mocking HTTP resources
+## Mocking HTTP resources
 
 Record and replay HTTP network interaction for a test.
 
@@ -133,14 +139,14 @@ import com.cariochi.recordo.MockHttpServer;
 
 ### Initialization
 
-- OkHttp
+* OkHttp
 
 ```java
 @EnableRecordo
 private OkHttpClient client;
 ```
 
-- Apache HttpClient
+* Apache HttpClient
 
 ```java
 @EnableRecordo
@@ -159,7 +165,7 @@ void should_retrieve_gists() {
 }
 ```
 
-# Declarative MockMvc
+## Declarative MockMvc
 
 Use Spring MockMvc in declarative way.
 
@@ -269,3 +275,4 @@ void should_delete_book(
     ...
 }
 ```
+
