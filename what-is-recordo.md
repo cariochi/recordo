@@ -4,9 +4,9 @@
 This documentation is still under development, so you can find some missing sections.
 {% endhint %}
 
-**Recordo** is a JUnit 5 extension.
+**Recordo** is a JUnit 5 extension for fast, deterministic, and accurate tests. 
 
-#### Load Resources 
+### Load Resources 
 
 ```java
 @Test
@@ -17,7 +17,7 @@ void should_create_book(
 }
 ```
 
-#### Make Assertions
+### Make Assertions
 
 ```java
 @Test
@@ -29,7 +29,7 @@ void should_get_book_by_id(
 }
 ```
 
-#### Record and playback all third-party REST requests in a test
+### Record and playback all third-party REST requests in a test
 
 ```java
 @Test
@@ -41,7 +41,7 @@ void should_retrieve_gists() {
 }
 ```
 
-#### Test a web layer  
+### Test a web layer  
 
 ```java
 @Test
