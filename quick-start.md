@@ -1,6 +1,8 @@
 # Quick start
 
 {% hint style="info" %}
+
+
 This documentation is still under development, so you can find some missing sections.
 {% endhint %}
 
