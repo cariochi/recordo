@@ -13,9 +13,7 @@ Please, see our recently published documentation [here](https://www.cariochi.com
 
 ```java
 @Test
-void should_create_book(
-    @Given("/books/book.json") Book book
-) {
+void should_create_book(@Given("/books/book.json") Book book) {
     ...
 }
 ```
@@ -24,9 +22,7 @@ void should_create_book(
 
 ```java
 @Test
-void should_get_book_by_id(
-        @Given("/books/book.json") Assertion<Book> assertion
-) {
+void should_get_book_by_id(@Given("/books/book.json") Assertion<Book> assertion) {
     final Book actual = bookService.findById(1L);
     assertion.assertAsExpected(actual);
 }
@@ -48,9 +44,7 @@ void should_retrieve_gists() {
 
 ```java
 @Test
-void should_get_books(
-        @MockHttpGet("/books") Page<Book> books
-) {
+void should_get_books(@MockHttpGet("/books") Page<Book> books) {
    ...
 }
 ```
