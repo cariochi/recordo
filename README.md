@@ -8,7 +8,7 @@ Please, see our recently published documentation [here](https://www.cariochi.com
 
 # Features 
 
-## Load Resources 
+### Load Resources 
 
 ```java
 @Test
@@ -19,7 +19,7 @@ void should_create_book(
 }
 ```
 
-## Make Assertions
+### Make Assertions
 
 ```java
 @Test
@@ -31,7 +31,7 @@ void should_get_book_by_id(
 }
 ```
 
-## Record and Playback  REST Requests
+### Record and Playback  REST Requests
 
 ```java
 @Test
@@ -43,7 +43,7 @@ void should_retrieve_gists() {
 }
 ```
 
-## Test a Web Layer  
+### Test a Web Layer  
 
 ```java
 @Test
