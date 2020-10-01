@@ -3,6 +3,10 @@
 
 **Recordo** is a JUnit 5 extension for fast, deterministic, and accurate tests. It implements common test functionality in a declarative way and helps to handle json resources by recording or generating json files if they are absent.
 
+# Documentation
+
+Please, see our recently published documentation [here](https://www.cariochi.com). Although it has been published, it is still under development and there may be some sections unfinished or missing.
+
 # Features 
 
 ## Load Resources 
@@ -51,6 +55,3 @@ void should_get_books(
 }
 ```
 
-# Documentation
-
-Please, see our recently published documentation [here](https://www.cariochi.com). Although it has been published, it is still under development and there may be some sections unfinished or missing.
