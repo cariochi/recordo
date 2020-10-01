@@ -55,3 +55,6 @@ void should_get_books(
 }
 ```
 
+LICENSE
+Recordo propject is licensed under the MIT License. See the [LICENSE](https://github.com/cariochi/recordo/blob/master/LICENSE) file for details.
+
