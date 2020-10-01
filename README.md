@@ -1,6 +1,5 @@
 # What is Recordo
 
-
 **Recordo** is a JUnit 5 extension for fast, deterministic, and accurate tests. It implements common test functionality in a declarative way and helps to handle json resources by recording or generating json files if they are absent.
 
 # Documentation
@@ -55,6 +54,7 @@ void should_get_books(
 }
 ```
 
-LICENSE
-Recordo propject is licensed under the MIT License. See the [LICENSE](https://github.com/cariochi/recordo/blob/master/LICENSE) file for details.
+# LICENSE
+
+**Recordo** propject is licensed under the MIT License. See the [LICENSE](https://github.com/cariochi/recordo/blob/master/LICENSE) file for details.
 
