@@ -53,4 +53,4 @@ void should_get_books(
 
 ### Documentation
 
-Please, see our recently published documentation [here](https://cariochi.com). Although it has been published, it is still under development and there may be some sections unfinished or missing.
+Please, see our recently published documentation [here](https://www.cariochi.com). Although it has been published, it is still under development and there may be some sections unfinished or missing.
