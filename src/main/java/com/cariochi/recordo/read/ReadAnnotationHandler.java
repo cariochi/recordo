@@ -1,6 +1,6 @@
-package com.cariochi.recordo.given;
+package com.cariochi.recordo.read;
 
-import com.cariochi.recordo.Given;
+import com.cariochi.recordo.Read;
 import com.cariochi.recordo.RecordoError;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonConverters;
@@ -13,25 +13,25 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.lang.reflect.Type;
 
-public class GivenAnnotationHandler implements BeforeEachCallback {
+public class ReadAnnotationHandler implements BeforeEachCallback {
 
     @Override
     public void beforeEach(ExtensionContext context) {
         final ExceptionsCollector collector = Exceptions.collectorOf(RecordoError.class);
         Fields.of(context.getRequiredTestInstance())
-                .withAnnotation(Given.class)
+                .withAnnotation(Read.class)
                 .forEach(collector.consuming(
-                        field -> processGiven(field.getAnnotation(Given.class), field)
+                        field -> processGiven(field.getAnnotation(Read.class), field)
                 ));
         if (collector.hasExceptions()) {
             throw new RecordoError(collector.getMessage());
         }
     }
 
-    public void processGiven(Given annotation, TargetField field) {
+    public void processGiven(Read annotation, TargetField field) {
         final Type parameterType = field.getGenericType();
         final JsonConverter jsonConverter = JsonConverters.find(field.getTarget());
-        final Object value = GivenObjectReader.read(annotation.value(), parameterType, jsonConverter);
+        final Object value = ObjectReader.read(annotation.value(), parameterType, jsonConverter);
         field.setValue(value);
     }
 }

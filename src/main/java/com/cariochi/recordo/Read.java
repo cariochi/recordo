@@ -2,10 +2,10 @@ package com.cariochi.recordo;
 
 import java.lang.annotation.*;
 
-@Target({ElementType.METHOD, ElementType.PARAMETER})
+@Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface MockHttpServer {
+public @interface Read {
 
     String value();
 

@@ -1,13 +1,13 @@
 package com.cariochi.recordo.mockhttp.client.resolvers;
 
 import com.cariochi.recordo.EnableRecordo;
-import com.cariochi.recordo.given.GivenObjectReader;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonConverters;
 import com.cariochi.recordo.mockhttp.client.MockHttpClient;
 import com.cariochi.recordo.mockhttp.client.Request;
 import com.cariochi.recordo.mockhttp.client.RequestInterceptor;
 import com.cariochi.recordo.mockhttp.client.Response;
+import com.cariochi.recordo.read.ObjectReader;
 import com.cariochi.recordo.utils.reflection.Fields;
 import com.cariochi.recordo.utils.reflection.TargetField;
 import lombok.SneakyThrows;
@@ -77,7 +77,7 @@ public abstract class AbstractRequestParameterResolver implements ParameterResol
 
     public String getBodyFromFile(String bodyFile, Object testInstance) {
         final JsonConverter jsonConverter = JsonConverters.find(testInstance);
-        return (String) GivenObjectReader.read(bodyFile, String.class, jsonConverter);
+        return (String) ObjectReader.read(bodyFile, String.class, jsonConverter);
     }
 
     private Object executeRequest(Request<Object> request, ParameterContext parameter) {

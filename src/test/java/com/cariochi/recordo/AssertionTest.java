@@ -1,52 +1,51 @@
 package com.cariochi.recordo;
 
 import com.cariochi.recordo.dto.TestDto;
-import com.cariochi.recordo.given.Assertion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 
+import static com.cariochi.recordo.assertions.RecordoAssertion.assertAsJson;
+import static com.cariochi.recordo.assertions.RecordoCondition.equalAsJsonTo;
 import static com.cariochi.recordo.dto.TestDto.dto;
 import static java.util.Arrays.asList;
 import static java.util.Collections.reverse;
 import static java.util.Collections.shuffle;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(RecordoExtension.class)
 public class AssertionTest {
 
     @Test
-    void extensible(
-            @Given("/verify_annotation_test/dto.json") Assertion<TestDto> assertion
-    ) {
-        assertion
+    void extensible() {
+
+        assertAsJson(testDto(1))
                 .extensible(true)
-                .assertAsExpected(testDto(1));
+                .isEqualTo("/verify_annotation_test/dto.json");
+
+        assertThat(testDto(1))
+                .is(equalAsJsonTo("/verify_annotation_test/dto.json").extensible(true));
+
     }
 
     @Test
-    void not_extensible(
-            @Given("/verify_annotation_test/dto.json") Assertion<TestDto> assertion
-    ) {
-        assertion
-                .assertAsExpected(testDto(1));
+    void not_extensible() {
+        assertAsJson(testDto(1))
+                .isEqualTo("/verify_annotation_test/dto.json");
     }
 
     @Test
-    void included(
-            @Given("/verify_annotation_test/short_dto.json") Assertion<TestDto> assertion
-    ) {
-        assertion
-                .included("id", "text", "children.id", "children.text")
-                .assertAsExpected(testDto(1));
+    void included() {
+        assertAsJson(testDto(1))
+                .including("id", "text", "children.id", "children.text")
+                .isEqualTo("/verify_annotation_test/short_dto.json");
     }
 
     @Test
-    void excluded(
-            @Given("/verify_annotation_test/short_dto.json") Assertion<TestDto> assertion
-    ) {
-        assertion
-                .excluded(
+    void excluded() {
+        assertAsJson(testDto(1))
+                .excluding(
                         "strings",
                         "date",
                         "parent",
@@ -55,81 +54,76 @@ public class AssertionTest {
                         "children.parent",
                         "children.children"
                 )
-                .assertAsExpected(testDto(1));
+                .isEqualTo("/verify_annotation_test/short_dto.json");
     }
 
     @Test
-    void list_extensible(
-            @Given("/verify_annotation_test/list.json") Assertion<List<TestDto>> assertion
-    ) {
-        assertion
+    void list_extensible() {
+        assertAsJson(list())
                 .extensible(true)
-                .assertAsExpected(list());
+                .isEqualTo("/verify_annotation_test/list.json");
     }
 
     @Test
-    void list_not_extensible(
-            @Given("/verify_annotation_test/list.json") Assertion<List<TestDto>> assertion
-    ) {
-        assertion.assertAsExpected(list());
+    void list_not_extensible() {
+        assertAsJson(list())
+                .isEqualTo("/verify_annotation_test/list.json");
     }
 
     @Test
-    void list_included(
-            @Given("/verify_annotation_test/short_list.json") Assertion<List<TestDto>> assertion
-    ) {
-        assertion
-                .included("id", "text", "children.id", "children.text")
-                .assertAsExpected(list());
+    void list_included() {
+        assertAsJson(list())
+                .including("id", "text", "children.id", "children.text")
+                .isEqualTo("/verify_annotation_test/short_list.json");
     }
 
     @Test
-    void list_included_full_children(
-            @Given("/verify_annotation_test/short_list_with_full_children.json") Assertion<List<TestDto>> assertion
-    ) {
-        assertion
-                .included("id", "text", "children")
-                .assertAsExpected(list());
+    void list_included_full_children() {
+        assertAsJson(list())
+                .including("id", "text", "children")
+                .isEqualTo("/verify_annotation_test/short_list_with_full_children.json");
+
+        assertThat(list()).is(
+                equalAsJsonTo("/verify_annotation_test/short_list_with_full_children.json")
+                        .including("id", "text", "children")
+        );
     }
 
     @Test
-    void list_excluded(
-            @Given("/verify_annotation_test/short_list.json") Assertion<List<TestDto>> assertion
-    ) {
-        assertion
-                .excluded("strings", "date", "children.strings", "children.date", "children.children")
-                .assertAsExpected(list());
+    void list_excluded() {
+        assertAsJson(list())
+                .excluding("strings", "date", "children.strings", "children.date", "children.children")
+                .isEqualTo("/verify_annotation_test/short_list.json");
     }
 
     @Test
-    void list_strict_order(
-            @Given("/verify_annotation_test/list_strict_order.json") Assertion<List<TestDto>> assertion
-    ) {
+    void list_strict_order() {
         final List<TestDto> list = list();
         reverse(list.get(0).getChildren());
-        assertion.assertAsExpected(list);
+
+        assertAsJson(list)
+                .isEqualTo("/verify_annotation_test/list_strict_order.json");
     }
 
     @Test
-    void list_not_strict_order(
-            @Given("/verify_annotation_test/list.json") Assertion<List<TestDto>> assertion
-    ) {
+    void list_not_strict_order() {
         final List<TestDto> list = list();
         shuffle(list.get(0).getChildren());
         shuffle(list.get(1).getChildren());
         shuffle(list);
-        assertion
-                .strictOrder(false)
-                .assertAsExpected(list);
+
+        assertAsJson(list)
+                .withStrictOrder(false)
+                .isEqualTo("/verify_annotation_test/list.json");
     }
 
     @Test
-    void multiple(
-            @Given("/verify_annotation_test/dto.json") Assertion<TestDto> objectAssertion,
-            @Given("/verify_annotation_test/list.json") Assertion<List<TestDto>> listAssertion
-    ) {
-        objectAssertion.assertAsExpected(testDto(1));
-        listAssertion.assertAsExpected(list());
+    void multiple() {
+        assertAsJson(testDto(1))
+                .isEqualTo("/verify_annotation_test/dto.json");
+
+        assertAsJson(list())
+                .isEqualTo("/verify_annotation_test/list.json");
     }
 
     private TestDto testDto(int id) {

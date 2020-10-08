@@ -1,4 +1,4 @@
-package com.cariochi.recordo.given;
+package com.cariochi.recordo.read;
 
 import com.cariochi.recordo.generator.EmptyInstanceGenerator;
 import com.cariochi.recordo.json.JsonConverter;
@@ -11,7 +11,7 @@ import java.nio.file.NoSuchFileException;
 
 @Slf4j
 @UtilityClass
-public class GivenObjectReader {
+public class ObjectReader {
 
     private final EmptyInstanceGenerator EMPTY_INSTANCE_GENERATOR = new EmptyInstanceGenerator();
 
