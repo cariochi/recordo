@@ -1,40 +1,35 @@
 package com.cariochi.recordo;
 
 import com.cariochi.recordo.dto.Category;
-import com.cariochi.recordo.given.Assertion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import static com.cariochi.recordo.assertions.RecordoAssertion.assertAsJson;
 
 @ExtendWith(RecordoExtension.class)
 public class HierarchyAssertionTest {
 
     @Test
-    void should_assert_hierarchy(
-            @Given("/hierarchy_test/hierarchy.json") Assertion<Category> assertion
-    ) {
-        assertion
-                .excluded("subcategories.category", "subcategories.attributes.subcategory")
-                .assertAsExpected(hierarchy());
+    void should_assert_hierarchy() {
+        assertAsJson(hierarchy())
+                .excluding("subcategories.category", "subcategories.attributes.subcategory")
+                .isEqualTo("/hierarchy_test/hierarchy.json");
     }
 
     @Test
-    void should_include_full_attributes(
-            @Given("/hierarchy_test/hierarchy_include_full_attributes.json") Assertion<Category> assertion
-    ) {
-        assertion
-                .included("name", "subcategories.name", "subcategories.attributes")
-                .excluded("subcategories.attributes.subcategory")
-                .assertAsExpected(hierarchy());
+    void should_include_full_attributes() {
+        assertAsJson(hierarchy())
+                .including("name", "subcategories.name", "subcategories.attributes")
+                .excluding("subcategories.attributes.subcategory")
+                .isEqualTo("/hierarchy_test/hierarchy_include_full_attributes.json");
     }
 
     @Test
-    void should_include_categories_without_attributes(
-            @Given("/hierarchy_test/hierarchy_without_attributes.json") Assertion<Category> assertion
-    ) {
-        assertion
-                .included("name", "subcategories")
-                .excluded("subcategories.category", "subcategories.attributes")
-                .assertAsExpected(hierarchy());
+    void should_include_categories_without_attributes() {
+        assertAsJson(hierarchy())
+                .including("name", "subcategories")
+                .excluding("subcategories.category", "subcategories.attributes")
+                .isEqualTo("/hierarchy_test/hierarchy_without_attributes.json");
     }
 
     private Category hierarchy() {

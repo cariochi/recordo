@@ -18,6 +18,10 @@ public class Files {
 
     public final Path USER_DIR = Paths.get(getProperty("user.dir"));
 
+    public boolean exists(String file) {
+        return java.nio.file.Files.exists(path(file));
+    }
+
     public String read(String file) throws NoSuchFileException {
         try {
             return new String(java.nio.file.Files.readAllBytes(path(file)), UTF_8);

@@ -1,8 +1,6 @@
 package com.cariochi.recordo.generator;
 
-import com.cariochi.recordo.Given;
 import com.cariochi.recordo.RecordoExtension;
-import com.cariochi.recordo.given.Assertion;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import org.junit.jupiter.api.Test;
@@ -13,6 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static com.cariochi.recordo.assertions.RecordoAssertion.assertAsJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(RecordoExtension.class)
@@ -21,16 +20,16 @@ class EmptyInstanceGeneratorTest {
     private final EmptyInstanceGenerator generator = new EmptyInstanceGenerator();
 
     @Test
-    void should_generate_object(
-            @Given("/generator/test_object.json") Assertion<TestObject> assertion
-    ) {
+    void should_generate_object() {
         TestObject object = (TestObject) generator.createInstance(TestObject.class, 2);
+
         assertThat(object)
                 .extracting(TestObject::getLocalDate, TestObject::getLocalDateTime, TestObject::getInstant)
                 .doesNotContainNull();
-        assertion
-                .excluded("localDate", "localDateTime", "instant")
-                .assertAsExpected(object);
+
+        assertAsJson(object)
+                .excluding("localDate", "localDateTime", "instant")
+                .isEqualTo("/generator/test_object.json");
     }
 
     @Data
