@@ -13,7 +13,7 @@ Please, see our recently published documentation [here](https://www.cariochi.com
 ```java
 @Test
 void should_create_book(
-    @Given("/books/book.json") Book book
+    @Read("/books/book.json") Book book
 ) {
     ...
 }
@@ -23,11 +23,11 @@ void should_create_book(
 
 ```java
 @Test
-void should_get_book_by_id(
-    @Given("/books/book.json") Assertion<Book> assertion
-) {
-    final Book actual = bookService.findById(1L);
-    assertion.assertAsExpected(actual);
+void should_get_book_by_id() {
+    Book actual = ...
+    
+    RecordoAsserion.assertAsJson(actual)
+            .isEqualTo("/books/book.json");
 }
 ```
 
@@ -35,10 +35,10 @@ void should_get_book_by_id(
 
 ```java
 @Test
-@MockHttpServer("/mockServer/should_retrieve_gists.rest.json")
+@WithMockHttpServer("/mockServer/get_gists.rest.json")
 void should_retrieve_gists() {
     ...
-    final List<GistResponse> gists = restClient.getGists();
+    List<GistResponse> gists = restClient.getGists();
     ...
 }
 ```
@@ -48,7 +48,7 @@ void should_retrieve_gists() {
 ```java
 @Test
 void should_get_books(
-    @MockHttpGet("/books") Page<Book> books
+        @MockHttpGet("/books") Page<Book> books
 ) {
    ...
 }
