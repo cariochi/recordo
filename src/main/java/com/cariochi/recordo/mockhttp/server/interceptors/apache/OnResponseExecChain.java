@@ -12,19 +12,23 @@ import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.impl.execchain.ClientExecChain;
 
 import java.io.IOException;
-import java.util.Optional;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 @RequiredArgsConstructor
-public class PlaybackExecChain implements ClientExecChain {
+public class OnResponseExecChain implements ClientExecChain {
 
     private final ClientExecChain requestExecutor;
     private final ApacheMapper mapper = new ApacheMapper();
 
-    private Function<MockHttpRequest, Optional<MockHttpResponse>> onBeforeRequest;
+    private BiFunction<MockHttpRequest, MockHttpResponse, MockHttpResponse> onResponse;
+    private boolean active;
 
-    public void init(Function<MockHttpRequest, Optional<MockHttpResponse>> onBeforeRequest) {
-        this.onBeforeRequest = onBeforeRequest;
+    public void onResponse(BiFunction<MockHttpRequest, MockHttpResponse, MockHttpResponse> onResponse) {
+        this.onResponse = onResponse;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     @Override
@@ -32,9 +36,13 @@ public class PlaybackExecChain implements ClientExecChain {
                                          HttpRequestWrapper request,
                                          HttpClientContext context,
                                          HttpExecutionAware executionAware) throws IOException, HttpException {
-        final Optional<MockHttpResponse> recordoResponse = onBeforeRequest.apply(mapper.toRecordoRequest(request));
-        return recordoResponse.isPresent()
-                ? mapper.toHttpResponse(recordoResponse.get())
-                : requestExecutor.execute(route, request, context, executionAware);
+        final CloseableHttpResponse response = requestExecutor.execute(route, request, context, executionAware);
+        if (active) {
+            final MockHttpRequest recordoRequest = mapper.toRecordoRequest(request);
+            final MockHttpResponse recordoResponse = mapper.toRecordoResponse(response);
+            return mapper.toHttpResponse(onResponse.apply(recordoRequest, recordoResponse));
+        } else {
+            return response;
+        }
     }
 }

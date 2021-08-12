@@ -30,7 +30,7 @@ public class HttpClientInterceptors {
                     .withTypeAndAnnotation(OkHttpClientInterceptor.class, EnableRecordo.class).stream().findAny()
                     .map(TargetField::getValue)
                     .map(Optional::of)
-                    .orElseGet(() -> okHttpClient(testInstance).map(OkHttpClientInterceptor::new))
+                    .orElseGet(() -> okHttpClient(testInstance).map(OkHttpClientInterceptor::attachTo))
                     .map(HttpClientInterceptor.class::cast);
         } catch (ClassNotFoundException e) {
             return Optional.empty();
