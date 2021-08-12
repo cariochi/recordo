@@ -4,6 +4,7 @@ import com.cariochi.recordo.json.JacksonConverter;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.mockhttp.server.assertion.RequestAssert;
 import com.cariochi.recordo.mockhttp.server.interceptors.HttpClientInterceptor;
+import com.cariochi.recordo.mockhttp.server.interceptors.RecordoRequestHandler;
 import com.cariochi.recordo.mockhttp.server.model.MockHttpInteraction;
 import com.cariochi.recordo.mockhttp.server.model.MockHttpRequest;
 import com.cariochi.recordo.mockhttp.server.model.MockHttpResponse;
@@ -22,7 +23,7 @@ import static java.util.stream.Collectors.*;
 import static org.apache.commons.text.StringSubstitutor.replace;
 
 @Slf4j
-public class MockHttpServer implements AutoCloseable {
+public class MockHttpServer implements AutoCloseable, RecordoRequestHandler {
 
     private static final Type TYPE = new TypeReference<List<MockHttpInteraction>>() {}.getType();
 
@@ -39,7 +40,7 @@ public class MockHttpServer implements AutoCloseable {
 
     public MockHttpServer(String fileName, HttpClientInterceptor interceptor) {
         this.fileName = fileName;
-        interceptor.init(this::pollMock, this::addMock);
+        interceptor.init(this);
     }
 
     public MockHttpServer(String fileName, HttpClientInterceptor interceptor, JsonConverter jsonConverter) {
@@ -47,7 +48,8 @@ public class MockHttpServer implements AutoCloseable {
         this.jsonConverter = jsonConverter;
     }
 
-    Optional<MockHttpResponse> pollMock(MockHttpRequest request) {
+    @Override
+    public Optional<MockHttpResponse> onRequest(MockHttpRequest request) {
         if (expectedMocks().isEmpty()) {
             return Optional.empty();
         }
@@ -58,7 +60,8 @@ public class MockHttpServer implements AutoCloseable {
         return Optional.of(expected.getResponse());
     }
 
-    MockHttpResponse addMock(MockHttpRequest request, MockHttpResponse response) {
+    @Override
+    public MockHttpResponse onResponse(MockHttpRequest request, MockHttpResponse response) {
         actualMocks.add(new MockHttpInteraction(request, response));
         return response;
     }
@@ -111,30 +114,61 @@ public class MockHttpServer implements AutoCloseable {
     }
 
     private MockHttpInteraction prepareForRecord(MockHttpInteraction mock) {
-        final MockHttpRequest request = Optional.ofNullable(mock.getRequest().getBody())
-                .map(json -> jsonConverter.fromJson((String) json, Object.class))
-                .map(body -> mock.getRequest().withBody(body))
-                .orElse(mock.getRequest().withBody(null));
-        final MockHttpResponse response = Optional.ofNullable(mock.getResponse().getBody())
-                .map(json -> jsonConverter.fromJson((String) json, Object.class))
-                .map(mock.getResponse()::withBody)
-                .orElse(mock.getResponse().withBody(null));
         return new MockHttpInteraction(
-                request.withHeaders(filteredHeaders(request.getHeaders())),
-                response.withHeaders(filteredHeaders(response.getHeaders()))
+                prepareForRecord(mock.getRequest()),
+                prepareForRecord(mock.getResponse())
         );
     }
 
+    private MockHttpRequest prepareForRecord(MockHttpRequest request) {
+        final MockHttpRequest prepared = Optional.ofNullable(request)
+                .filter(MockHttpRequest::isJson)
+                .map(MockHttpRequest::getBody)
+                .filter(body -> body instanceof String)
+                .map(String.class::cast)
+                .map(json -> jsonConverter.fromJson(json, Object.class))
+                .map(request::withBody)
+                .orElse(request);
+        return prepared.withHeaders(filteredHeaders(request.getHeaders()));
+    }
+
+    private MockHttpResponse prepareForRecord(MockHttpResponse request) {
+        final MockHttpResponse prepared = Optional.ofNullable(request)
+                .filter(MockHttpResponse::isJson)
+                .map(MockHttpResponse::getBody)
+                .filter(body -> body instanceof String)
+                .map(String.class::cast)
+                .map(json -> jsonConverter.fromJson(json, Object.class))
+                .map(request::withBody)
+                .orElse(request);
+        return prepared.withHeaders(filteredHeaders(request.getHeaders()));
+    }
+
     private MockHttpInteraction prepareForPlayback(MockHttpInteraction mock) {
-        final MockHttpRequest request = Optional.ofNullable(mock.getRequest().getBody())
+        return new MockHttpInteraction(
+                prepareForPlayback(mock.getRequest()),
+                prepareForPlayback(mock.getResponse())
+        );
+    }
+
+    private MockHttpRequest prepareForPlayback(MockHttpRequest request) {
+        return Optional.ofNullable(request)
+                .filter(MockHttpRequest::isJson)
+                .map(MockHttpRequest::getBody)
+                .filter(body -> !(body instanceof String))
                 .map(jsonConverter::toJson)
-                .map(mock.getRequest()::withBody)
-                .orElse(mock.getRequest().withBody(null));
-        final MockHttpResponse response = Optional.ofNullable(mock.getResponse().getBody())
+                .map(request::withBody)
+                .orElse(request);
+    }
+
+    private MockHttpResponse prepareForPlayback(MockHttpResponse response) {
+        return Optional.ofNullable(response)
+                .filter(MockHttpResponse::isJson)
+                .map(MockHttpResponse::getBody)
+                .filter(body -> !(body instanceof String))
                 .map(jsonConverter::toJson)
-                .map(mock.getResponse()::withBody)
-                .orElse(mock.getResponse().withBody(null));
-        return new MockHttpInteraction(request, response);
+                .map(response::withBody)
+                .orElse(response);
     }
 
     private Map<String, String> filteredHeaders(Map<String, String> headers) {

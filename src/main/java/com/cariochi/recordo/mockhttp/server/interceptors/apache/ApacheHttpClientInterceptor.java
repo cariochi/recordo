@@ -1,35 +1,32 @@
 package com.cariochi.recordo.mockhttp.server.interceptors.apache;
 
 import com.cariochi.recordo.mockhttp.server.interceptors.HttpClientInterceptor;
-import com.cariochi.recordo.mockhttp.server.model.MockHttpRequest;
+import com.cariochi.recordo.mockhttp.server.interceptors.RecordoRequestHandler;
 import com.cariochi.recordo.mockhttp.server.model.MockHttpResponse;
 import org.apache.http.client.HttpClient;
 
 import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.Function;
+
+import static com.cariochi.recordo.mockhttp.server.interceptors.apache.ApacheClientAttachUtils.attachOnRequestExecChain;
+import static com.cariochi.recordo.mockhttp.server.interceptors.apache.ApacheClientAttachUtils.attachOnResponseExecChain;
 
 public class ApacheHttpClientInterceptor implements HttpClientInterceptor {
 
-    private final PlaybackExecChain playbackExecChain;
-    private final RecordExecChain recordExecChain;
+    private final OnRequestExecChain onRequestExecChain;
+    private final OnResponseExecChain onResponseExecChain;
 
     public ApacheHttpClientInterceptor(HttpClient httpClient) {
-        playbackExecChain = ApacheClientAttachUtils.attachPlaybackExecChain(httpClient);
-        recordExecChain = ApacheClientAttachUtils.attachRecordExecChain(httpClient);
+        onRequestExecChain = attachOnRequestExecChain(httpClient);
+        onResponseExecChain = attachOnResponseExecChain(httpClient);
     }
 
     @Override
-    public void init(Function<MockHttpRequest, Optional<MockHttpResponse>> onBeforeRequest,
-                     BiFunction<MockHttpRequest, MockHttpResponse, MockHttpResponse> onAfterRequest) {
-
-        playbackExecChain.init(request -> {
-            final Optional<MockHttpResponse> response = onBeforeRequest.apply(request);
-            recordExecChain.setActive(!response.isPresent());
+    public void init(RecordoRequestHandler handler) {
+        onRequestExecChain.onRequest(request -> {
+            final Optional<MockHttpResponse> response = handler.onRequest(request);
+            onResponseExecChain.setActive(!response.isPresent());
             return response;
         });
-
-        recordExecChain.init(onAfterRequest);
+        onResponseExecChain.onResponse(handler::onResponse);
     }
-
 }

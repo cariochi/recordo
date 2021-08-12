@@ -3,11 +3,10 @@ package com.cariochi.recordo.mockhttp.server.interceptors.okhttp;
 import com.cariochi.recordo.RecordoError;
 import com.cariochi.recordo.mockhttp.server.model.MockHttpRequest;
 import com.cariochi.recordo.mockhttp.server.model.MockHttpResponse;
-import okhttp3.Headers;
-import okhttp3.MediaType;
-import okhttp3.Protocol;
-import okhttp3.ResponseBody;
+import okhttp3.*;
 import okio.Buffer;
+import okio.BufferedSource;
+import okio.GzipSource;
 
 import java.io.IOException;
 import java.util.Map;
@@ -16,6 +15,7 @@ import java.util.Optional;
 import static java.lang.String.join;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toMap;
+import static okio.Okio.buffer;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 public class OkHttpMapper {
@@ -24,7 +24,7 @@ public class OkHttpMapper {
     private static final String DEFAULT_CONTENT_TYPE = "application/json; charset=utf-8";
 
     public MockHttpRequest toRecordoRequest(okhttp3.Request request) {
-        return  MockHttpRequest.builder()
+        return MockHttpRequest.builder()
                 .method(request.method())
                 .url(request.url().url().toString())
                 .headers(headersOf(request.headers()))
@@ -32,8 +32,8 @@ public class OkHttpMapper {
                 .build();
     }
 
-    public MockHttpResponse toRecordoResponse(okhttp3.Response response) {
-        return  MockHttpResponse.builder()
+    public MockHttpResponse toRecordoResponse(Response response) {
+        return MockHttpResponse.builder()
                 .protocol(response.protocol().toString())
                 .headers(headersOf(response.headers()))
                 .statusCode(response.code())
@@ -42,13 +42,13 @@ public class OkHttpMapper {
                 .build();
     }
 
-    public okhttp3.Response fromRecordoResponse(okhttp3.Request request, MockHttpResponse response) throws IOException {
+    public Response toOkHttpResponse(okhttp3.Request request, MockHttpResponse response) throws IOException {
         final byte[] body = bytes(response.getBody());
         final ResponseBody responseBody = ResponseBody.create(
                 MediaType.parse(contentTypeOf(response.getHeaders())),
                 body
         );
-        return new okhttp3.Response.Builder()
+        return new Response.Builder()
                 .request(request)
                 .code(response.getStatusCode())
                 .message(response.getStatusText())
@@ -72,11 +72,16 @@ public class OkHttpMapper {
         }
     }
 
-    private String bodyOf(okhttp3.Response response) {
+    private String bodyOf(Response response) {
         try {
             String responseContent = null;
-            if (response.body() != null) {
-                responseContent = response.body().source().readString(UTF_8);
+            final ResponseBody body = response.body();
+            if (body != null) {
+                BufferedSource source = buffer(body.source());
+                if ("gzip".equals(response.header("Content-Encoding"))) {
+                    source = buffer(new GzipSource(source));
+                }
+                responseContent = source.readUtf8();
             }
             return isEmpty(responseContent) ? null : responseContent;
         } catch (IOException e) {

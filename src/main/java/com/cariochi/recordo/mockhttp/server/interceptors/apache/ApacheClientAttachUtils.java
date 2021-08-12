@@ -9,45 +9,45 @@ import org.apache.http.impl.execchain.MainClientExec;
 @UtilityClass
 public class ApacheClientAttachUtils {
 
-    public RecordExecChain attachRecordExecChain(Object target) {
+    public static OnRequestExecChain attachOnRequestExecChain(Object target) {
         return Fields.of(target).withType(ClientExecChain.class).stream()
                 .findAny()
-                .map(ApacheClientAttachUtils::getRecordExecChain)
+                .map(ApacheClientAttachUtils::getOnRequestExecChain)
                 .orElse(null);
     }
 
-    public PlaybackExecChain attachPlaybackExecChain(Object target) {
+    public static OnResponseExecChain attachOnResponseExecChain(Object target) {
         return Fields.of(target).withType(ClientExecChain.class).stream()
                 .findAny()
-                .map(ApacheClientAttachUtils::getPlaybackExecChain)
+                .map(ApacheClientAttachUtils::getOnResponseExecChain)
                 .orElse(null);
     }
 
-    private PlaybackExecChain getPlaybackExecChain(TargetField field) {
+    private OnRequestExecChain getOnRequestExecChain(TargetField field) {
         final Object value = field.getValue();
         if (value == null) {
             return null;
-        } else if (PlaybackExecChain.class.isAssignableFrom(value.getClass())) {
-            return (PlaybackExecChain) value;
+        } else if (OnRequestExecChain.class.isAssignableFrom(value.getClass())) {
+            return (OnRequestExecChain) value;
         } else if (MainClientExec.class.isAssignableFrom(value.getClass())) {
-            final PlaybackExecChain playbackExecChain = new PlaybackExecChain((MainClientExec) value);
-            field.setValue(playbackExecChain);
-            return playbackExecChain;
+            final OnRequestExecChain onRequestExecChain = new OnRequestExecChain((MainClientExec) value);
+            field.setValue(onRequestExecChain);
+            return onRequestExecChain;
         } else {
-            return attachPlaybackExecChain(value);
+            return attachOnRequestExecChain(value);
         }
     }
 
-    private RecordExecChain getRecordExecChain(TargetField field) {
+    private OnResponseExecChain getOnResponseExecChain(TargetField field) {
         final Object value = field.getValue();
         if (value == null) {
             return null;
-        } else if (RecordExecChain.class.isAssignableFrom(value.getClass())) {
-            return (RecordExecChain) value;
+        } else if (OnResponseExecChain.class.isAssignableFrom(value.getClass())) {
+            return (OnResponseExecChain) value;
         } else {
-            final RecordExecChain recordExecChain = new RecordExecChain((ClientExecChain) value);
-            field.setValue(recordExecChain);
-            return recordExecChain;
+            final OnResponseExecChain onResponseExecChain = new OnResponseExecChain((ClientExecChain) value);
+            field.setValue(onResponseExecChain);
+            return onResponseExecChain;
         }
     }
 }

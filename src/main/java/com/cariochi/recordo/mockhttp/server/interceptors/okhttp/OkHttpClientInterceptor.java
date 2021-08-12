@@ -1,56 +1,54 @@
 package com.cariochi.recordo.mockhttp.server.interceptors.okhttp;
 
 import com.cariochi.recordo.mockhttp.server.interceptors.HttpClientInterceptor;
+import com.cariochi.recordo.mockhttp.server.interceptors.RecordoRequestHandler;
 import com.cariochi.recordo.mockhttp.server.model.MockHttpRequest;
 import com.cariochi.recordo.mockhttp.server.model.MockHttpResponse;
 import com.cariochi.recordo.utils.reflection.Fields;
+import lombok.SneakyThrows;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
-import static com.cariochi.recordo.utils.exceptions.Exceptions.tryGet;
 import static java.util.stream.Collectors.toList;
 
 public class OkHttpClientInterceptor implements Interceptor, HttpClientInterceptor {
 
     private final OkHttpMapper mapper = new OkHttpMapper();
 
-    private Function<MockHttpRequest, Optional<MockHttpResponse>> onBeforeRequest;
-    private BiFunction<MockHttpRequest, MockHttpResponse, MockHttpResponse> onAfterRequest;
+    private RecordoRequestHandler handler;
 
-    public OkHttpClientInterceptor(OkHttpClient httpClient) {
-        attachToHttpClient(httpClient);
+    public static OkHttpClientInterceptor attachTo(OkHttpClient httpClient) {
+        final OkHttpClientInterceptor interceptor = new OkHttpClientInterceptor();
+        final List<Interceptor> interceptors = httpClient.interceptors().stream()
+                .filter(interceptor1 -> !(interceptor1 instanceof OkHttpClientInterceptor))
+                .collect(toList());
+        interceptors.add(interceptor);
+        Fields.of(httpClient).get("interceptors").setValue(interceptors);
+        return interceptor;
     }
 
     @Override
-    public void init(Function<MockHttpRequest, Optional<MockHttpResponse>> onBeforeRequest,
-                     BiFunction<MockHttpRequest, MockHttpResponse, MockHttpResponse> onAfterRequest) {
-        this.onBeforeRequest = onBeforeRequest;
-        this.onAfterRequest = onAfterRequest;
+    public void init(RecordoRequestHandler handler) {
+        this.handler = handler;
     }
 
     @Override
     public okhttp3.Response intercept(Chain chain) throws IOException {
         final okhttp3.Request request = chain.request();
         final MockHttpRequest recordoRequest = mapper.toRecordoRequest(request);
-        final MockHttpResponse response = onBeforeRequest.apply(recordoRequest)
-                .orElseGet(tryGet(
-                        () -> onAfterRequest.apply(recordoRequest, mapper.toRecordoResponse(chain.proceed(request)))
-                ));
-        return mapper.fromRecordoResponse(request, response);
+        final MockHttpResponse response = handler.onRequest(recordoRequest)
+                .orElseGet(() -> handler.onResponse(recordoRequest, proceed(request, chain)));
+        return mapper.toOkHttpResponse(request, response);
     }
 
-    private void attachToHttpClient(OkHttpClient httpClient) {
-        final List<Interceptor> interceptors = httpClient.interceptors().stream()
-                .filter(interceptor -> !(interceptor instanceof OkHttpClientInterceptor))
-                .collect(toList());
-        interceptors.add(this);
-        Fields.of(httpClient).get("interceptors").setValue(interceptors);
+    @SneakyThrows
+    private MockHttpResponse proceed(Request request, Chain chain) {
+        final Response response = chain.proceed(request);
+        return mapper.toRecordoResponse(response);
     }
-
 }
