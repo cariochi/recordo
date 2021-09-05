@@ -1,0 +1,34 @@
+package com.cariochi.recordo.mockserver.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+@Data
+@Builder
+@With
+@NoArgsConstructor
+@AllArgsConstructor
+public class MockHttpRequest {
+
+    private String method;
+    private String url;
+    @Builder.Default
+    private Map<String, String> headers = new LinkedHashMap<>();
+    private Object body;
+
+    public String contentType() {
+        return headers.entrySet().stream()
+                .filter(e -> "content-type".equalsIgnoreCase(e.getKey()))
+                .map(Map.Entry::getValue)
+                .findAny()
+                .orElse("application/json");
+    }
+
+    @JsonIgnore
+    public boolean isJson() {
+        return contentType().startsWith("application/json");
+    }
+}

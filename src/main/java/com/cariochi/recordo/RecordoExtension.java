@@ -1,9 +1,11 @@
 package com.cariochi.recordo;
 
-import com.cariochi.recordo.mockhttp.client.resolvers.*;
-import com.cariochi.recordo.mockhttp.server.HttpMocksAnnotationHandler;
+import com.cariochi.recordo.mockmvc.resolvers.*;
+import com.cariochi.recordo.mockserver.MockServerAnnotationHandler;
 import com.cariochi.recordo.read.ReadAnnotationHandler;
 import com.cariochi.recordo.read.ReadParameterResolver;
+import com.cariochi.recordo.typeref.ParameterizedTypeReferenceParameterResolver;
+import com.cariochi.recordo.typeref.TypeRefParameterResolver;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.*;
 
@@ -17,7 +19,7 @@ public class RecordoExtension implements BeforeEachCallback, AfterEachCallback, 
 
     private final List<Extension> handlers = asList(
             new ReadAnnotationHandler(),
-            new HttpMocksAnnotationHandler()
+            new MockServerAnnotationHandler()
     );
 
     private final List<ParameterResolver> parameterResolvers = asList(
@@ -28,7 +30,9 @@ public class RecordoExtension implements BeforeEachCallback, AfterEachCallback, 
             new PutParameterResolver(),
             new PatchParameterResolver(),
             new DeleteParameterResolver(),
-            new MockMvcClientParameterResolver()
+            new MockMvcClientParameterResolver(),
+            new TypeRefParameterResolver(),
+            new ParameterizedTypeReferenceParameterResolver()
     );
 
     @Override
