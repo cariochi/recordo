@@ -1,5 +1,6 @@
 package com.cariochi.recordo.utils.exceptions;
 
+import com.cariochi.recordo.RecordoError;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import static java.util.stream.Collectors.joining;
 import static lombok.AccessLevel.PROTECTED;
 
 @RequiredArgsConstructor(staticName = "of", access = PROTECTED)
-public final class ExceptionsCollector {
+public final class ExceptionsCollector implements AutoCloseable {
 
     private final Class<? extends Throwable> exceptionType;
 
@@ -52,6 +53,13 @@ public final class ExceptionsCollector {
         return exceptions.stream()
                 .map(Throwable::getMessage)
                 .collect(joining("\n\n"));
+    }
+
+    @Override
+    public void close() {
+        if (hasExceptions()) {
+            throw new RecordoError(getMessage());
+        }
     }
 
 }
