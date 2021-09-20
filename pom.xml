@@ -42,7 +42,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <jackson-datatype-jsr310.version>2.12.4</jackson-datatype-jsr310.version>
+        <jackson.version>2.12.4</jackson.version>
         <commons-text.version>1.9</commons-text.version>
         <junit-jupiter.version>5.7.2</junit-jupiter.version>
         <jsonassert.version>1.5.0</jsonassert.version>
@@ -75,7 +75,13 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson-datatype-jsr310.version}</version>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-csv</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>

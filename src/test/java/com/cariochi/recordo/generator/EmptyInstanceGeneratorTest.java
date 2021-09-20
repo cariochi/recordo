@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static com.cariochi.recordo.assertions.RecordoAssertion.assertAsJson;
+import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(RecordoExtension.class)

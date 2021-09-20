@@ -134,7 +134,7 @@ public class RecordoMockMvc {
     }
 
 
-    public <RESP> Response<RESP> execute(Request<RESP> request) {
+    public <RESP> Response<RESP> perform(Request<RESP> request) {
         try {
             final MockHttpServletRequestBuilder requestBuilder =
                     MockMvcRequestBuilders.request(request.method(), request.path(), request.uriVars())

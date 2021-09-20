@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static lombok.AccessLevel.NONE;
@@ -42,8 +43,8 @@ public class Request<RESP> {
 
     private HttpStatus expectedStatus;
 
-    public Response<RESP> execute() {
-        return client.execute(this);
+    public Response<RESP> perform() {
+        return client.perform(this);
     }
 
     public Request<RESP> headers(Map<String, String> headers) {

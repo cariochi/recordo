@@ -85,9 +85,9 @@ public abstract class AbstractRequestParameterResolver implements ParameterResol
         if (isWaitingForRequest(parameterClass)) {
             return request;
         } else if (isWaitingForResponse(parameterClass)) {
-            return request.execute();
+            return request.perform();
         } else {
-            return request.execute().getBody();
+            return request.perform().getBody();
         }
     }
 
