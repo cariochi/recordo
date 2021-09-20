@@ -9,7 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
+import static com.cariochi.recordo.assertions.JsonUtils.compareMode;
 import static org.junit.platform.commons.util.AnnotationUtils.findAnnotation;
 
 @Slf4j
@@ -20,12 +22,12 @@ public class MockServerAnnotationHandler implements BeforeEachCallback, AfterEac
     @Override
     public void beforeEach(ExtensionContext context) {
         findAnnotation(context.getRequiredTestMethod(), MockServer.class)
-                .map(MockServer::value)
-                .ifPresent(file -> {
+                .ifPresent(annotation -> {
                     final Object testInstance = context.getRequiredTestInstance();
                     final JsonConverter jsonConverter = JsonConverters.find(testInstance);
                     final HttpClientInterceptor interceptor = HttpClientInterceptors.of(testInstance);
-                    mockServer = new RecordoMockServer(file, interceptor, jsonConverter);
+                    final JSONCompareMode compareMode = compareMode(annotation.extensible(), annotation.strictOrder());
+                    mockServer = new RecordoMockServer(annotation.value(), interceptor, jsonConverter, compareMode);
                 });
     }
 
