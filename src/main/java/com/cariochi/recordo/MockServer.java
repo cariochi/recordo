@@ -16,7 +16,7 @@ import java.lang.annotation.*;
  *  &#064;MockServer("/mocks/get_gists.json")
  *  void should_retrieve_gists() {
  *      ...
- *      List<GistResponse> gists = gitHubClient.getGists();
+ *      List&lt;GistResponse&gt; gists = gitHubClient.getGists();
  *      ...
  *  }
  *

@@ -4,7 +4,28 @@
 
 # Documentation
 
-Please, see our recently published documentation [here](https://www.cariochi.com). Although it has been published, it is still under development and there may be some sections unfinished or missing.
+Please, see the recently published documentation [here](https://www.cariochi.com). Although it has been published, it is still under development and there may be some sections unfinished or missing.
+
+# Quick Start
+
+### Import maven dependency
+```markup
+<dependency>
+    <groupId>com.cariochi</groupId>
+    <artifactId>recordo</artifactId>
+    <version>1.1.10</version>
+    <scope>test</scope>
+</dependency>
+```
+
+### Extend a test with Recordo extension
+
+```java
+@ExtendWith(RecordoExtension.class)
+class BookServiceTest {
+    ...
+}
+```
 
 # Features 
 
@@ -24,10 +45,21 @@ void should_create_book(
 ```java
 @Test
 void should_get_book_by_id() {
-    Book actual = ...
-    
-    RecordoAsserion.assertAsJson(actual)
-            .isEqualTo("/books/book.json");
+    Book book = ...
+    JsonAssertion.assertAsJson(book)
+        .extensible(true)
+        .isEqualTo("/books/book.json");
+}
+```
+
+```java
+@Test
+void should_get_books_as_csv() {
+    String csv = ...
+    CsvAssertion.assertCsv(csv)
+        .withHeaders(true)
+        .withStrictOrder(false)
+        .isEqualTo("/books.csv");
 }
 ```
 
@@ -35,7 +67,7 @@ void should_get_book_by_id() {
 
 ```java
 @Test
-@WithMockHttpServer("/mockServer/get_gists.rest.json")
+@MockServer("/mockServer/get_gists.rest.json")
 void should_retrieve_gists() {
     ...
     List<GistResponse> gists = restClient.getGists();
@@ -48,9 +80,19 @@ void should_retrieve_gists() {
 ```java
 @Test
 void should_get_books(
-        @MockHttpGet("/books") Page<Book> books
+        @Get("/books") Page<Book> books
 ) {
    ...
+}
+```
+
+```java
+@Test
+void should_create_book(
+        @Post("/books") Request<Book> request
+) {
+    BookDto book = ...
+    Response<BookDto> response = request.body(book).perform();
 }
 ```
 
