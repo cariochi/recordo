@@ -17,21 +17,19 @@ public class ReadAnnotationHandler implements BeforeEachCallback {
 
     @Override
     public void beforeEach(ExtensionContext context) {
-        final ExceptionsCollector collector = Exceptions.collectorOf(RecordoError.class);
-        Fields.of(context.getRequiredTestInstance())
-                .withAnnotation(Read.class)
-                .forEach(collector.consuming(
-                        field -> processGiven(field.getAnnotation(Read.class), field)
-                ));
-        if (collector.hasExceptions()) {
-            throw new RecordoError(collector.getMessage());
+        try (final ExceptionsCollector exceptionsCollector = Exceptions.collectorOf(RecordoError.class)) {
+            Fields.of(context.getRequiredTestInstance())
+                    .withAnnotation(Read.class)
+                    .forEach(exceptionsCollector.consuming(this::processRead));
         }
     }
 
-    public void processGiven(Read annotation, TargetField field) {
+    public void processRead(TargetField field) {
+        final String file = field.getAnnotation(Read.class).value();
         final Type parameterType = field.getGenericType();
         final JsonConverter jsonConverter = JsonConverters.find(field.getTarget());
-        final Object value = ObjectReader.read(annotation.value(), parameterType, jsonConverter);
+        final Object value = ObjectReader.read(file, parameterType, jsonConverter);
         field.setValue(value);
     }
+
 }
