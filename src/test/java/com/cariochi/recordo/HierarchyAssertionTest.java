@@ -4,7 +4,7 @@ import com.cariochi.recordo.dto.Category;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static com.cariochi.recordo.assertions.RecordoAssertion.assertAsJson;
+import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 
 @ExtendWith(RecordoExtension.class)
 public class HierarchyAssertionTest {

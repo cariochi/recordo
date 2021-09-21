@@ -7,7 +7,6 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Type;
-import java.nio.file.NoSuchFileException;
 
 @Slf4j
 @UtilityClass
@@ -16,18 +15,17 @@ public class ObjectReader {
     private final EmptyInstanceGenerator EMPTY_INSTANCE_GENERATOR = new EmptyInstanceGenerator();
 
     public Object read(String file, Type parameterType, JsonConverter jsonConverter) {
-        try {
-            return jsonConverter.fromJson(Files.read(file), parameterType);
-        } catch (NoSuchFileException e) {
-            return generate(file, parameterType, jsonConverter, e.getMessage());
-        }
+        return Files.exists(file)
+                ? jsonConverter.fromJson(Files.read(file), parameterType)
+                : generate(file, parameterType, jsonConverter);
+
     }
 
-    private Object generate(String file, Type parameterType, JsonConverter jsonConverter, String errorMessage) {
+    private Object generate(String file, Type parameterType, JsonConverter jsonConverter) {
         Object givenObject = EMPTY_INSTANCE_GENERATOR.createInstance(parameterType, 3);
         final String json = givenObject == null ? "{}" : jsonConverter.toJson(givenObject);
         Files.write(json, file)
-                .ifPresent(path -> log.warn(errorMessage + "\nEmpty json is generated: file://{}", path));
+                .ifPresent(path -> log.warn("\nFile not found. Empty json is generated: file://{}", path));
         return givenObject;
     }
 }
