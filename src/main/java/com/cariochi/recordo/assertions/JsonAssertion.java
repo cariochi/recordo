@@ -1,6 +1,6 @@
 package com.cariochi.recordo.assertions;
 
-import com.cariochi.recordo.json.JacksonConverter;
+import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonPropertyFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class JsonAssertion<T> {
     private boolean strictOrder = true;
 
     public JsonAssertion<T> using(ObjectMapper mapper) {
-        jsonComparator.setJsonConverter(new JacksonConverter(mapper));
+        jsonComparator.setJsonConverter(new JsonConverter(mapper));
         return this;
     }
 

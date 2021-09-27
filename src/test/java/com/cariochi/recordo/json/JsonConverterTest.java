@@ -9,7 +9,7 @@ import static com.cariochi.recordo.dto.TestDto.dto;
 import static java.util.Arrays.asList;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 
-class JacksonConverterTest {
+class JsonConverterTest {
 
     private static final TestDto GIVEN_OBJECT = dto(1).withChild(dto(2));
 
@@ -24,7 +24,7 @@ class JacksonConverterTest {
             "    ]" +
             "}";
 
-    private final JsonConverter jsonConverter = new JacksonConverter();
+    private final JsonConverter jsonConverter = new JsonConverter();
 
     @Test
     @SneakyThrows

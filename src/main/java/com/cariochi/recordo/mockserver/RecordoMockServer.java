@@ -1,6 +1,5 @@
 package com.cariochi.recordo.mockserver;
 
-import com.cariochi.recordo.json.JacksonConverter;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.mockserver.interceptors.HttpClientInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
@@ -31,7 +30,7 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
     private static final Type TYPE = new TypeReference<List<MockHttpInteraction>>() {}.getType();
 
     private final String fileName;
-    private JsonConverter jsonConverter = new JacksonConverter();
+    private JsonConverter jsonConverter = new JsonConverter();
     private JSONCompareMode compareMode = compareMode(true, true);
     private final List<MockHttpInteraction> actualMocks = new ArrayList<>();
     private List<MockHttpInteraction> expectedMocks;

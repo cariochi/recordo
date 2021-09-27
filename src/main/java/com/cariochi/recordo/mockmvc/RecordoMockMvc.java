@@ -1,7 +1,6 @@
 package com.cariochi.recordo.mockmvc;
 
 import com.cariochi.recordo.RecordoError;
-import com.cariochi.recordo.json.JacksonConverter;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.mockmvc.dto.PageBuilder;
 import com.cariochi.recordo.typeref.TypeRef;
@@ -38,7 +37,7 @@ public class RecordoMockMvc {
 
     public RecordoMockMvc(MockMvc mockMvc, ObjectMapper objectMapper) {
         this.mockMvc = mockMvc;
-        this.jsonConverter = new JacksonConverter(objectMapper);
+        this.jsonConverter = new JsonConverter(objectMapper);
     }
 
     // Request
