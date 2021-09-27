@@ -14,8 +14,8 @@ public class JsonConverters {
                 .withTypeAndAnnotation(ObjectMapper.class, EnableRecordo.class).stream().findAny()
                 .map(TargetField::getValue)
                 .map(ObjectMapper.class::cast)
-                .map(JacksonConverter::new)
-                .orElseGet(JacksonConverter::new);
+                .map(JsonConverter::new)
+                .orElseGet(JsonConverter::new);
     }
 
 }

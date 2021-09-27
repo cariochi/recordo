@@ -1,6 +1,5 @@
 package com.cariochi.recordo.assertions;
 
-import com.cariochi.recordo.json.JacksonConverter;
 import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonPropertyFilter;
 import com.cariochi.recordo.utils.Files;
@@ -16,7 +15,7 @@ import static org.skyscreamer.jsonassert.JSONCompare.compareJSON;
 class RecordoJsonComparator<T> {
 
     @Setter
-    private JsonConverter jsonConverter = new JacksonConverter();
+    private JsonConverter jsonConverter = new JsonConverter();
 
     @SneakyThrows
     public JSONCompareResult compareAsJson(

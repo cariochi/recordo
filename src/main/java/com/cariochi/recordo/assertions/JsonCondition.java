@@ -1,6 +1,6 @@
 package com.cariochi.recordo.assertions;
 
-import com.cariochi.recordo.json.JacksonConverter;
+import com.cariochi.recordo.json.JsonConverter;
 import com.cariochi.recordo.json.JsonPropertyFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -16,40 +16,40 @@ import java.util.function.Predicate;
 import static com.cariochi.recordo.assertions.JsonUtils.compareMode;
 import static java.util.Arrays.asList;
 
-public class RecordoCondition<T> extends Condition<T> {
+public class JsonCondition<T> extends Condition<T> {
 
     private final RecordoPredicate<T> predicate;
 
-    public static <T> RecordoCondition<T> equalAsJsonTo(String fileName) {
-        return new RecordoCondition<>(new RecordoPredicate<>(fileName));
+    public static <T> JsonCondition<T> equalAsJsonTo(String fileName) {
+        return new JsonCondition<>(new RecordoPredicate<>(fileName));
     }
 
-    private RecordoCondition(RecordoPredicate<T> predicate) {
+    private JsonCondition(RecordoPredicate<T> predicate) {
         super(predicate, "");
         this.predicate = predicate;
     }
 
-    public RecordoCondition<T> using(ObjectMapper mapper) {
+    public JsonCondition<T> using(ObjectMapper mapper) {
         predicate.using(mapper);
         return this;
     }
 
-    public RecordoCondition<T> including(String... fields) {
+    public JsonCondition<T> including(String... fields) {
         predicate.including(asList(fields));
         return this;
     }
 
-    public RecordoCondition<T> excluding(String... fields) {
+    public JsonCondition<T> excluding(String... fields) {
         predicate.excluding(asList(fields));
         return this;
     }
 
-    public RecordoCondition<T> extensible(boolean extensible) {
+    public JsonCondition<T> extensible(boolean extensible) {
         predicate.extensible(extensible);
         return this;
     }
 
-    public RecordoCondition<T> withStrictOrder(boolean strictOrder) {
+    public JsonCondition<T> withStrictOrder(boolean strictOrder) {
         predicate.strictOrder(strictOrder);
         return this;
     }
@@ -75,7 +75,7 @@ public class RecordoCondition<T> extends Condition<T> {
         }
 
         public void using(ObjectMapper objectMapper) {
-            jsonComparator.setJsonConverter(new JacksonConverter(objectMapper));
+            jsonComparator.setJsonConverter(new JsonConverter(objectMapper));
         }
 
     }
