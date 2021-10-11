@@ -4,13 +4,14 @@ import com.cariochi.recordo.EnableRecordo;
 import com.cariochi.recordo.mockserver.interceptors.apache.ApacheHttpClientInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.okhttp.OkHttpClientInterceptor;
 import com.cariochi.recordo.utils.reflection.ClassLoaders;
-import com.cariochi.recordo.utils.reflection.Fields;
-import com.cariochi.recordo.utils.reflection.TargetField;
+import com.cariochi.reflecto.fields.JavaField;
 import lombok.experimental.UtilityClass;
 import okhttp3.OkHttpClient;
 import org.apache.http.client.HttpClient;
 
 import java.util.Optional;
+
+import static com.cariochi.reflecto.Reflecto.reflect;
 
 
 @UtilityClass
@@ -26,11 +27,10 @@ public class HttpClientInterceptors {
     private Optional<HttpClientInterceptor> okHttpClientInterceptor(Object testInstance) {
         try {
             ClassLoaders.checkClassLoaded("okhttp3.OkHttpClient");
-            return Fields.of(testInstance)
+            return reflect(testInstance).fields()
                     .withTypeAndAnnotation(OkHttpClientInterceptor.class, EnableRecordo.class).stream().findAny()
-                    .map(TargetField::getValue)
-                    .map(Optional::of)
-                    .orElseGet(() -> okHttpClient(testInstance).map(OkHttpClientInterceptor::attachTo))
+                    .map(JavaField::getValue)
+                    .or(() -> okHttpClient(testInstance).map(OkHttpClientInterceptor::attachTo))
                     .map(HttpClientInterceptor.class::cast);
         } catch (ClassNotFoundException e) {
             return Optional.empty();
@@ -40,9 +40,9 @@ public class HttpClientInterceptors {
     private Optional<OkHttpClient> okHttpClient(Object testInstance) {
         try {
             ClassLoaders.checkClassLoaded("okhttp3.OkHttpClient");
-            return Fields.of(testInstance)
+            return reflect(testInstance).fields()
                     .withTypeAndAnnotation(OkHttpClient.class, EnableRecordo.class).stream().findAny()
-                    .map(TargetField::getValue);
+                    .map(JavaField::getValue);
         } catch (ClassNotFoundException e) {
             return Optional.empty();
         }
@@ -51,9 +51,9 @@ public class HttpClientInterceptors {
     private Optional<HttpClientInterceptor> apacheHttpClientInterceptor(Object testInstance) {
         try {
             ClassLoaders.checkClassLoaded("org.apache.http.client.HttpClient");
-            return Fields.of(testInstance)
+            return reflect(testInstance).fields()
                     .withTypeAndAnnotation(HttpClient.class, EnableRecordo.class).stream().findAny()
-                    .map(TargetField::getValue)
+                    .map(JavaField::getValue)
                     .map(HttpClient.class::cast)
                     .map(ApacheHttpClientInterceptor::new);
         } catch (ClassNotFoundException e) {

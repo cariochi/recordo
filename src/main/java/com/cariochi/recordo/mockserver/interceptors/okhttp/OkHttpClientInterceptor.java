@@ -4,7 +4,6 @@ import com.cariochi.recordo.mockserver.interceptors.HttpClientInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
 import com.cariochi.recordo.mockserver.model.MockHttpRequest;
 import com.cariochi.recordo.mockserver.model.MockHttpResponse;
-import com.cariochi.recordo.utils.reflection.Fields;
 import lombok.SneakyThrows;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -14,6 +13,7 @@ import okhttp3.Response;
 import java.io.IOException;
 import java.util.List;
 
+import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.stream.Collectors.toList;
 
 public class OkHttpClientInterceptor implements Interceptor, HttpClientInterceptor {
@@ -28,7 +28,7 @@ public class OkHttpClientInterceptor implements Interceptor, HttpClientIntercept
                 .filter(interceptor1 -> !(interceptor1 instanceof OkHttpClientInterceptor))
                 .collect(toList());
         interceptors.add(interceptor);
-        Fields.of(httpClient).get("interceptors").setValue(interceptors);
+        reflect(httpClient).get("interceptors").setValue(interceptors);
         return interceptor;
     }
 

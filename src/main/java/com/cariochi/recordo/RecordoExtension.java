@@ -2,6 +2,7 @@ package com.cariochi.recordo;
 
 import com.cariochi.recordo.mockmvc.resolvers.*;
 import com.cariochi.recordo.mockserver.MockServerAnnotationHandler;
+import com.cariochi.recordo.read.ReadAnnotationHandler;
 import com.cariochi.recordo.read.ReadParameterResolver;
 import com.cariochi.recordo.typeref.ParameterizedTypeReferenceParameterResolver;
 import com.cariochi.recordo.typeref.TypeRefParameterResolver;
@@ -17,7 +18,8 @@ import static java.util.Arrays.asList;
 public class RecordoExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
 
     private final List<Extension> handlers = asList(
-            new MockServerAnnotationHandler()
+            new MockServerAnnotationHandler(),
+            new ReadAnnotationHandler()
     );
 
     private final List<ParameterResolver> parameterResolvers = asList(

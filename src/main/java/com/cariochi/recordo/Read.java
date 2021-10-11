@@ -18,7 +18,7 @@ import java.lang.annotation.*;
  *
  *</code></pre>
  */
-@Target(ElementType.PARAMETER)
+@Target({ElementType.PARAMETER, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface Read {
