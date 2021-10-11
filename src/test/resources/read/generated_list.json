@@ -1,25 +1,17 @@
 [
   {
     "id": 0,
-    "text": "",
-    "nullValue": "",
     "strings": [
       ""
     ],
     "date": "2020-09-21T10:28:27.624Z",
     "parent": {
       "id": 0,
-      "text": "",
-      "nullValue": "",
       "strings": [
         ""
       ],
       "date": "2020-09-21T10:28:27.624Z",
-      "parent": {
-        "children": []
-      },
-      "children": []
-    },
-    "children": []
+      "parent": {}
+    }
   }
 ]

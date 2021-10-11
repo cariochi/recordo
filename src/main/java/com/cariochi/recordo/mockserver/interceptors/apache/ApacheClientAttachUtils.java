@@ -1,29 +1,32 @@
 package com.cariochi.recordo.mockserver.interceptors.apache;
 
-import com.cariochi.recordo.utils.reflection.Fields;
-import com.cariochi.recordo.utils.reflection.TargetField;
+import com.cariochi.reflecto.fields.JavaField;
 import lombok.experimental.UtilityClass;
 import org.apache.http.impl.execchain.ClientExecChain;
 import org.apache.http.impl.execchain.MainClientExec;
+
+import static com.cariochi.reflecto.Reflecto.reflect;
 
 @UtilityClass
 public class ApacheClientAttachUtils {
 
     public static OnRequestExecChain attachOnRequestExecChain(Object target) {
-        return Fields.of(target).withType(ClientExecChain.class).stream()
+        return reflect(target).fields()
+                .withType(ClientExecChain.class).stream()
                 .findAny()
                 .map(ApacheClientAttachUtils::getOnRequestExecChain)
                 .orElse(null);
     }
 
     public static OnResponseExecChain attachOnResponseExecChain(Object target) {
-        return Fields.of(target).withType(ClientExecChain.class).stream()
+        return reflect(target).fields()
+                .withType(ClientExecChain.class).stream()
                 .findAny()
                 .map(ApacheClientAttachUtils::getOnResponseExecChain)
                 .orElse(null);
     }
 
-    private OnRequestExecChain getOnRequestExecChain(TargetField field) {
+    private OnRequestExecChain getOnRequestExecChain(JavaField field) {
         final Object value = field.getValue();
         if (value == null) {
             return null;
@@ -38,7 +41,7 @@ public class ApacheClientAttachUtils {
         }
     }
 
-    private OnResponseExecChain getOnResponseExecChain(TargetField field) {
+    private OnResponseExecChain getOnResponseExecChain(JavaField field) {
         final Object value = field.getValue();
         if (value == null) {
             return null;

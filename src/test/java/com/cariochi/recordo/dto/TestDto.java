@@ -33,7 +33,7 @@ public class TestDto {
                 .id(id)
                 .text("Test Object " + id)
                 .strings(asList(String.valueOf(id), String.valueOf(id + 1), String.valueOf(id + 2)))
-                .date(Instant.ofEpochSecond(1577836800 + 86400 * id))
+                .date(Instant.ofEpochSecond(1577836800 + 86400L * id))
                 .build();
     }
 

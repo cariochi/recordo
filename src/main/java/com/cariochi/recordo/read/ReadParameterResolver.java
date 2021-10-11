@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 public class ReadParameterResolver implements ParameterResolver {
@@ -34,7 +35,16 @@ public class ReadParameterResolver implements ParameterResolver {
 
     private Object resolveParameter(String fileName, Parameter parameter, JsonConverter jsonConverter) {
         final Type parameterType = parameter.getParameterizedType();
-        return ObjectReader.read(fileName, parameterType, jsonConverter);
+        final ObjectReader objectReader = new ObjectReader(jsonConverter);
+        if (ObjectFactory.class.isAssignableFrom(parameter.getType())) {
+            final Type actualTypeArgument = ((ParameterizedType) parameterType).getActualTypeArguments()[0];
+            return new ObjectFactory<>(objectReader, fileName, actualTypeArgument);
+        } else if (ObjectTemplate.class.isAssignableFrom(parameter.getType())) {
+            final Type actualTypeArgument = ((ParameterizedType) parameterType).getActualTypeArguments()[0];
+            return new ObjectTemplate<>(objectReader, fileName, actualTypeArgument);
+        } else {
+            return objectReader.read(fileName, parameterType);
+        }
     }
 
 }

@@ -8,8 +8,7 @@ import com.cariochi.recordo.mockmvc.Request;
 import com.cariochi.recordo.mockmvc.RequestInterceptor;
 import com.cariochi.recordo.mockmvc.Response;
 import com.cariochi.recordo.read.ObjectReader;
-import com.cariochi.recordo.utils.reflection.Fields;
-import com.cariochi.recordo.utils.reflection.TargetField;
+import com.cariochi.reflecto.fields.JavaField;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -24,6 +23,7 @@ import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
@@ -77,7 +77,8 @@ public abstract class AbstractRequestParameterResolver implements ParameterResol
 
     public String getBodyFromFile(String bodyFile, Object testInstance) {
         final JsonConverter jsonConverter = JsonConverters.find(testInstance);
-        return (String) ObjectReader.read(bodyFile, String.class, jsonConverter);
+        final ObjectReader objectReader = new ObjectReader(jsonConverter);
+        return (String) objectReader.read(bodyFile, String.class);
     }
 
     private Object executeRequest(Request<Object> request, ParameterContext parameter) {
@@ -104,9 +105,9 @@ public abstract class AbstractRequestParameterResolver implements ParameterResol
     }
 
     private MockMvc mockMvc(Object testInstance) {
-        return Fields.of(testInstance)
+        return reflect(testInstance).fields()
                 .withTypeAndAnnotation(MockMvc.class, EnableRecordo.class).stream().findAny()
-                .map(TargetField::getValue)
+                .map(JavaField::getValue)
                 .map(MockMvc.class::cast)
                 .orElse(null);
     }

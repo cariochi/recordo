@@ -1,11 +1,11 @@
 package com.cariochi.recordo.generator;
 
-import com.cariochi.recordo.utils.reflection.Fields;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.*;
 import java.util.*;
 
+import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.Arrays.stream;
 
 @Slf4j
@@ -92,7 +92,7 @@ public class EmptyInstanceGenerator {
         }
 
         if (instance != null) {
-            Fields.of(instance).all().stream()
+            reflect(instance).fields().all().stream()
                     .filter(field -> !field.isStatic())
                     .filter(field -> !field.isPrimitive())
                     .filter(field -> !field.isTransient())
