@@ -94,7 +94,7 @@ void should_get_books_as_csv() {
 }
 ```
 
-## Recordo Mock Service
+## Recordo Mock Server
 
 Records all real REST interactions during the first test run into a file.
 Then this file is automatically used for mocking.
