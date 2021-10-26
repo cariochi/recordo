@@ -5,17 +5,29 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.cariochi</groupId>
-    <artifactId>recordo</artifactId>
-    <version>1.1.10</version>
+    <groupId>com.cariochi.recordo</groupId>
+    <artifactId>recordo-parent</artifactId>
+    <packaging>pom</packaging>
+    <version>1.2.0</version>
+
     <name>Recordo</name>
-    <description>JUnit 5 extension for declarative testing.</description>
+    <description>JUnit extension for declarative testing.</description>
     <url>https://cariochi.com</url>
+
+    <modules>
+        <module>core</module>
+        <module>read</module>
+        <module>assertions</module>
+        <module>mockmvc</module>
+        <module>mockserver</module>
+        <module>tests</module>
+        <module>spring-tests</module>
+    </modules>
 
     <licenses>
         <license>
             <name>The MIT License</name>
-            <url>https://github.com/mockito/mockito/blob/master/LICENSE</url>
+            <url>https://github.com/cariochi/recordo/blob/master/LICENSE</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -42,19 +54,15 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <jackson.version>2.12.4</jackson.version>
+        <jackson.version>2.12.5</jackson.version>
         <commons-text.version>1.9</commons-text.version>
         <junit-jupiter.version>5.7.2</junit-jupiter.version>
         <jsonassert.version>1.5.0</jsonassert.version>
         <slf4j-api.version>1.7.32</slf4j-api.version>
 
-        <okhttp.version>4.9.1</okhttp.version>
-        <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
-        <httpclient.version>4.5.13</httpclient.version>
-        <lombok.version>1.18.20</lombok.version>
-        <spring-web.version>5.3.9</spring-web.version>
-        <spring.version>2.5.3</spring.version>
+        <lombok.version>1.18.22</lombok.version>
 
+        <reflecto.version>1.0.1</reflecto.version>
     </properties>
 
     <dependencies>
@@ -63,6 +71,18 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
             <version>${junit-jupiter.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.cariochi</groupId>
+            <artifactId>reflecto</artifactId>
+            <version>${reflecto.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>lombok</artifactId>
+                    <groupId>org.projectlombok</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -85,6 +105,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.skyscreamer</groupId>
             <artifactId>jsonassert</artifactId>
             <version>${jsonassert.version}</version>
@@ -102,55 +128,6 @@
             <version>${slf4j-api.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>${okhttp.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>${httpclient.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <version>${spring.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-commons</artifactId>
-            <version>${spring.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>${spring-web.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>${javax.servlet-api.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j-api.version}</version>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
 
     <build>
@@ -162,6 +139,28 @@
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>enforce-dependency-management</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>11</version>
+                                </requireJavaVersion>
+                                <dependencyConvergence/>
+                                <banDuplicatePomDependencyVersions/>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

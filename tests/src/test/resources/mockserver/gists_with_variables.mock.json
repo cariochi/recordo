@@ -1,0 +1,73 @@
+[
+  {
+    "request": {
+      "method": "GET",
+      "url": "https://api.github.com/gists?per_page=3&page=1",
+      "headers": {
+        "accept": "*/*"
+      }
+    },
+    "response": {
+      "protocol": "http/1.1",
+      "statusCode": 200,
+      "statusText": "OK",
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": [
+        {
+          "url": "https://api.github.com/gists/${id1}",
+          "id": "${id1}",
+          "html_url": "https://gist.github.com/${id1}",
+          "files": {
+            "debounce.js": {
+              "filename": "debounce.js",
+              "type": "application/javascript",
+              "language": "JavaScript",
+              "raw_url": "https://gist.githubusercontent.com/phatnguyenuit/${id1}/raw/4df542e7fdcf3a2023acf02621c13ed8aa2aa1a6/debounce.js",
+              "size": 928.0
+            },
+            "throttle.js": {
+              "filename": "throttle.js",
+              "type": "application/javascript",
+              "language": "JavaScript",
+              "raw_url": "https://gist.githubusercontent.com/phatnguyenuit/${id1}/raw/5e8cdd7ff2c22aeccd7fdae1db1c6c9545a7c333/throttle.js",
+              "size": 778.0
+            }
+          },
+          "description": "Throttle \u0026 Debounce"
+        },
+        {
+          "url": "https://api.github.com/gists/${id2}",
+          "id": "${id2}",
+          "html_url": "https://gist.github.com/${id2}",
+          "files": {
+            "gistfile1.txt": {
+              "filename": "gistfile1.txt",
+              "type": "text/plain",
+              "language": "Text",
+              "raw_url": "https://gist.githubusercontent.com/hoehli/${id2}/raw/34d41e1a9ca47fcf7679aecdbb412358926e2ffd/gistfile1.txt",
+              "size": 165.0
+            }
+          },
+          "description": "simple hallo world dummy makefile"
+        },
+        {
+          "url": "https://api.github.com/gists/${id3}",
+          "id": "${id3}",
+          "html_url": "https://gist.github.com/${id3}",
+          "files": {
+            "mS0J.md": {
+              "filename": "mS0J.md",
+              "type": "text/markdown",
+              "language": "Markdown",
+              "raw_url": "https://gist.githubusercontent.com/artem-konkov94/${id3}/raw/bda4480279c519f659dc5c85933eafd7d24fdb22/mS0J.md",
+              "size": 7641.0
+            }
+          },
+          "description": "HOW DO I WRITE AN ARGUMENTATIVE ESSAY"
+        }
+      ]
+    }
+  }
+]
