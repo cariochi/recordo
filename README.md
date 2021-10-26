@@ -24,6 +24,10 @@ class BookServiceTest {
 
 ## Recordo Read
 
+Loads test resources from JSON files.
+An empty json file according to object structure will be automatically created on the first run.
+You just need to set expected values, and the test is ready.
+
 ### Maven dependency
 
 ```markup
@@ -40,13 +44,19 @@ class BookServiceTest {
 ```java
 @Test
 void should_create_book(
-        @Read("/books/book.json") Book book
-){
+    @Read("/books/book.json") Book book
+) {
         ...
 }
 ```
 
 ## Recordo Assertions
+
+1. Asserts that the actual object is equal as JSON to the expected one stored in a file.
+2. Asserts that the actual CSV string is equal to the expected one from a file.
+
+JSON and CSV files with actual values will be created on the first run or if they are absent.
+You just need to verify them, and the test is ready.
 
 ### Maven dependency
 
@@ -63,7 +73,7 @@ void should_create_book(
 
 ```java
 @Test
-void should_get_book_by_id(){
+void should_get_book_by_id() {
     Book book = ...
         
     assertAsJson(book)
@@ -74,7 +84,7 @@ void should_get_book_by_id(){
 
 ```java
 @Test
-void should_get_books_as_csv(){
+void should_get_books_as_csv() {
     String csv = ...
         
     assertCsv(csv)
@@ -85,6 +95,9 @@ void should_get_books_as_csv(){
 ```
 
 ## Recordo Mock Service
+
+Records all real REST interactions during the first test run into a file.
+Then this file is automatically used for mocking.
 
 ### Maven dependency
 
@@ -102,7 +115,7 @@ void should_get_books_as_csv(){
 ```java
 @Test
 @MockServer("/mockServer/get_gists.rest.json")
-void should_retrieve_gists(){
+void should_retrieve_gists() {
     ...
     List<GistResponse> gists = restClient.getGists();
     ...
@@ -110,6 +123,9 @@ void should_retrieve_gists(){
 ```
 
 ## Recordo Spring MockMvc
+
+Provides an easy and convenient way to test your String controllers. 
+You just need to declare an HTTP request (method, url, headers, etc) and a response type as test method parameters.
 
 ### Maven dependency
 
@@ -128,7 +144,7 @@ void should_retrieve_gists(){
 @Test
 void should_get_books(
     @Get("/books") Page<Book> books
-){
+) {
     ...
 }
 ```
@@ -137,7 +153,7 @@ void should_get_books(
 @Test
 void should_create_book(
     @Post("/books") Request<Book> request
-){
+) {
    BookDto book = ...
    Response<BookDto> response=request.body(book).perform();
 }
