@@ -1,0 +1,8 @@
+feign:
+  httpclient:
+    config:
+      GitHub:
+        requestInterceptors:
+          -  GitHubInterceptor
+
+github.key: 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

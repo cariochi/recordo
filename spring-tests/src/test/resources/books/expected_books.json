@@ -1,0 +1,45 @@
+{
+  "content": [
+    {
+      "id": 129649988384959,
+      "author": {
+        "id": 129649987758738,
+        "firstName": "0ddAM5PDcp",
+        "lastName": "Q2DXdR9DdB"
+      },
+      "title": "Oin7c_WtHq"
+    },
+    {
+      "id": 1,
+      "author": {
+        "id": 1,
+        "firstName": "William",
+        "lastName": "Shakespeare"
+      },
+      "title": "Othello"
+    },
+    {
+      "id": 129649986932158,
+      "author": {
+        "id": 129649985822335,
+        "firstName": "3vRRjH5Eir",
+        "lastName": "v4qcdNu87_"
+      },
+      "title": "lIEE41TMJh"
+    }
+  ],
+  "pageable": "INSTANCE",
+  "last": true,
+  "totalPages": 1,
+  "totalElements": 3,
+  "first": true,
+  "numberOfElements": 3,
+  "size": 3,
+  "number": 0,
+  "sort": {
+    "sorted": false,
+    "unsorted": true,
+    "empty": true
+  },
+  "empty": false
+}

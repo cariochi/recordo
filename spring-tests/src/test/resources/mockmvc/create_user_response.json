@@ -1,0 +1,10 @@
+{
+  "status": "OK",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "id": 1,
+    "name": "Test User UA"
+  }
+}

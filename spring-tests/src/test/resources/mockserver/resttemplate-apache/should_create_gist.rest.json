@@ -1,0 +1,105 @@
+[
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://api.github.com/gists",
+      "headers": {
+        "authorization": "********",
+        "content-type": "application/json",
+        "accept": "application/json, application/*+json"
+      },
+      "body": {
+        "description": "Hello World!",
+        "files": {
+          "hello_world.txt": {
+            "content": "Hello \nWorld\n!"
+          }
+        }
+      }
+    },
+    "response": {
+      "protocol": "HTTP/1.1",
+      "statusCode": 201,
+      "statusText": "Created",
+      "headers": {
+        "content-type": "application/json; charset=utf-8",
+        "location": "https://api.github.com/gists/4c16188cd8b6bc2de6ea2eec953ed7ca"
+      },
+      "body": {
+        "url": "https://api.github.com/gists/4c16188cd8b6bc2de6ea2eec953ed7ca",
+        "id": "4c16188cd8b6bc2de6ea2eec953ed7ca",
+        "html_url": "https://gist.github.com/4c16188cd8b6bc2de6ea2eec953ed7ca",
+        "files": {
+          "hello_world.txt": {
+            "filename": "hello_world.txt",
+            "type": "text/plain",
+            "language": "Text",
+            "size": 14,
+            "truncated": false,
+            "content": "Hello \nWorld\n!"
+          }
+        },
+        "public": false,
+        "created_at": "2020-07-06T08:34:56Z",
+        "updated_at": "2020-07-06T08:34:56Z",
+        "description": "Hello World!"
+      }
+    }
+  },
+  {
+    "request": {
+      "method": "GET",
+      "url": "https://api.github.com/gists/4c16188cd8b6bc2de6ea2eec953ed7ca",
+      "headers": {
+        "authorization": "********",
+        "accept": "application/json, application/*+json"
+      },
+      "body": null
+    },
+    "response": {
+      "protocol": "HTTP/1.1",
+      "statusCode": 200,
+      "statusText": "OK",
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "url": "https://api.github.com/gists/4c16188cd8b6bc2de6ea2eec953ed7ca",
+        "id": "4c16188cd8b6bc2de6ea2eec953ed7ca",
+        "html_url": "https://gist.github.com/4c16188cd8b6bc2de6ea2eec953ed7ca",
+        "files": {
+          "hello_world.txt": {
+            "filename": "hello_world.txt",
+            "type": "text/plain",
+            "language": "Text",
+            "size": 14,
+            "truncated": false,
+            "content": "Hello \nWorld\n!"
+          }
+        },
+        "public": false,
+        "created_at": "2020-07-06T08:34:56Z",
+        "updated_at": "2020-07-06T08:34:56Z",
+        "description": "Hello World!"
+      }
+    }
+  },
+  {
+    "request": {
+      "method": "DELETE",
+      "url": "https://api.github.com/gists/4c16188cd8b6bc2de6ea2eec953ed7ca",
+      "headers": {
+        "authorization": "********",
+        "accept": "application/json, application/*+json"
+      },
+      "body": null
+    },
+    "response": {
+      "protocol": "HTTP/1.1",
+      "statusCode": 204,
+      "statusText": "No Content",
+      "headers": {},
+      "body": null
+    }
+  }
+]
