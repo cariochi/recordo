@@ -11,9 +11,9 @@ Please, see the recently published documentation [here](https://www.cariochi.com
 ### Import maven dependency
 ```markup
 <dependency>
-    <groupId>com.cariochi</groupId>
+    <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo</artifactId>
-    <version>1.1.10</version>
+    <version>1.2.0</version>
     <scope>test</scope>
 </dependency>
 ```

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>recordo-parent</artifactId>
+        <groupId>com.cariochi.recordo</groupId>
+        <version>1.2.0</version>
+    </parent>
+
+    <artifactId>recordo-assertions</artifactId>
+    <name>Recordo Assertions</name>
+    <description>Assertions module of Recordo JUnit extension.</description>
+    <url>https://cariochi.com</url>
+
+    <properties>
+        <assertj.version>3.21.0</assertj.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.cariochi.recordo</groupId>
+            <artifactId>recordo-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+        </dependency>
+
+    </dependencies>
+
+</project>
