@@ -1,8 +1,8 @@
 package com.cariochi.recordo.mockserver.interceptors.apache;
 
 import com.cariochi.recordo.core.utils.Exceptions;
-import com.cariochi.recordo.mockserver.model.MockHttpRequest;
-import com.cariochi.recordo.mockserver.model.MockHttpResponse;
+import com.cariochi.recordo.mockserver.model.MockRequest;
+import com.cariochi.recordo.mockserver.model.MockResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.*;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -24,12 +24,12 @@ import static org.apache.commons.lang3.StringUtils.substringBefore;
 
 public class ApacheMapper {
 
-    public MockHttpRequest toRecordoRequest(HttpRequestWrapper wrapper) {
+    public MockRequest toRecordoRequest(HttpRequestWrapper wrapper) {
         final HttpRequest request = wrapper.getOriginal();
         final String body = request instanceof HttpEntityEnclosingRequest
                 ? bodyOf(((HttpEntityEnclosingRequest) request).getEntity())
                 : null;
-        return MockHttpRequest.builder()
+        return MockRequest.builder()
                 .method(request.getRequestLine().getMethod())
                 .url(request.getRequestLine().getUri())
                 .headers(headersOf(request.getAllHeaders()))
@@ -37,8 +37,8 @@ public class ApacheMapper {
                 .build();
     }
 
-    public MockHttpResponse toRecordoResponse(HttpResponse response) {
-        return MockHttpResponse.builder()
+    public MockResponse toRecordoResponse(HttpResponse response) {
+        return MockResponse.builder()
                 .protocol(response.getProtocolVersion().toString())
                 .statusCode(response.getStatusLine().getStatusCode())
                 .statusText(response.getStatusLine().getReasonPhrase())
@@ -47,7 +47,7 @@ public class ApacheMapper {
                 .build();
     }
 
-    public CloseableHttpResponse toHttpResponse(MockHttpResponse response) {
+    public CloseableHttpResponse toHttpResponse(MockResponse response) {
         final String protocol = substringBefore(response.getProtocol(), "/");
         final String[] version = substringAfter(response.getProtocol(), "/").split("\\.");
         final ResponseWrapper newResponse = new ResponseWrapper(

@@ -2,7 +2,6 @@ package com.cariochi.recordo.assertions;
 
 import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.core.json.JsonPropertyFilter;
-import com.cariochi.recordo.core.json.JsonUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +11,7 @@ import org.skyscreamer.jsonassert.JSONCompareResult;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.cariochi.recordo.core.json.JsonUtils.compareMode;
 import static java.util.Arrays.asList;
 
 @Slf4j
@@ -53,7 +53,7 @@ public class JsonAssertion<T> {
 
     public void isEqualTo(String fileName) {
         final JsonPropertyFilter jsonFilter = new JsonPropertyFilter(including, excluding);
-        final JSONCompareMode compareMode = JsonUtils.compareMode(extensible, strictOrder);
+        final JSONCompareMode compareMode = compareMode(extensible, strictOrder);
         final JSONCompareResult compareResult = jsonComparator.compareAsJson(actual, fileName, jsonFilter, compareMode);
         if (compareResult.failed()) {
             throw new AssertionError(compareResult.getMessage());

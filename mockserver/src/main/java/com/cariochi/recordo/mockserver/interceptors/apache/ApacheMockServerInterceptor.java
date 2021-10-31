@@ -1,18 +1,18 @@
 package com.cariochi.recordo.mockserver.interceptors.apache;
 
-import com.cariochi.recordo.mockserver.interceptors.HttpClientInterceptor;
+import com.cariochi.recordo.mockserver.interceptors.MockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
-import com.cariochi.recordo.mockserver.model.MockHttpResponse;
+import com.cariochi.recordo.mockserver.model.MockResponse;
 import org.apache.http.client.HttpClient;
 
 import java.util.Optional;
 
-public class ApacheHttpClientInterceptor implements HttpClientInterceptor {
+public class ApacheMockServerInterceptor implements MockServerInterceptor {
 
     private final OnRequestExecChain onRequestExecChain;
     private final OnResponseExecChain onResponseExecChain;
 
-    public ApacheHttpClientInterceptor(HttpClient httpClient) {
+    public ApacheMockServerInterceptor(HttpClient httpClient) {
         onRequestExecChain = ApacheClientAttachUtils.attachOnRequestExecChain(httpClient);
         onResponseExecChain = ApacheClientAttachUtils.attachOnResponseExecChain(httpClient);
     }
@@ -20,8 +20,8 @@ public class ApacheHttpClientInterceptor implements HttpClientInterceptor {
     @Override
     public void init(RecordoRequestHandler handler) {
         onRequestExecChain.onRequest(request -> {
-            final Optional<MockHttpResponse> response = handler.onRequest(request);
-            onResponseExecChain.setActive(!response.isPresent());
+            final Optional<MockResponse> response = handler.onRequest(request);
+            onResponseExecChain.setActive(response.isEmpty());
             return response;
         });
         onResponseExecChain.onResponse(handler::onResponse);
