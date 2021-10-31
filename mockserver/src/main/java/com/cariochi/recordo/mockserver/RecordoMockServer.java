@@ -4,11 +4,11 @@ package com.cariochi.recordo.mockserver;
 import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.core.utils.Files;
 import com.cariochi.recordo.core.utils.Properties;
-import com.cariochi.recordo.mockserver.interceptors.HttpClientInterceptor;
+import com.cariochi.recordo.mockserver.interceptors.MockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
-import com.cariochi.recordo.mockserver.model.MockHttpInteraction;
-import com.cariochi.recordo.mockserver.model.MockHttpRequest;
-import com.cariochi.recordo.mockserver.model.MockHttpResponse;
+import com.cariochi.recordo.mockserver.model.MockInteraction;
+import com.cariochi.recordo.mockserver.model.MockRequest;
+import com.cariochi.recordo.mockserver.model.MockResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -28,37 +28,37 @@ import static org.skyscreamer.jsonassert.JSONCompare.compareJSON;
 @Slf4j
 public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
 
-    private static final Type TYPE = new TypeReference<List<MockHttpInteraction>>() {}.getType();
+    private static final Type TYPE = new TypeReference<List<MockInteraction>>() {}.getType();
 
     private final String fileName;
-    private JsonConverter jsonConverter = new JsonConverter();
-    private JSONCompareMode compareMode = compareMode(false, true);
-    private final List<MockHttpInteraction> actualMocks = new ArrayList<>();
-    private List<MockHttpInteraction> expectedMocks;
+    private final JSONCompareMode compareMode;
+    private final JsonConverter jsonConverter;
+    private final List<MockInteraction> actualMocks = new ArrayList<>();
+    private List<MockInteraction> expectedMocks;
     private final Map<String, Object> variables = new HashMap<>();
     private int index = 0;
 
-    public RecordoMockServer(String fileName, HttpClientInterceptor interceptor) {
-        this.fileName = fileName;
-        interceptor.init(this);
+    public RecordoMockServer(String fileName, MockServerInterceptor interceptor) {
+        this(fileName, interceptor, new JsonConverter(), compareMode(false, true));
     }
 
     public RecordoMockServer(String fileName,
-                             HttpClientInterceptor interceptor,
+                             MockServerInterceptor interceptor,
                              JsonConverter jsonConverter,
                              JSONCompareMode compareMode) {
-        this(fileName, interceptor);
+        this.fileName = fileName;
         this.jsonConverter = jsonConverter;
         this.compareMode = compareMode;
+        interceptor.init(this);
     }
 
     @SneakyThrows
     @Override
-    public Optional<MockHttpResponse> onRequest(MockHttpRequest request) {
+    public Optional<MockResponse> onRequest(MockRequest request) {
         if (expectedMocks().isEmpty()) {
             return Optional.empty();
         }
-        final MockHttpInteraction mock = expectedMocks().get(index++);
+        final MockInteraction mock = expectedMocks().get(index++);
         log.info("Playback Http Mock: [{}] {}", request.getMethod(), request.getUrl());
 
         request.setHeaders(filteredHeaders(request.getHeaders()));
@@ -78,8 +78,8 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
     }
 
     @Override
-    public MockHttpResponse onResponse(MockHttpRequest request, MockHttpResponse response) {
-        actualMocks.add(new MockHttpInteraction(request, response));
+    public MockResponse onResponse(MockRequest request, MockResponse response) {
+        actualMocks.add(new MockInteraction(request, response));
         return response;
     }
 
@@ -91,7 +91,7 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
     @Override
     public void close() {
         if (!actualMocks.isEmpty()) {
-            final List<MockHttpInteraction> mocksToRecord = actualMocks.stream()
+            final List<MockInteraction> mocksToRecord = actualMocks.stream()
                     .map(this::prepareForRecord)
                     .collect(toList());
 
@@ -102,7 +102,7 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
         }
     }
 
-    private List<MockHttpInteraction> expectedMocks() {
+    private List<MockInteraction> expectedMocks() {
         if (expectedMocks == null) {
             loadExpectedMocks();
         }
@@ -131,17 +131,17 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
                 .orElse(string);
     }
 
-    private MockHttpInteraction prepareForRecord(MockHttpInteraction mock) {
-        return new MockHttpInteraction(
+    private MockInteraction prepareForRecord(MockInteraction mock) {
+        return new MockInteraction(
                 prepareForRecord(mock.getRequest()),
                 prepareForRecord(mock.getResponse())
         );
     }
 
-    private MockHttpRequest prepareForRecord(MockHttpRequest request) {
-        final MockHttpRequest prepared = Optional.ofNullable(request)
-                .filter(MockHttpRequest::isJson)
-                .map(MockHttpRequest::getBody)
+    private MockRequest prepareForRecord(MockRequest request) {
+        final MockRequest prepared = Optional.ofNullable(request)
+                .filter(MockRequest::isJson)
+                .map(MockRequest::getBody)
                 .filter(body -> body instanceof String)
                 .map(String.class::cast)
                 .map(json -> jsonConverter.fromJson(json, Object.class))
@@ -150,10 +150,10 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
         return prepared.withHeaders(filteredHeaders(request.getHeaders()));
     }
 
-    private MockHttpResponse prepareForRecord(MockHttpResponse request) {
-        final MockHttpResponse prepared = Optional.ofNullable(request)
-                .filter(MockHttpResponse::isJson)
-                .map(MockHttpResponse::getBody)
+    private MockResponse prepareForRecord(MockResponse request) {
+        final MockResponse prepared = Optional.ofNullable(request)
+                .filter(MockResponse::isJson)
+                .map(MockResponse::getBody)
                 .filter(body -> body instanceof String)
                 .map(String.class::cast)
                 .map(json -> jsonConverter.fromJson(json, Object.class))
@@ -162,10 +162,10 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
         return prepared.withHeaders(filteredHeaders(request.getHeaders()));
     }
 
-    private MockHttpResponse prepareForPlayback(MockHttpResponse response) {
+    private MockResponse prepareForPlayback(MockResponse response) {
         return Optional.ofNullable(response)
-                .filter(MockHttpResponse::isJson)
-                .map(MockHttpResponse::getBody)
+                .filter(MockResponse::isJson)
+                .map(MockResponse::getBody)
                 .filter(body -> !(body instanceof String))
                 .map(jsonConverter::toJson)
                 .map(response::withBody)
@@ -183,9 +183,9 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
                 ));
     }
 
-    private String urlsOf(List<MockHttpInteraction> mocks) {
+    private String urlsOf(List<MockInteraction> mocks) {
         return mocks.stream()
-                .map(MockHttpInteraction::getRequest)
+                .map(MockInteraction::getRequest)
                 .map(req -> format("-[%s] %s", req.getMethod(), req.getUrl()))
                 .collect(joining("\n"));
     }

@@ -1,6 +1,7 @@
 package com.cariochi.recordo.mockmvc.extensions;
 
 import com.cariochi.recordo.core.EnableRecordo;
+import com.cariochi.recordo.core.Extension;
 import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.core.utils.ObjectReader;
 import com.cariochi.recordo.mockmvc.RecordoMockMvc;
@@ -33,7 +34,7 @@ import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.apache.commons.lang3.StringUtils.substringBefore;
 import static org.springframework.test.context.junit.jupiter.SpringExtension.getApplicationContext;
 
-public abstract class AbstractMockMvcExtension implements ParameterResolver {
+public abstract class AbstractMockMvcExtension implements Extension, ParameterResolver {
 
     protected Object processRequest(HttpMethod method,
                                     String path,

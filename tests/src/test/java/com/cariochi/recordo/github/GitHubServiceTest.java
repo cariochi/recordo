@@ -5,7 +5,7 @@ import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.github.dto.GistDto;
 import com.cariochi.recordo.mockserver.MockServer;
 import com.cariochi.recordo.mockserver.RecordoMockServer;
-import com.cariochi.recordo.mockserver.interceptors.okhttp.OkHttpClientInterceptor;
+import com.cariochi.recordo.mockserver.interceptors.okhttp.OkMockServerInterceptor;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +31,7 @@ class GitHubServiceTest {
     @Test
     void test_mock_http_with_variables() {
         try (RecordoMockServer mockServer =
-                     new RecordoMockServer("/mockserver/gists_with_variables.mock.json", OkHttpClientInterceptor.attachTo(client))) {
+                     new RecordoMockServer("/mockserver/gists_with_variables.mock.json", OkMockServerInterceptor.attachTo(client))) {
 
             mockServer.set("id1", "36387e79b940de553ad0b381afc29bf4");
             mockServer.set("id2", "cc7e0f8678d69196387b623bd45f0f33");

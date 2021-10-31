@@ -12,4 +12,6 @@ public class Profiles {
     public static final String FEIGN = "feign";
 
     public static final String REST_TEMPLATE = "restTemplate";
+
+    public static final String SIMPLE = "simple";
 }

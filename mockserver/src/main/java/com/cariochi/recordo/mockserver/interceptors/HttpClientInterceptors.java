@@ -1,13 +1,15 @@
 package com.cariochi.recordo.mockserver.interceptors;
 
 import com.cariochi.recordo.core.EnableRecordo;
-import com.cariochi.recordo.mockserver.interceptors.apache.ApacheHttpClientInterceptor;
-import com.cariochi.recordo.mockserver.interceptors.okhttp.OkHttpClientInterceptor;
+import com.cariochi.recordo.mockserver.interceptors.apache.ApacheMockServerInterceptor;
+import com.cariochi.recordo.mockserver.interceptors.okhttp.OkMockServerInterceptor;
+import com.cariochi.recordo.mockserver.interceptors.resttemplate.RestTemplateInterceptor;
 import com.cariochi.reflecto.fields.JavaField;
 import lombok.experimental.UtilityClass;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.http.client.HttpClient;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
 
@@ -17,20 +19,34 @@ import static com.cariochi.reflecto.Reflecto.reflect;
 @UtilityClass
 public class HttpClientInterceptors {
 
-    public HttpClientInterceptor of(Object testInstance) {
-        return okHttpClientInterceptor(testInstance)
+    public MockServerInterceptor of(Object testInstance) {
+        return restTemplateInterceptor(testInstance)
+                .or(() -> okHttpClientInterceptor(testInstance))
                 .or(() -> apacheHttpClientInterceptor(testInstance))
                 .orElseThrow(() -> new IllegalArgumentException("Http Client not found"));
     }
 
-    private Optional<HttpClientInterceptor> okHttpClientInterceptor(Object testInstance) {
+    private Optional<MockServerInterceptor> restTemplateInterceptor(Object testInstance) {
+        try {
+            ClassUtils.getClass("org.springframework.web.client.RestTemplate", false);
+            return reflect(testInstance).fields()
+                    .withTypeAndAnnotation(RestTemplate.class, EnableRecordo.class).stream().findAny()
+                    .map(JavaField::getValue)
+                    .map(RestTemplate.class::cast)
+                    .map(RestTemplateInterceptor::attachTo);
+        } catch (ClassNotFoundException e) {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<MockServerInterceptor> okHttpClientInterceptor(Object testInstance) {
         try {
             ClassUtils.getClass("okhttp3.OkHttpClient", false);
             return reflect(testInstance).fields()
-                    .withTypeAndAnnotation(OkHttpClientInterceptor.class, EnableRecordo.class).stream().findAny()
+                    .withTypeAndAnnotation(OkMockServerInterceptor.class, EnableRecordo.class).stream().findAny()
                     .map(JavaField::getValue)
-                    .or(() -> okHttpClient(testInstance).map(OkHttpClientInterceptor::attachTo))
-                    .map(HttpClientInterceptor.class::cast);
+                    .or(() -> okHttpClient(testInstance).map(OkMockServerInterceptor::attachTo))
+                    .map(MockServerInterceptor.class::cast);
         } catch (ClassNotFoundException e) {
             return Optional.empty();
         }
@@ -47,16 +63,17 @@ public class HttpClientInterceptors {
         }
     }
 
-    private Optional<HttpClientInterceptor> apacheHttpClientInterceptor(Object testInstance) {
+    private Optional<MockServerInterceptor> apacheHttpClientInterceptor(Object testInstance) {
         try {
             ClassUtils.getClass("org.apache.http.client.HttpClient", false);
             return reflect(testInstance).fields()
                     .withTypeAndAnnotation(HttpClient.class, EnableRecordo.class).stream().findAny()
                     .map(JavaField::getValue)
                     .map(HttpClient.class::cast)
-                    .map(ApacheHttpClientInterceptor::new);
+                    .map(ApacheMockServerInterceptor::new);
         } catch (ClassNotFoundException e) {
             return Optional.empty();
         }
     }
+
 }
