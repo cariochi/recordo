@@ -4,7 +4,7 @@ import com.cariochi.recordo.core.EnableRecordo;
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.mockserver.dto.Gist;
 import com.cariochi.recordo.mockserver.dto.GistResponse;
-import com.cariochi.recordo.mockserver.interceptors.okhttp.OkHttpClientInterceptor;
+import com.cariochi.recordo.mockserver.interceptors.okhttp.OkMockServerInterceptor;
 import com.cariochi.recordo.read.Read;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Test;
@@ -44,7 +44,7 @@ class FeignOkHttpTest {
             @Read("/mockserver/gist.json") Gist gist
     ) {
         try (RecordoMockServer mockServer =
-                     new RecordoMockServer("/mockserver/feign-okhttp/should_create_gist.rest.json", OkHttpClientInterceptor.attachTo(client))) {
+                     new RecordoMockServer("/mockserver/feign-okhttp/should_create_gist.rest.json", OkMockServerInterceptor.attachTo(client))) {
 
             mockServer.set("gistId", "16d0b491b237960fd5bf3ba503a3d18b");
 
@@ -52,9 +52,6 @@ class FeignOkHttpTest {
             final GistResponse updateResponse = gitHub.updateGist(response.getId(), gist);
             final Gist createdGist = gitHub.getGist(response.getId(), "hello world");
             gitHub.deleteGist(response.getId());
-
-            assertAsJson(updateResponse)
-                    .isEqualTo("/mockserver/feign-okhttp/gist_response.json");
 
             assertAsJson(createdGist)
                     .isEqualTo("/mockserver/gist.json");

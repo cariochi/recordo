@@ -1,5 +1,6 @@
 package com.cariochi.recordo.mockmvc.extensions;
 
+import com.cariochi.recordo.core.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
@@ -9,7 +10,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-public class ParameterizedTypeReferenceParameterResolver implements ParameterResolver {
+public class ParameterizedTypeReferenceParameterResolver implements Extension, ParameterResolver {
 
     @Override
     public boolean supportsParameter(ParameterContext parameter, ExtensionContext extension) throws ParameterResolutionException {

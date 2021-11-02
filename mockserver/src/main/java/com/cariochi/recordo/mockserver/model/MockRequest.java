@@ -1,17 +1,21 @@
 package com.cariochi.recordo.mockserver.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 
 @Data
 @Builder
 @With
 @NoArgsConstructor
 @AllArgsConstructor
-public class MockHttpRequest {
+@JsonInclude(NON_EMPTY)
+public class MockRequest {
 
     private String method;
     private String url;

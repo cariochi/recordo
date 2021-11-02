@@ -8,7 +8,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
@@ -39,12 +38,12 @@ public class UserController {
 
     @GetMapping("/{id}")
     public UserDto getById(@PathVariable int id,
-                           @RequestParam(value = "name", required = false) Optional<String> name,
-                           @RequestHeader(value = "locale", required = false) Optional<String> locale
+                           @RequestParam(value = "name", required = false) String name,
+                           @RequestHeader(value = "locale", required = false) String locale
     ) {
         return UserDto.builder()
                 .id(id)
-                .name(name.orElse("user_" + id) + " " + locale.orElse(""))
+                .name(name + " " + locale)
                 .build();
     }
 
@@ -60,4 +59,5 @@ public class UserController {
     public void delete(@PathVariable int id) {
         log.info("User {} deleted", id);
     }
+
 }

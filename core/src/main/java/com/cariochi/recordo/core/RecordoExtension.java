@@ -46,7 +46,7 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
     }
 
     @Override
-    public void afterAll(ExtensionContext context) throws Exception {
+    public void afterAll(ExtensionContext context) {
         handlers.stream()
                 .filter(i -> AfterAllCallback.class.isAssignableFrom(i.getClass()))
                 .map(AfterAllCallback.class::cast)
