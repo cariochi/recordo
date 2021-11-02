@@ -1,7 +1,7 @@
 package com.cariochi.recordo.mockserver.interceptors.apache;
 
-import com.cariochi.recordo.mockserver.model.MockHttpRequest;
-import com.cariochi.recordo.mockserver.model.MockHttpResponse;
+import com.cariochi.recordo.mockserver.model.MockRequest;
+import com.cariochi.recordo.mockserver.model.MockResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpException;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -20,10 +20,10 @@ public class OnResponseExecChain implements ClientExecChain {
     private final ClientExecChain requestExecutor;
     private final ApacheMapper mapper = new ApacheMapper();
 
-    private BiFunction<MockHttpRequest, MockHttpResponse, MockHttpResponse> onResponse;
+    private BiFunction<MockRequest, MockResponse, MockResponse> onResponse;
     private boolean active;
 
-    public void onResponse(BiFunction<MockHttpRequest, MockHttpResponse, MockHttpResponse> onResponse) {
+    public void onResponse(BiFunction<MockRequest, MockResponse, MockResponse> onResponse) {
         this.onResponse = onResponse;
     }
 
@@ -38,8 +38,8 @@ public class OnResponseExecChain implements ClientExecChain {
                                          HttpExecutionAware executionAware) throws IOException, HttpException {
         final CloseableHttpResponse response = requestExecutor.execute(route, request, context, executionAware);
         if (active) {
-            final MockHttpRequest recordoRequest = mapper.toRecordoRequest(request);
-            final MockHttpResponse recordoResponse = mapper.toRecordoResponse(response);
+            final MockRequest recordoRequest = mapper.toRecordoRequest(request);
+            final MockResponse recordoResponse = mapper.toRecordoResponse(response);
             return mapper.toHttpResponse(onResponse.apply(recordoRequest, recordoResponse));
         } else {
             return response;

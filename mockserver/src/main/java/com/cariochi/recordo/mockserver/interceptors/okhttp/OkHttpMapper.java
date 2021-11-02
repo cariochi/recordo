@@ -1,8 +1,8 @@
 package com.cariochi.recordo.mockserver.interceptors.okhttp;
 
 import com.cariochi.recordo.core.RecordoError;
-import com.cariochi.recordo.mockserver.model.MockHttpRequest;
-import com.cariochi.recordo.mockserver.model.MockHttpResponse;
+import com.cariochi.recordo.mockserver.model.MockRequest;
+import com.cariochi.recordo.mockserver.model.MockResponse;
 import okhttp3.*;
 import okio.Buffer;
 import okio.BufferedSource;
@@ -23,8 +23,8 @@ public class OkHttpMapper {
     public static final String CONTENT_TYPE = "Content-Type";
     private static final String DEFAULT_CONTENT_TYPE = "application/json; charset=utf-8";
 
-    public MockHttpRequest toRecordoRequest(okhttp3.Request request) {
-        return MockHttpRequest.builder()
+    public MockRequest toRecordoRequest(okhttp3.Request request) {
+        return MockRequest.builder()
                 .method(request.method())
                 .url(request.url().url().toString())
                 .headers(headersOf(request.headers()))
@@ -32,8 +32,8 @@ public class OkHttpMapper {
                 .build();
     }
 
-    public MockHttpResponse toRecordoResponse(Response response) {
-        return MockHttpResponse.builder()
+    public MockResponse toRecordoResponse(Response response) {
+        return MockResponse.builder()
                 .protocol(response.protocol().toString())
                 .headers(headersOf(response.headers()))
                 .statusCode(response.code())
@@ -42,7 +42,7 @@ public class OkHttpMapper {
                 .build();
     }
 
-    public Response toOkHttpResponse(okhttp3.Request request, MockHttpResponse response) throws IOException {
+    public Response toOkHttpResponse(okhttp3.Request request, MockResponse response) throws IOException {
         final byte[] body = bytes(response.getBody());
         final ResponseBody responseBody = ResponseBody.create(
                 MediaType.parse(contentTypeOf(response.getHeaders())),
@@ -50,9 +50,9 @@ public class OkHttpMapper {
         );
         return new Response.Builder()
                 .request(request)
-                .code(response.getStatusCode())
-                .message(response.getStatusText())
                 .protocol(Protocol.get(response.getProtocol().toLowerCase()))
+                .code(response.getStatusCode())
+                .message(Optional.ofNullable(response.getStatusText()).orElse(""))
                 .headers(Headers.of(response.getHeaders()))
                 .body(responseBody)
                 .build();
@@ -104,4 +104,5 @@ public class OkHttpMapper {
                 .map(s -> s.getBytes(UTF_8))
                 .orElse(new byte[0]);
     }
+
 }

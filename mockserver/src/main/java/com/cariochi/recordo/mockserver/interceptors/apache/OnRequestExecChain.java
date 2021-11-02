@@ -1,7 +1,7 @@
 package com.cariochi.recordo.mockserver.interceptors.apache;
 
-import com.cariochi.recordo.mockserver.model.MockHttpRequest;
-import com.cariochi.recordo.mockserver.model.MockHttpResponse;
+import com.cariochi.recordo.mockserver.model.MockRequest;
+import com.cariochi.recordo.mockserver.model.MockResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpException;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -21,9 +21,9 @@ public class OnRequestExecChain implements ClientExecChain {
     private final ClientExecChain requestExecutor;
     private final ApacheMapper mapper = new ApacheMapper();
 
-    private Function<MockHttpRequest, Optional<MockHttpResponse>> onRequest;
+    private Function<MockRequest, Optional<MockResponse>> onRequest;
 
-    public void onRequest(Function<MockHttpRequest, Optional<MockHttpResponse>> onRequest) {
+    public void onRequest(Function<MockRequest, Optional<MockResponse>> onRequest) {
         this.onRequest = onRequest;
     }
 
@@ -32,7 +32,7 @@ public class OnRequestExecChain implements ClientExecChain {
                                          HttpRequestWrapper request,
                                          HttpClientContext context,
                                          HttpExecutionAware executionAware) throws IOException, HttpException {
-        final Optional<MockHttpResponse> recordoResponse = onRequest.apply(mapper.toRecordoRequest(request));
+        final Optional<MockResponse> recordoResponse = onRequest.apply(mapper.toRecordoRequest(request));
         return recordoResponse.isPresent()
                 ? mapper.toHttpResponse(recordoResponse.get())
                 : requestExecutor.execute(route, request, context, executionAware);

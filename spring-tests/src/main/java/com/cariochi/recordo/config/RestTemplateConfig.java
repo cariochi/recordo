@@ -14,6 +14,7 @@ import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import static com.cariochi.recordo.config.Profiles.REST_TEMPLATE;
+import static com.cariochi.recordo.config.Profiles.SIMPLE;
 
 @Configuration
 @Profile(REST_TEMPLATE)
@@ -35,6 +36,12 @@ public class RestTemplateConfig {
     @ConditionalOnBean(OkHttpClient.class)
     public RestTemplate restTemplate(OkHttpClient client) {
         return new RestTemplate(new OkHttp3ClientHttpRequestFactory(client));
+    }
+
+    @Bean
+    @Profile(SIMPLE)
+    public RestTemplate simpleRestTemplate() {
+        return new RestTemplate(new OkHttp3ClientHttpRequestFactory(new OkHttpClient()));
     }
 
 }

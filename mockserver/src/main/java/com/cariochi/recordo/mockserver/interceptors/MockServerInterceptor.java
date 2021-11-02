@@ -1,6 +1,6 @@
 package com.cariochi.recordo.mockserver.interceptors;
 
-public interface HttpClientInterceptor {
+public interface MockServerInterceptor {
 
     void init(RecordoRequestHandler handler);
 

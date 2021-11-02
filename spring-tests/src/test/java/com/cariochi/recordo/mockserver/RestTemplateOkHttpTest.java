@@ -47,9 +47,6 @@ public class RestTemplateOkHttpTest {
         final Gist createdGist = gitHub.getGist(response.getId(), "hello world");
         gitHub.deleteGist(response.getId());
 
-        assertAsJson(updateResponse)
-                .isEqualTo("/mockserver/resttemplate-okhttp/gist_response.json");
-
         assertAsJson(createdGist)
                 .isEqualTo("/mockserver/gist.json");
     }

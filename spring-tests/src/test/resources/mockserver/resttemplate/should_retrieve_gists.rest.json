@@ -9,8 +9,8 @@
       }
     },
     "response": {
-      "protocol": "h2",
       "statusCode": 200,
+      "statusText": "OK",
       "headers": {
         "content-type": "application/json; charset=utf-8"
       },
