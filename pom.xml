@@ -8,26 +8,26 @@
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
 
     <name>Recordo</name>
     <description>JUnit extension for declarative testing.</description>
     <url>https://cariochi.com</url>
 
     <modules>
-        <module>core</module>
-        <module>read</module>
-        <module>assertions</module>
-        <module>mockmvc</module>
-        <module>mockserver</module>
-        <module>tests</module>
-        <module>spring-tests</module>
+        <module>recordo-core</module>
+        <module>recordo-read</module>
+        <module>recordo-assertions</module>
+        <module>recordo-spring-mockmvc</module>
+        <module>recordo-mockserver</module>
+        <module>recordo-tests</module>
+        <module>recordo-spring-tests</module>
     </modules>
 
     <licenses>
         <license>
-            <name>The MIT License</name>
-            <url>https://github.com/cariochi/recordo/blob/master/LICENSE</url>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
             <distribution>repo</distribution>
         </license>
     </licenses>

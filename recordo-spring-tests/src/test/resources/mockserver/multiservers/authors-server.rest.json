@@ -1,0 +1,46 @@
+[
+  {
+    "request": {
+      "method": "GET",
+      "url": "https://authors.server/authors",
+      "headers": {
+        "accept": "application/json, application/*+json"
+      }
+    },
+    "response": {
+      "statusCode": 200,
+      "statusText": "OK",
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": [
+        {
+          "id": 1,
+          "firstName": "William",
+          "lastName": "Shakespeare"
+        }
+      ]
+    }
+  },
+  {
+    "request": {
+      "method": "GET",
+      "url": "https://authors.server/authors/1",
+      "headers": {
+        "accept": "application/json, application/*+json"
+      }
+    },
+    "response": {
+      "statusCode": 200,
+      "statusText": "OK",
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "id": 1,
+        "firstName": "William",
+        "lastName": "Shakespeare"
+      }
+    }
+  }
+]

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>recordo-parent</artifactId>
+        <groupId>com.cariochi.recordo</groupId>
+        <version>1.2.2</version>
+    </parent>
+
+    <artifactId>recordo-mockserver</artifactId>
+    <name>Recordo Mock Server</name>
+    <description>Mock Server module of Recordo JUnit extension.</description>
+    <url>https://cariochi.com</url>
+
+    <properties>
+        <okhttp.version>4.9.2</okhttp.version>
+        <httpclient.version>4.5.13</httpclient.version>
+        <okio.version>2.9.0</okio.version>
+        <spring.version>5.3.11</spring.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.cariochi.recordo</groupId>
+            <artifactId>recordo-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${okhttp.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>okio</artifactId>
+                    <groupId>com.squareup.okio</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.squareup.okio</groupId>
+            <artifactId>okio</artifactId>
+            <version>${okio.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${httpclient.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+    </dependencies>
+
+</project>
