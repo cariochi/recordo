@@ -17,10 +17,10 @@
     <url>https://cariochi.com</url>
 
     <properties>
-        <okhttp.version>4.9.2</okhttp.version>
+        <okhttp.version>4.9.3</okhttp.version>
         <httpclient.version>4.5.13</httpclient.version>
         <okio.version>2.9.0</okio.version>
-        <spring.version>5.3.11</spring.version>
+        <spring.version>5.3.15</spring.version>
     </properties>
 
     <dependencies>
