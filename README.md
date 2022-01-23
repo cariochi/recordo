@@ -34,7 +34,7 @@ You just need to set expected values, and the test is ready.
 <dependency>
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-read</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -64,7 +64,7 @@ You just need to verify them, and the test is ready.
 <dependency>
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-assertions</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -105,7 +105,7 @@ Then this file is automatically used for mocking.
 <dependency>
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-mockserver</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -133,7 +133,7 @@ You just need to declare an HTTP request (method, url, headers, etc) and a respo
 <dependency>
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-spring-mockmvc</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <scope>test</scope>
 </dependency>
 ```
