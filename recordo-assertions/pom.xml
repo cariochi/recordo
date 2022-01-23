@@ -17,7 +17,7 @@
     <url>https://cariochi.com</url>
 
     <properties>
-        <assertj.version>3.21.0</assertj.version>
+        <assertj.version>3.22.0</assertj.version>
     </properties>
 
     <dependencies>

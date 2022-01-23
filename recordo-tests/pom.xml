@@ -16,10 +16,10 @@
 
 
     <properties>
-        <feign.version>11.6</feign.version>
+        <feign.version>11.8</feign.version>
         <log4j-to-slf4j.version>2.14.1</log4j-to-slf4j.version>
-        <okhttp.version>4.9.2</okhttp.version>
-        <logback.version>1.2.6</logback.version>
+        <okhttp.version>4.9.3</okhttp.version>
+        <logback.version>1.2.10</logback.version>
     </properties>
 
     <dependencies>
@@ -85,6 +85,12 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>

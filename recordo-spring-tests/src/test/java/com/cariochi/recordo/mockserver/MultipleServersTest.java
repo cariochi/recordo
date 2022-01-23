@@ -4,7 +4,6 @@ import com.cariochi.recordo.books.dto.Author;
 import com.cariochi.recordo.books.dto.Book;
 import com.cariochi.recordo.core.EnableRecordo;
 import com.cariochi.recordo.core.RecordoExtension;
-import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +40,6 @@ public class MultipleServersTest {
         final Author author = get("https://authors.server/authors/1", typeOf(Author.class));
     }
 
-    @Nullable
     private <T> T get(String url, ParameterizedTypeReference<T> responseType) {
         return restTemplate.exchange(RequestEntity.get(URI.create(url)).build(), responseType).getBody();
     }

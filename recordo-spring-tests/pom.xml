@@ -15,8 +15,8 @@
     <name>Recordo Spring Tests</name>
 
     <properties>
-        <spring.boot.version>2.5.6</spring.boot.version>
-        <spring-cloud.version>2020.0.4</spring-cloud.version>
+        <spring.boot.version>2.6.3</spring.boot.version>
+        <spring-cloud.version>2021.0.0</spring-cloud.version>
         <okio.version>2.9.0</okio.version>
     </properties>
 
@@ -62,6 +62,12 @@
             <groupId>com.squareup.okio</groupId>
             <artifactId>okio</artifactId>
             <version>${okio.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>annotations</artifactId>
+                    <groupId>org.jetbrains</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
