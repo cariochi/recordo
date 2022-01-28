@@ -14,14 +14,7 @@
     <artifactId>recordo-mockserver</artifactId>
     <name>Recordo Mock Server</name>
     <description>Mock Server module of Recordo JUnit extension.</description>
-    <url>https://cariochi.com</url>
-
-    <properties>
-        <okhttp.version>4.9.3</okhttp.version>
-        <httpclient.version>4.5.13</httpclient.version>
-        <okio.version>2.9.0</okio.version>
-        <spring.version>5.3.15</spring.version>
-    </properties>
+    <url>https://cariochi.com/recordo/modules/mockserver</url>
 
     <dependencies>
         <dependency>
@@ -29,40 +22,25 @@
             <artifactId>recordo-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>${okhttp.version}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>okio</artifactId>
-                    <groupId>com.squareup.okio</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
-
         <dependency>
             <groupId>com.squareup.okio</groupId>
             <artifactId>okio</artifactId>
-            <version>${okio.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>${httpclient.version}</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-            <version>${spring.version}</version>
             <scope>provided</scope>
         </dependency>
-
     </dependencies>
 
 </project>
