@@ -14,7 +14,7 @@
     <artifactId>recordo-mockserver</artifactId>
     <name>Recordo Mock Server</name>
     <description>Mock Server module of Recordo JUnit extension.</description>
-    <url>https://cariochi.com/recordo/modules/mockserver</url>
+    <url>https://cariochi.com/recordo/mockserver</url>
 
     <dependencies>
         <dependency>
