@@ -189,5 +189,5 @@ void should_create_book(
 
 # License
 
-**Recordo** propject is licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) License. 
+**Recordo** extensions are licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) License. 
 
