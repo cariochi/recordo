@@ -54,9 +54,20 @@
         </dependency>
         <dependency>
             <groupId>com.cariochi.recordo</groupId>
-            <artifactId>recordo-all</artifactId>
+            <artifactId>recordo-read</artifactId>
             <version>${project.version}</version>
-            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.cariochi.recordo</groupId>
+            <artifactId>recordo-assertions</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.cariochi.recordo</groupId>
+            <artifactId>recordo-mockserver</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
