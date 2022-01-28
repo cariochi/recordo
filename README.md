@@ -126,6 +126,7 @@ Then this file is automatically used for mocking.
 
 ### Examples
 
+#### Single MockServer
 ```java
 @Test
 @MockServer("/mockServer/get_gists.rest.json")
@@ -133,6 +134,19 @@ void should_retrieve_gists() {
     ...
     List<GistResponse> gists = restClient.getGists();
     ...
+}
+```
+
+#### Multiple MockServers
+```java
+@Test
+@MockServer(urlPattern = "https://books.server/**", value = "/mockserver/multiservers/books-server.rest.json")
+@MockServer(urlPattern = "https://authors.server/**", value = "/mockserver/multiservers/authors-server.rest.json")
+void should_retrieve_books() {
+    List<Book> allBooks = restClient.get("https://books.server/books", listOf(Book.class));
+    List<Author> allAuthors = restClient.get("https://authors.server/authors", listOf(Author.class));
+    Book book = restClient.get("https://books.server/books/129649986932158", typeOf(Book.class));
+    Author author = restClient.get("https://authors.server/authors/1", typeOf(Author.class));
 }
 ```
 
