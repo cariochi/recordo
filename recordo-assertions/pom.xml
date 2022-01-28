@@ -14,7 +14,7 @@
     <artifactId>recordo-assertions</artifactId>
     <name>Recordo Assertions</name>
     <description>Assertions module of Recordo JUnit extension.</description>
-    <url>https://cariochi.com/recordo/modules/assertions</url>
+    <url>https://cariochi.com/recordo/assertions</url>
 
     <dependencies>
         <dependency>

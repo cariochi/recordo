@@ -14,7 +14,7 @@
     <artifactId>recordo-spring-mockmvc</artifactId>
     <name>Recordo Spring MockMvc</name>
     <description>Spring MockMvc module of Recordo JUnit extension.</description>
-    <url>https://cariochi.com/recordo/modules/mockmvc</url>
+    <url>https://cariochi.com/recordo/mockmvc</url>
 
     <dependencies>
         <dependency>
