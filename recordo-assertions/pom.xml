@@ -14,11 +14,7 @@
     <artifactId>recordo-assertions</artifactId>
     <name>Recordo Assertions</name>
     <description>Assertions module of Recordo JUnit extension.</description>
-    <url>https://cariochi.com</url>
-
-    <properties>
-        <assertj.version>3.22.0</assertj.version>
-    </properties>
+    <url>https://cariochi.com/recordo/modules/assertions</url>
 
     <dependencies>
         <dependency>
@@ -26,13 +22,10 @@
             <artifactId>recordo-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>${assertj.version}</version>
         </dependency>
-
     </dependencies>
 
 </project>
