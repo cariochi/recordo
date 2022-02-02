@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>recordo-parent</artifactId>
+        <groupId>com.cariochi.recordo</groupId>
+        <version>1.2.2</version>
+    </parent>
+
+    <artifactId>recordo-read</artifactId>
+    <name>Recordo Read</name>
+    <description>Resources Reading module of Recordo JUnit extension.</description>
+    <url>https://cariochi.com/recordo/read</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.cariochi.recordo</groupId>
+            <artifactId>recordo-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+</project>

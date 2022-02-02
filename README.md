@@ -5,10 +5,24 @@ a declarative way and helps to handle json resources by recording or generating 
 
 # Documentation
 
-Please, see the recently published documentation [here](https://www.cariochi.com). Although it has been published, it is
+Please, see the recently published documentation [here](https://www.cariochi.com/recordo). Although it has been published, it is
 still under development and there may be some sections unfinished or missing.
 
 # Quick Start
+
+### Maven dependency
+
+Recordo modules can be added to a project all together or one-by-one separately.
+
+```markup
+<dependency>
+    <groupId>com.cariochi.recordo</groupId>
+    <artifactId>recordo-all</artifactId>
+    <version>1.2.2</version>
+    <type>pom</type>
+    <scope>test</scope>
+</dependency>
+```
 
 ### Extend a test with Recordo extension
 
@@ -34,7 +48,7 @@ You just need to set expected values, and the test is ready.
 <dependency>
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-read</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -64,7 +78,7 @@ You just need to verify them, and the test is ready.
 <dependency>
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-assertions</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -105,13 +119,14 @@ Then this file is automatically used for mocking.
 <dependency>
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-mockserver</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <scope>test</scope>
 </dependency>
 ```
 
 ### Examples
 
+#### Single MockServer
 ```java
 @Test
 @MockServer("/mockServer/get_gists.rest.json")
@@ -119,6 +134,19 @@ void should_retrieve_gists() {
     ...
     List<GistResponse> gists = restClient.getGists();
     ...
+}
+```
+
+#### Multiple MockServers
+```java
+@Test
+@MockServer(urlPattern = "https://books.server/**", value = "/mockserver/multiservers/books-server.rest.json")
+@MockServer(urlPattern = "https://authors.server/**", value = "/mockserver/multiservers/authors-server.rest.json")
+void should_retrieve_books() {
+    List<Book> allBooks = restClient.get("https://books.server/books", listOf(Book.class));
+    List<Author> allAuthors = restClient.get("https://authors.server/authors", listOf(Author.class));
+    Book book = restClient.get("https://books.server/books/129649986932158", typeOf(Book.class));
+    Author author = restClient.get("https://authors.server/authors/1", typeOf(Author.class));
 }
 ```
 
@@ -133,7 +161,7 @@ You just need to declare an HTTP request (method, url, headers, etc) and a respo
 <dependency>
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-spring-mockmvc</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -161,6 +189,5 @@ void should_create_book(
 
 # License
 
-**Recordo** propject is licensed under the MIT License. See
-the [LICENSE](https://github.com/cariochi/recordo/blob/master/LICENSE) file for details.
+**Recordo** extensions are licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) License. 
 
