@@ -29,7 +29,7 @@ public class HttpClientInterceptors {
     private Optional<MockServerInterceptor> restTemplateInterceptor(Object testInstance) {
         try {
             ClassUtils.getClass("org.springframework.web.client.RestTemplate", false);
-            return reflect(testInstance).fields()
+            return reflect(testInstance).fieldsIncludingEnclosing()
                     .withTypeAndAnnotation(RestTemplate.class, EnableRecordo.class).stream().findAny()
                     .map(JavaField::getValue)
                     .map(RestTemplate.class::cast)
@@ -42,7 +42,7 @@ public class HttpClientInterceptors {
     private Optional<MockServerInterceptor> okHttpClientInterceptor(Object testInstance) {
         try {
             ClassUtils.getClass("okhttp3.OkHttpClient", false);
-            return reflect(testInstance).fields()
+            return reflect(testInstance).fieldsIncludingEnclosing()
                     .withTypeAndAnnotation(OkMockServerInterceptor.class, EnableRecordo.class).stream().findAny()
                     .map(JavaField::getValue)
                     .or(() -> okHttpClient(testInstance).map(OkMockServerInterceptor::attachTo))
@@ -55,7 +55,7 @@ public class HttpClientInterceptors {
     private Optional<OkHttpClient> okHttpClient(Object testInstance) {
         try {
             ClassUtils.getClass("okhttp3.OkHttpClient", false);
-            return reflect(testInstance).fields()
+            return reflect(testInstance).fieldsIncludingEnclosing()
                     .withTypeAndAnnotation(OkHttpClient.class, EnableRecordo.class).stream().findAny()
                     .map(JavaField::getValue);
         } catch (ClassNotFoundException e) {
@@ -66,7 +66,7 @@ public class HttpClientInterceptors {
     private Optional<MockServerInterceptor> apacheHttpClientInterceptor(Object testInstance) {
         try {
             ClassUtils.getClass("org.apache.http.client.HttpClient", false);
-            return reflect(testInstance).fields()
+            return reflect(testInstance).fieldsIncludingEnclosing()
                     .withTypeAndAnnotation(HttpClient.class, EnableRecordo.class).stream().findAny()
                     .map(JavaField::getValue)
                     .map(HttpClient.class::cast)
