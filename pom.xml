@@ -8,7 +8,7 @@
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.2</version>
+    <version>1.2.3</version>
 
     <name>Recordo Parent</name>
     <description>Parent for Recordo JUnit extension modules.</description>
@@ -54,20 +54,20 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jackson.version>2.13.1</jackson.version>
+        <jackson.version>2.13.3</jackson.version>
         <commons-text.version>1.9</commons-text.version>
         <junit-jupiter.version>5.8.2</junit-jupiter.version>
         <jsonassert.version>1.5.0</jsonassert.version>
-        <slf4j-api.version>1.7.33</slf4j-api.version>
-        <lombok.version>1.18.22</lombok.version>
-        <reflecto.version>1.0.1</reflecto.version>
-        <assertj.version>3.22.0</assertj.version>
-        <commons-lang3.version>3.11</commons-lang3.version>
+        <slf4j-api.version>1.7.36</slf4j-api.version>
+        <lombok.version>1.18.24</lombok.version>
+        <reflecto.version>1.1.2</reflecto.version>
+        <assertj.version>3.23.1</assertj.version>
+        <commons-lang3.version>3.12.0</commons-lang3.version>
         <okhttp.version>4.9.3</okhttp.version>
         <httpclient.version>4.5.13</httpclient.version>
         <okio.version>2.9.0</okio.version>
-        <spring.version>5.3.15</spring.version>
-        <spring-data.version>2.6.1</spring-data.version>
+        <spring.version>5.3.20</spring.version>
+        <spring-data.version>2.7.0</spring-data.version>
         <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
     </properties>
 
@@ -81,7 +81,7 @@
             </dependency>
 
             <dependency>
-                <groupId>com.cariochi</groupId>
+                <groupId>com.cariochi.reflecto</groupId>
                 <artifactId>reflecto</artifactId>
                 <version>${reflecto.version}</version>
                 <exclusions>

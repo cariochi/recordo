@@ -6,6 +6,7 @@ import lombok.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 import static java.util.Arrays.asList;
@@ -24,6 +25,7 @@ public class TestDto {
     private List<String> strings;
     private Instant date;
     private TestDto parent;
+    private Set<ItemDto> itemsSet;
 
     @Builder.Default
     private List<TestDto> children = new ArrayList<>();
@@ -37,9 +39,22 @@ public class TestDto {
                 .build();
     }
 
+    public static ItemDto item(int index) {
+        return new ItemDto(index);
+    }
+
     public TestDto withChild(TestDto child) {
         children.add(child);
         return this;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ItemDto {
+
+        private Integer index;
+
     }
 
 }

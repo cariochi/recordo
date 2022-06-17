@@ -2,7 +2,6 @@ package com.cariochi.recordo.mockmvc;
 
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.mockmvc.dto.UserDto;
-import com.cariochi.recordo.mockmvc.utils.Types;
 import com.cariochi.recordo.read.Read;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -12,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
+import static com.cariochi.recordo.mockmvc.utils.TypeReferences.pageOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.OK;
@@ -56,7 +56,7 @@ class UserControllerTest {
 
     @Test
     void should_get_all_users_with_mock_mvc(RecordoMockMvc mockMvc) {
-        final Request<Page<UserDto>> request = mockMvc.get("/users", Types.pageOf(UserDto.class));
+        final Request<Page<UserDto>> request = mockMvc.get("/users", pageOf(UserDto.class));
         final Response<Page<UserDto>> response = request.perform();
         assertAsJson(response.getBody()).isEqualTo("/mockmvc/users_page.json");
     }

@@ -18,8 +18,8 @@ import java.util.List;
 
 import static com.cariochi.recordo.config.Profiles.REST_TEMPLATE;
 import static com.cariochi.recordo.config.Profiles.SIMPLE;
-import static com.cariochi.recordo.mockmvc.utils.Types.listOf;
-import static com.cariochi.recordo.mockmvc.utils.Types.typeOf;
+import static com.cariochi.recordo.mockmvc.utils.TypeReferences.listOf;
+import static com.cariochi.recordo.mockmvc.utils.TypeReferences.typeOf;
 
 @SpringBootTest
 @ActiveProfiles({REST_TEMPLATE, SIMPLE})

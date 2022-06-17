@@ -6,9 +6,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
+import java.util.Set;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 import static com.cariochi.recordo.assertions.JsonCondition.equalAsJsonTo;
+import static com.cariochi.recordo.main.dto.TestDto.item;
 import static java.util.Arrays.asList;
 import static java.util.Collections.reverse;
 import static java.util.Collections.shuffle;
@@ -115,6 +117,21 @@ public class JsonAssertionTest {
         assertAsJson(list)
                 .withStrictOrder(false)
                 .isEqualTo("/verify_annotation_test/list.json");
+    }
+
+    @Test
+    void should_sort_sets() {
+        final TestDto testDto = testDto(1);
+        testDto.setItemsSet(Set.of(item(33), item(32), item(31)));
+        testDto.getChildren().forEach(child -> child.setItemsSet(Set.of(
+                item(child.getId() + 3),
+                item(child.getId() + 2),
+                item(child.getId() + 1)
+        )));
+
+        assertAsJson(testDto)
+                .withStrictOrder(false)
+                .isEqualTo("/verify_annotation_test/sorted_sets.json");
     }
 
     @Test
