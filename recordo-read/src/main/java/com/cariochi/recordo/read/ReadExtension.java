@@ -18,7 +18,7 @@ public class ReadExtension implements Extension, BeforeEachCallback {
 
     @Override
     public void beforeEach(ExtensionContext context) {
-        reflect(context.getRequiredTestInstance()).fields()
+        reflect(context.getRequiredTestInstance()).fields().includeEnclosing()
                 .withAnnotation(Read.class)
                 .forEach(this::processRead);
     }

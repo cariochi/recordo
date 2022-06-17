@@ -1,0 +1,65 @@
+{
+  "id": 1,
+  "text": "Test Object 1",
+  "strings": [
+    "1",
+    "2",
+    "3"
+  ],
+  "date": "2020-01-02T00:00:00Z",
+  "itemsSet": [
+    {
+      "index": 31
+    },
+    {
+      "index": 32
+    },
+    {
+      "index": 33
+    }
+  ],
+  "children": [
+    {
+      "id": 2,
+      "text": "Test Object 2",
+      "strings": [
+        "2",
+        "3",
+        "4"
+      ],
+      "date": "2020-01-03T00:00:00Z",
+      "itemsSet": [
+        {
+          "index": 3
+        },
+        {
+          "index": 4
+        },
+        {
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "text": "Test Object 3",
+      "strings": [
+        "3",
+        "4",
+        "5"
+      ],
+      "date": "2020-01-04T00:00:00Z",
+      "itemsSet": [
+        {
+          "index": 4
+        },
+        {
+          "index": 5
+        },
+        {
+          "index": 6
+        }
+      ]
+    }
+  ]
+}

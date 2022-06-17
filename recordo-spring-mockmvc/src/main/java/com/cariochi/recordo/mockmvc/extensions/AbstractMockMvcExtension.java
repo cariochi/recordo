@@ -123,7 +123,7 @@ public abstract class AbstractMockMvcExtension implements Extension, ParameterRe
     }
 
     private Optional<MockMvc> findMockMvc(ExtensionContext context) {
-        return reflect(context.getRequiredTestInstance()).fields()
+        return reflect(context.getRequiredTestInstance()).fields().includeEnclosing()
                 .withTypeAndAnnotation(MockMvc.class, EnableRecordo.class).stream().findAny()
                 .map(JavaField::getValue)
                 .map(MockMvc.class::cast);

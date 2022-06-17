@@ -8,15 +8,15 @@
     <parent>
         <artifactId>recordo-parent</artifactId>
         <groupId>com.cariochi.recordo</groupId>
-        <version>1.2.2</version>
+        <version>1.2.3</version>
     </parent>
 
     <artifactId>recordo-spring-tests</artifactId>
     <name>Recordo Spring Tests</name>
 
     <properties>
-        <spring.boot.version>2.6.3</spring.boot.version>
-        <spring-cloud.version>2021.0.0</spring-cloud.version>
+        <spring.boot.version>2.7.0</spring.boot.version>
+        <spring-cloud.version>2021.0.3</spring-cloud.version>
     </properties>
 
     <dependencies>

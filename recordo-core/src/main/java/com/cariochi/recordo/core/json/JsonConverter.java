@@ -31,6 +31,7 @@ public class JsonConverter {
                 new ObjectMapper()
                         .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
                         .registerModule(new JavaTimeModule())
+                        .registerModule(SortedSetJsonSerializer.getJsonModule())
                         .setDateFormat(new StdDateFormat())
         );
     }

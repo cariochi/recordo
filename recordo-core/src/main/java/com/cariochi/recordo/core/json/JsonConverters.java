@@ -13,7 +13,7 @@ import static com.cariochi.reflecto.Reflecto.reflect;
 public class JsonConverters {
 
     public static Optional<JsonConverter> findJsonConverter(Object testInstance) {
-        return reflect(testInstance).fields()
+        return reflect(testInstance).fields().includeEnclosing()
                 .withTypeAndAnnotation(ObjectMapper.class, EnableRecordo.class).stream().findAny()
                 .map(JavaField::getValue)
                 .map(ObjectMapper.class::cast)
