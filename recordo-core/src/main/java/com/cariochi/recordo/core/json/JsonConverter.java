@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@RequiredArgsConstructor
 public class JsonConverter {
 
     private final ObjectMapper objectMapper;
@@ -31,9 +30,12 @@ public class JsonConverter {
                 new ObjectMapper()
                         .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
                         .registerModule(new JavaTimeModule())
-                        .registerModule(SortedSetJsonSerializer.getJsonModule())
                         .setDateFormat(new StdDateFormat())
         );
+    }
+
+    public JsonConverter(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper.copy().registerModule(SortedSetJsonSerializer.getJsonModule());
     }
 
     public String toJson(Object object) {
