@@ -1,12 +1,10 @@
 package com.cariochi.recordo.mockserver;
 
 import com.cariochi.recordo.config.Profiles;
-import com.cariochi.recordo.core.EnableRecordo;
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.mockserver.dto.Gist;
 import com.cariochi.recordo.mockserver.dto.GistResponse;
 import com.cariochi.recordo.read.Read;
-import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +19,6 @@ import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 @ActiveProfiles({Profiles.REST_TEMPLATE, Profiles.OK_HTTP})
 @ExtendWith(RecordoExtension.class)
 public class RestTemplateOkHttpTest {
-
-    @Autowired
-    @EnableRecordo
-    private OkHttpClient client;
 
     @Autowired
     protected GitHub gitHub;

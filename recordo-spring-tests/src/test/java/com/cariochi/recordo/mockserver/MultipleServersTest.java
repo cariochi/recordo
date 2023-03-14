@@ -2,7 +2,6 @@ package com.cariochi.recordo.mockserver;
 
 import com.cariochi.recordo.books.dto.Author;
 import com.cariochi.recordo.books.dto.Book;
-import com.cariochi.recordo.core.EnableRecordo;
 import com.cariochi.recordo.core.RecordoExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +26,6 @@ import static com.cariochi.recordo.mockmvc.utils.TypeReferences.typeOf;
 public class MultipleServersTest {
 
     @Autowired
-    @EnableRecordo
     private RestTemplate restTemplate;
 
     @Test

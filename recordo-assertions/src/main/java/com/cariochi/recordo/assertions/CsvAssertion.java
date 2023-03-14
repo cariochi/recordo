@@ -1,8 +1,9 @@
 package com.cariochi.recordo.assertions;
 
 import com.cariochi.recordo.core.utils.Files;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import java.util.Map;
 
+import static com.fasterxml.jackson.dataformat.csv.CsvParser.Feature.WRAP_AS_ARRAY;
 import static com.fasterxml.jackson.dataformat.csv.CsvSchema.emptySchema;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -51,7 +53,7 @@ public class CsvAssertion {
 
     private void doAssert(String fileName) {
         final List<Object> actual = read(actualCsv);
-        final List<Object> expected = read(Files.read(fileName));
+        final List<Object> expected = read(Files.readString(fileName));
         if (withStrictOrder) {
             assertThat(actual).containsExactlyElementsOf(expected);
         } else {
@@ -65,34 +67,34 @@ public class CsvAssertion {
 
     @SneakyThrows
     private List<Object> readWithHeaders(String csv) {
-        final CsvSchema schema = emptySchema()
-                .withHeader()
-                .withColumnSeparator(withColumnSeparator)
-                .withLineSeparator(withLineSeparator);
-        return new CsvMapper()
+        final ObjectReader objectReader = new CsvMapper()
                 .readerFor(Map.class)
-                .with(schema)
-                .readValues(csv)
-                .readAll();
+                .with(schema().withHeader());
+        try (final MappingIterator<Object> iterator = objectReader.readValues(csv)) {
+            return iterator.readAll();
+        }
     }
 
     @SneakyThrows
     private List<Object> readWithoutHeaders(String csv) {
-        final CsvSchema schema = emptySchema()
-                .withoutHeader()
+        final ObjectReader objectReader = new CsvMapper()
+                .enable(WRAP_AS_ARRAY)
+                .readerFor(List.class)
+                .with(schema().withoutHeader());
+        try (final MappingIterator<Object> iterator = objectReader.readValues(csv)) {
+            return iterator.readAll();
+        }
+    }
+
+    private CsvSchema schema() {
+        return emptySchema()
                 .withColumnSeparator(withColumnSeparator)
                 .withLineSeparator(withLineSeparator);
-        return new CsvMapper()
-                .enable(CsvParser.Feature.WRAP_AS_ARRAY)
-                .readerFor(List.class)
-                .with(schema)
-                .readValues(csv)
-                .readAll();
     }
 
     private void writeFile(String s) {
         Files.write(actualCsv, s, false)
-                .ifPresent(file -> log.info("\nExpected value is saved to file://{}", file));
+                .ifPresent(file -> log.info("\nExpected value has been saved to file://{}", file));
     }
 
     private String actualFileName(String expectedFileName) {

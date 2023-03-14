@@ -20,13 +20,13 @@ public class ReadExtension implements Extension, BeforeEachCallback {
     public void beforeEach(ExtensionContext context) {
         reflect(context.getRequiredTestInstance()).fields().includeEnclosing()
                 .withAnnotation(Read.class)
-                .forEach(this::processRead);
+                .forEach(field -> processRead(context, field));
     }
 
-    public void processRead(JavaField field) {
+    public void processRead(ExtensionContext context, JavaField field) {
         final String file = field.findAnnotation(Read.class).map(Read::value).orElseThrow();
         final Type parameterType = field.getGenericType();
-        final JsonConverter jsonConverter = getJsonConverter(field.getTarget());
+        final JsonConverter jsonConverter = getJsonConverter(context);
         final ObjectReader objectReader = new ObjectReader(jsonConverter);
         if (ObjectFactory.class.isAssignableFrom(field.getType())) {
             final Type actualTypeArgument = ((ParameterizedType) parameterType).getActualTypeArguments()[0];

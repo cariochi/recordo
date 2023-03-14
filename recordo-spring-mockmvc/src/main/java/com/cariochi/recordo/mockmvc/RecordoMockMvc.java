@@ -14,8 +14,10 @@ import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.lang.reflect.ParameterizedType;
@@ -26,7 +28,6 @@ import java.util.Optional;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -133,9 +134,19 @@ public class RecordoMockMvc {
 
     @SneakyThrows
     public <RESP> Response<RESP> perform(Request<RESP> request) {
-        final MockHttpServletRequestBuilder requestBuilder =
-                MockMvcRequestBuilders.request(request.method(), request.path(), request.uriVars())
-                        .params(request.params());
+
+        MockHttpServletRequestBuilder requestBuilder;
+
+        if (request.files().isEmpty()) {
+            requestBuilder = MockMvcRequestBuilders.request(request.method(), request.path(), request.uriVars())
+                    .params(request.params());
+        } else {
+            final MockMultipartHttpServletRequestBuilder multipart = MockMvcRequestBuilders.multipart(request.path(), request.uriVars());
+            request.files().forEach(file -> {
+                multipart.file(new MockMultipartFile(file.name(), file.originalFilename(), file.contentType(), file.content()));
+            });
+            requestBuilder = multipart;
+        }
 
         if (request.body() != null) {
             requestBuilder.contentType(APPLICATION_JSON);
@@ -154,14 +165,33 @@ public class RecordoMockMvc {
                 .map(HttpStatus::value)
                 .ifPresent(expectedStatus -> assertThat(response.getStatus()).isEqualTo(expectedStatus));
 
-        final String contentAsString = response.getContentAsString();
-
         return Response.<RESP>builder()
                 .status(HttpStatus.valueOf(response.getStatus()))
                 .headers(headersOf(response))
-                .body(isBlank(contentAsString) ? null : fromJson(contentAsString, request.responseType()))
+                .body(getBody(request, response))
                 .build();
 
+    }
+
+    @SneakyThrows
+    private <RESP> RESP getBody(Request<RESP> request, MockHttpServletResponse response) {
+        final Type responseType = request.responseType();
+        if (response.getContentAsByteArray().length == 0) {
+            return null;
+        } else if (byte[].class.equals(responseType)) {
+            return (RESP) response.getContentAsByteArray();
+        } else if (String.class.equals(responseType)) {
+            return (RESP) response.getContentAsString();
+        } else if (responseType instanceof ParameterizedType) {
+            final String contentAsString = response.getContentAsString();
+            ParameterizedType parameterizedType = (ParameterizedType) responseType;
+            if (parameterizedType.getRawType().equals(Page.class)) {
+                return pageFromJson(contentAsString, parameterizedType);
+            } else if (parameterizedType.getRawType().equals(Slice.class)) {
+                return sliceFromJson(contentAsString, parameterizedType);
+            }
+        }
+        return jsonConverter.fromJson(response.getContentAsString(), responseType);
     }
 
     private Map<String, String> headersOf(MockHttpServletResponse response) {
@@ -170,18 +200,6 @@ public class RecordoMockMvc {
                         identity(),
                         h -> response.getHeaderValues(h).stream().map(String::valueOf).collect(joining(", "))
                 ));
-    }
-
-    private <RESP> RESP fromJson(String json, Type responseType) {
-        if (responseType instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) responseType;
-            if (parameterizedType.getRawType().equals(Page.class)) {
-                return pageFromJson(json, parameterizedType);
-            } else if (parameterizedType.getRawType().equals(Slice.class)) {
-                return sliceFromJson(json, parameterizedType);
-            }
-        }
-        return jsonConverter.fromJson(json, responseType);
     }
 
     private <RESP> RESP pageFromJson(String json, ParameterizedType parameterizedType) {

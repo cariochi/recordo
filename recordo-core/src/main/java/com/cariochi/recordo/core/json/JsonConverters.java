@@ -1,27 +1,24 @@
 package com.cariochi.recordo.core.json;
 
-import com.cariochi.recordo.core.EnableRecordo;
-import com.cariochi.reflecto.fields.JavaField;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.experimental.UtilityClass;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.util.Optional;
 
-import static com.cariochi.reflecto.Reflecto.reflect;
+import static com.cariochi.recordo.core.utils.BeanUtils.findBean;
 
 @UtilityClass
 public class JsonConverters {
 
-    public static Optional<JsonConverter> findJsonConverter(Object testInstance) {
-        return reflect(testInstance).fields().includeEnclosing()
-                .withTypeAndAnnotation(ObjectMapper.class, EnableRecordo.class).stream().findAny()
-                .map(JavaField::getValue)
+    public static Optional<JsonConverter> findJsonConverter(ExtensionContext context) {
+        return findBean(ObjectMapper.class, context)
                 .map(ObjectMapper.class::cast)
                 .map(JsonConverter::new);
     }
 
-    public static JsonConverter getJsonConverter(Object testInstance) {
-        return findJsonConverter(testInstance)
+    public static JsonConverter getJsonConverter(ExtensionContext context) {
+        return findJsonConverter(context)
                 .orElseGet(JsonConverter::new);
     }
 

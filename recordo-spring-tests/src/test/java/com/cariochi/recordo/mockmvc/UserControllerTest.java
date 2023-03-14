@@ -1,6 +1,8 @@
 package com.cariochi.recordo.mockmvc;
 
+import com.cariochi.recordo.core.EnableRecordo;
 import com.cariochi.recordo.core.RecordoExtension;
+import com.cariochi.recordo.mockmvc.Post.File;
 import com.cariochi.recordo.mockmvc.dto.UserDto;
 import com.cariochi.recordo.read.Read;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +14,7 @@ import org.springframework.data.domain.Slice;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 import static com.cariochi.recordo.mockmvc.utils.TypeReferences.pageOf;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.OK;
@@ -21,12 +24,16 @@ import static org.springframework.http.HttpStatus.OK;
 @ExtendWith(RecordoExtension.class)
 class UserControllerTest {
 
+    @EnableRecordo
+    private RequestInterceptor<?> defaultInterceptor = request -> request.header("Authorization", "Bearer token");
+
     @Test
     void should_get_user_by_id_with_mock_mvc(RecordoMockMvc mockMvc) {
         final Response<UserDto> response = mockMvc.get("/users/{id}", UserDto.class)
                 .uriVars(1)
                 .param("name", "Test User")
                 .header("locale", "UA")
+                .header("Authorization", "Bearer token")
                 .expectedStatus(OK)
                 .perform();
 
@@ -52,6 +59,22 @@ class UserControllerTest {
             @Get(value = "/users/1?name=Test User", headers = "locale=UA") UserDto user
     ) {
         assertAsJson(user).isEqualTo("/mockmvc/user.json");
+    }
+
+    @Test
+    void should_get_as_string(
+            @Get(value = "/users/1?name=Test User", headers = "locale=UA") String userString
+    ) {
+        assertThat(userString)
+                .isEqualTo("{\"id\":1,\"name\":\"Test User UA\"}");
+    }
+
+    @Test
+    void should_get_as_bytes(
+            @Get(value = "/users/1?name=Test User", headers = "locale=UA") byte[] userBytes
+    ) {
+        assertThat(userBytes)
+                .isEqualTo("{\"id\":1,\"name\":\"Test User UA\"}".getBytes(UTF_8));
     }
 
     @Test
@@ -108,7 +131,7 @@ class UserControllerTest {
 
     @Test
     void should_create_user(
-            @Post(value = "/users", body = "/mockmvc/new_user.json") Request<UserDto> request
+            @Post(value = "/users", body = @Content(file = "/mockmvc/new_user.json")) Request<UserDto> request
     ) {
         final Response<UserDto> response = request.perform();
         assertAsJson(response.getBody()).isEqualTo("/mockmvc/created_user.json");
@@ -116,16 +139,29 @@ class UserControllerTest {
 
     @Test
     void should_create_user(
-            @Post(value = "/users", body = "/mockmvc/new_user.json") Response<UserDto> response
+            @Post(value = "/users", body = @Content(file = "/mockmvc/new_user.json")) Response<UserDto> response
     ) {
         assertAsJson(response.getBody()).isEqualTo("/mockmvc/created_user.json");
     }
 
     @Test
     void should_create_user(
-            @Post(value = "/users", body = "/mockmvc/new_user.json") UserDto user
+            @Post(value = "/users", body = @Content(file = "/mockmvc/new_user.json")) UserDto user
     ) {
         assertAsJson(user).isEqualTo("/mockmvc/user.json");
+    }
+
+    @Test
+    void should_upload_files(
+            @Post(
+                    value = "/users/1/upload",
+                    files = {
+                            @File(name = "file1", content = @Content(file = "/mockmvc/upload_file_1.txt")),
+                            @File(name = "file2", content = @Content(file = "/mockmvc/upload_file_2.txt"))
+                    }
+            ) byte[] content
+    ) {
+        assertThat(content).isEqualTo("Upload File 1\n".getBytes(UTF_8));
     }
 
     @Test
@@ -148,23 +184,23 @@ class UserControllerTest {
 
     @Test
     void should_update_user(
-            @Put(value = "/users", body = "/mockmvc/user.json") UserDto user
+            @Put(value = "/users", body = @Content(file = "/mockmvc/user.json")) UserDto user
     ) {
         assertAsJson(user).isEqualTo("/mockmvc/updated_user.json");
     }
 
     @Test
     void should_patch_user(
-            @Patch(value = "/users/1", body = "/mockmvc/user.json") UserDto user
+            @Patch(value = "/users/1", body = @Content(file = "/mockmvc/user.json")) UserDto user
     ) {
         assertAsJson(user).isEqualTo("/mockmvc/updated_user.json");
     }
 
-    public static class LocaleInterceptor implements RequestInterceptor {
+    public static class LocaleInterceptor implements RequestInterceptor<UserDto> {
 
         @Override
-        public <T> Request<T> intercept(Request<T> request, RecordoMockMvc http) {
-            final Request<UserDto> user = http.get("/users/1", UserDto.class);
+        public Request<UserDto> apply(Request<UserDto> request) {
+            final Request<UserDto> user = request.client().get("/users/1", UserDto.class);
             assertThat(user).isNotNull();
             return request.header("locale", "UA");
         }

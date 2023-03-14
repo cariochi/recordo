@@ -26,7 +26,7 @@ class RecordoJsonComparator<T> {
     ) {
         final String actualJson = jsonConverter.toJson(actualObject, jsonFilter);
         if (Files.exists(expectedFileName)) {
-            final String expectedJson = Files.read(expectedFileName);
+            final String expectedJson = Files.readString(expectedFileName);
             final JSONCompareResult result = compareJSON(expectedJson, actualJson, compareMode);
             if (result.failed()) {
                 Files.write(actualJson, actualFileName(expectedFileName))

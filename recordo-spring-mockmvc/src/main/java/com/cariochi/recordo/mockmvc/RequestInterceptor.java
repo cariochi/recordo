@@ -1,7 +1,8 @@
 package com.cariochi.recordo.mockmvc;
 
-public interface RequestInterceptor {
+import java.util.function.Function;
 
-    <T> Request<T> intercept(Request<T> request, RecordoMockMvc http);
+@FunctionalInterface
+public interface RequestInterceptor<T> extends Function<Request<T>, Request<T>> {
 
 }

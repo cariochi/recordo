@@ -5,7 +5,7 @@ a declarative way and helps to handle json resources by recording or generating 
 
 # Documentation
 
-Please, see the recently published documentation [here](https://www.cariochi.com/recordo). Although it has been published, it is
+Please, see the recently published documentation here: [https://cariochi.com/recordo](https://www.cariochi.com/recordo). Although it has been published, it is
 still under development and there may be some sections unfinished or missing.
 
 # Quick Start
@@ -18,7 +18,7 @@ Recordo modules can be added to a project all together or one-by-one separately.
 <dependency>
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-all</artifactId>
-    <version>1.2.4</version>
+    <version>1.2.6</version>
     <type>pom</type>
     <scope>test</scope>
 </dependency>
@@ -48,7 +48,7 @@ You just need to set expected values, and the test is ready.
 <dependency>
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-read</artifactId>
-    <version>1.2.4</version>
+    <version>1.2.6</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -78,7 +78,7 @@ You just need to verify them, and the test is ready.
 <dependency>
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-assertions</artifactId>
-    <version>1.2.4</version>
+    <version>1.2.6</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -119,7 +119,7 @@ Then this file is automatically used for mocking.
 <dependency>
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-mockserver</artifactId>
-    <version>1.2.4</version>
+    <version>1.2.6</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -161,7 +161,7 @@ You just need to declare an HTTP request (method, url, headers, etc) and a respo
 <dependency>
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-spring-mockmvc</artifactId>
-    <version>1.2.4</version>
+    <version>1.2.6</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -180,14 +180,12 @@ void should_get_books(
 ```java
 @Test
 void should_create_book(
-    @Post("/books") Request<Book> request
+    @Post(value = "/books", body = @Content(file = "/books/new_book.json")) Request<BookDto> request
 ) {
-   BookDto book = ...
-   Response<BookDto> response=request.body(book).perform();
+   Response<BookDto> response = request.perform();
 }
 ```
 
 # License
 
 **Recordo** extensions are licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) License. 
-

@@ -31,9 +31,8 @@ public class MockServerExtension implements Extension, BeforeEachCallback, After
     public void beforeEach(ExtensionContext context) {
         findAnnotation(context.getRequiredTestMethod(), MockServers.class)
                 .ifPresent(annotation -> {
-                    final Object testInstance = context.getRequiredTestInstance();
-                    final JsonConverter jsonConverter = getJsonConverter(testInstance);
-                    final MockServerInterceptor interceptor = HttpClientInterceptors.of(testInstance);
+                    final JsonConverter jsonConverter = getJsonConverter(context);
+                    final MockServerInterceptor interceptor = HttpClientInterceptors.of(context);
                     final List<RecordoMockServer> servers = Stream.of(annotation.value())
                             .map(a -> {
                                 final JSONCompareMode compareMode = compareMode(a.jsonCompareMode().extensible(), a.jsonCompareMode().strictOrder());
@@ -45,9 +44,8 @@ public class MockServerExtension implements Extension, BeforeEachCallback, After
                 });
         findAnnotation(context.getRequiredTestMethod(), MockServer.class)
                 .ifPresent(annotation -> {
-                    final Object testInstance = context.getRequiredTestInstance();
-                    final JsonConverter jsonConverter = getJsonConverter(testInstance);
-                    final MockServerInterceptor interceptor = HttpClientInterceptors.of(testInstance);
+                    final JsonConverter jsonConverter = getJsonConverter(context);
+                    final MockServerInterceptor interceptor = HttpClientInterceptors.of(context);
                     final JSONCompareMode compareMode = compareMode(annotation.jsonCompareMode().extensible(), annotation.jsonCompareMode().strictOrder());
                     final RecordoMockServer mockServer = new RecordoMockServer(annotation.urlPattern(), annotation.value(), jsonConverter, compareMode);
                     interceptor.init(new RoutingRequestHandler());

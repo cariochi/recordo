@@ -1,6 +1,5 @@
 package com.cariochi.recordo.mockserver;
 
-import com.cariochi.recordo.core.EnableRecordo;
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.mockserver.dto.Gist;
 import com.cariochi.recordo.mockserver.dto.GistResponse;
@@ -11,7 +10,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -23,10 +21,6 @@ import static com.cariochi.recordo.config.Profiles.SIMPLE;
 @ActiveProfiles({REST_TEMPLATE, SIMPLE})
 @ExtendWith(RecordoExtension.class)
 public class RestTemplateTest {
-
-    @Autowired
-    @EnableRecordo
-    private RestTemplate restTemplate;
 
     @Autowired
     protected GitHub gitHub;

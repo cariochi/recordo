@@ -1,6 +1,5 @@
 package com.cariochi.recordo.mockserver;
 
-import com.cariochi.recordo.core.EnableRecordo;
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.mockserver.dto.Gist;
 import com.cariochi.recordo.mockserver.dto.GistResponse;
@@ -25,7 +24,6 @@ import static com.cariochi.recordo.config.Profiles.OK_HTTP;
 class FeignOkHttpTest {
 
     @Autowired
-    @EnableRecordo
     private OkHttpClient client;
 
     @Autowired
