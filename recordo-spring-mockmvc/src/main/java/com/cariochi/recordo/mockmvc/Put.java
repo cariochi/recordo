@@ -15,7 +15,7 @@ public @interface Put {
 
     String[] headers() default {};
 
-    String body() default "";
+    Content body() default @Content();
 
     HttpStatus expectedStatus() default OK;
 

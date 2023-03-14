@@ -15,9 +15,27 @@ public @interface Post {
 
     String[] headers() default {};
 
-    String body() default "";
+    Content body() default @Content();
 
     HttpStatus expectedStatus() default OK;
 
     Class<? extends RequestInterceptor>[] interceptors() default {};
+
+    File[] files() default {};
+
+    @Target({ElementType.PARAMETER, ElementType.METHOD})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Inherited
+    @interface File {
+
+        String name();
+
+        String originalFilename() default "";
+
+        String contentType() default "";
+
+        Content content() default @Content();
+
+    }
+
 }

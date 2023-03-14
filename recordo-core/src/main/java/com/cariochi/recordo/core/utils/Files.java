@@ -22,8 +22,13 @@ public class Files {
     }
 
     @SneakyThrows
-    public String read(String file) {
+    public String readString(String file) {
         return java.nio.file.Files.readString(path(file));
+    }
+
+    @SneakyThrows
+    public byte[] readBytes(String file) {
+        return java.nio.file.Files.readAllBytes(path(file));
     }
 
     public Optional<Path> write(String content, String file) {

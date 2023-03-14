@@ -63,6 +63,15 @@ class ReadParameterResolverTest {
     }
 
     @Test
+    @SneakyThrows
+    void given_bytes(
+            @Read("/read/string.json") byte[] bytes
+    ) {
+        final TestDto value = objectMapper.readValue(bytes, TestDto.class);
+        assertAsJson(value).isEqualTo("/read/dto.json");
+    }
+
+    @Test
     void generated_json_test(
             @Read("/read/generated_dto.json") TestDto dto,
             @Read("/read/generated_list.json") List<TestDto> givenList
