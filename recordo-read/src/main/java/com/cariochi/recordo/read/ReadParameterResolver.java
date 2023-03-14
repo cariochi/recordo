@@ -30,7 +30,7 @@ public class ReadParameterResolver implements Extension, ParameterResolver {
                 .map(fileName -> resolveParameter(
                         fileName,
                         parameterContext.getParameter(),
-                        getJsonConverter(extensionContext.getRequiredTestInstance())
+                        getJsonConverter(extensionContext)
                 ))
                 .orElse(null);
     }

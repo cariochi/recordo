@@ -129,7 +129,7 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
 
     private List<MockInteraction> loadExpectedMocks(String fileName) {
         if (Files.exists(fileName)) {
-            final String json = applyVariables(Files.read(fileName));
+            final String json = applyVariables(Files.readString(fileName));
             final List<MockInteraction> mocks = jsonConverter.fromJson(json, TYPE);
             log.info("Read Http Mocks from file://{}\nRequests:\n{}", Files.path(fileName), urlsOf(mocks));
             return mocks;
@@ -140,7 +140,13 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
     }
 
     private String applyVariables(String string) {
-        return Optional.of(string).map(s -> replace(s, variables.entrySet().stream().filter(e -> e.getValue() instanceof CharSequence).collect(toMap(Map.Entry::getKey, Map.Entry::getValue)))).map(s -> replace(s, variables, "\"${", "}\"")).map(s -> replace(s, variables)).orElse(string);
+        return Optional.of(string)
+                .map(s -> replace(s, variables.entrySet().stream()
+                        .filter(e -> e.getValue() instanceof CharSequence)
+                        .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)))
+                )
+                .map(s -> replace(s, variables, "\"${", "}\""))
+                .map(s -> replace(s, variables)).orElse(string);
     }
 
     private MockInteraction prepareForRecord(MockInteraction mock) {
@@ -148,25 +154,53 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
     }
 
     private MockRequest prepareForRecord(MockRequest request) {
-        final MockRequest prepared = Optional.ofNullable(request).filter(MockRequest::isJson).map(MockRequest::getBody).filter(body -> body instanceof String).map(String.class::cast).map(json -> jsonConverter.fromJson(json, Object.class)).map(request::withBody).orElse(request);
+        final MockRequest prepared = Optional.ofNullable(request)
+                .filter(MockRequest::isJson)
+                .map(MockRequest::getBody)
+                .filter(body -> body instanceof String)
+                .map(String.class::cast)
+                .map(json -> jsonConverter.fromJson(json, Object.class))
+                .map(request::withBody)
+                .orElse(request);
         return prepared.withHeaders(filteredHeaders(request.getHeaders()));
     }
 
     private MockResponse prepareForRecord(MockResponse request) {
-        final MockResponse prepared = Optional.ofNullable(request).filter(MockResponse::isJson).map(MockResponse::getBody).filter(body -> body instanceof String).map(String.class::cast).map(json -> jsonConverter.fromJson(json, Object.class)).map(request::withBody).orElse(request);
+        final MockResponse prepared = Optional.ofNullable(request)
+                .filter(MockResponse::isJson)
+                .map(MockResponse::getBody)
+                .filter(body -> body instanceof String)
+                .map(String.class::cast)
+                .map(json -> jsonConverter.fromJson(json, Object.class))
+                .map(request::withBody)
+                .orElse(request);
         return prepared.withHeaders(filteredHeaders(request.getHeaders()));
     }
 
     private MockResponse prepareForPlayback(MockResponse response) {
-        return Optional.ofNullable(response).filter(MockResponse::isJson).map(MockResponse::getBody).filter(body -> !(body instanceof String)).map(jsonConverter::toJson).map(response::withBody).orElse(response);
+        return Optional.ofNullable(response)
+                .filter(MockResponse::isJson)
+                .map(MockResponse::getBody)
+                .filter(body -> !(body instanceof String))
+                .map(jsonConverter::toJson)
+                .map(response::withBody)
+                .orElse(response);
     }
 
     private Map<String, String> filteredHeaders(Map<String, String> headers) {
-        return headers.entrySet().stream().filter(header -> Properties.httpMocksIncludedHeaders().contains(header.getKey().toLowerCase())).collect(toMap(stringStringEntry -> stringStringEntry.getKey().toLowerCase(), entry -> Properties.httpMocksSensitiveHeaders().contains(entry.getKey().toLowerCase()) ? "********" : entry.getValue()));
+        return headers.entrySet().stream()
+                .filter(header -> Properties.httpMocksIncludedHeaders().contains(header.getKey().toLowerCase()))
+                .collect(toMap(
+                        stringStringEntry -> stringStringEntry.getKey().toLowerCase(),
+                        entry -> Properties.httpMocksSensitiveHeaders().contains(entry.getKey().toLowerCase()) ? "********" : entry.getValue()
+                ));
     }
 
     private String urlsOf(List<MockInteraction> mocks) {
-        return mocks.stream().map(MockInteraction::getRequest).map(req -> format("-[%s] %s", req.getMethod(), req.getUrl())).collect(joining("\n"));
+        return mocks.stream()
+                .map(MockInteraction::getRequest)
+                .map(req -> format("-[%s] %s", req.getMethod(), req.getUrl()))
+                .collect(joining("\n"));
     }
 
 }

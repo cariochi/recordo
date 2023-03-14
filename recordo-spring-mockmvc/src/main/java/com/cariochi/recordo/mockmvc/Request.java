@@ -1,9 +1,6 @@
 package com.cariochi.recordo.mockmvc;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.Accessors;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -11,6 +8,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +23,7 @@ import static org.apache.commons.lang3.ArrayUtils.addFirst;
 @AllArgsConstructor
 public class Request<RESP> {
 
+    @Getter
     private final RecordoMockMvc client;
     private final HttpMethod method;
     private final String path;
@@ -40,6 +39,9 @@ public class Request<RESP> {
     private MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 
     private Object body;
+
+    @Setter(NONE)
+    private List<File> files = new ArrayList<>();
 
     private HttpStatus expectedStatus;
 
@@ -73,8 +75,24 @@ public class Request<RESP> {
         return this;
     }
 
+    public Request<RESP> file(File file) {
+        files.add(file);
+        return this;
+    }
+
     private void addToParams(String name, List<String> values) {
         values.forEach(value -> params.add(name, value));
+    }
+
+    @Value
+    @Builder
+    public static class File {
+
+        String name;
+        String originalFilename;
+        String contentType;
+        byte[] content;
+
     }
 
 }
