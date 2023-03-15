@@ -65,7 +65,7 @@ class ReadParameterResolverTest {
     @Test
     @SneakyThrows
     void given_bytes(
-            @Read("/read/bytes.zip") byte[] bytes
+            @Read("/read/bytes.bin") byte[] bytes
     ) {
         assertEquals(bytes.length, 370);
     }
