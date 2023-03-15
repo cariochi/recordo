@@ -72,7 +72,7 @@
         <classgraph.version>4.8.157</classgraph.version>
         <objenesis.version>3.3</objenesis.version>
         <jetbrains-annotations.version>24.0.1</jetbrains-annotations.version>
-        <kotlin-stdlib.version>1.5.31</kotlin-stdlib.version>
+        <kotlin-stdlib.version>1.8.10</kotlin-stdlib.version>
     </properties>
 
     <dependencyManagement>
@@ -166,18 +166,28 @@
                 <groupId>com.squareup.okhttp3</groupId>
                 <artifactId>okhttp</artifactId>
                 <version>${okhttp.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jetbrains</groupId>
-                <artifactId>annotations</artifactId>
-                <version>${jetbrains-annotations.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-stdlib</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-stdlib-common</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-stdlib</artifactId>
                 <version>${kotlin-stdlib.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>${jetbrains-annotations.version}</version>
             </dependency>
 
             <dependency>
