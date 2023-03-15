@@ -9,6 +9,9 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.function.UnaryOperator;
 
+import static com.cariochi.recordo.core.utils.Files.readBytes;
+import static com.cariochi.recordo.core.utils.Files.readString;
+import static java.util.function.UnaryOperator.identity;
 import static org.apache.commons.lang3.reflect.TypeUtils.isArrayType;
 import static org.apache.commons.lang3.reflect.TypeUtils.isAssignable;
 
@@ -21,12 +24,12 @@ public class ObjectReader {
     private final JsonConverter jsonConverter;
 
     public Object read(String file, Type parameterType) {
-        return read(file, parameterType, UnaryOperator.identity());
+        return read(file, parameterType, identity());
     }
 
     public Object read(String file, Type parameterType, UnaryOperator<String> jsonModifier) {
         return Files.exists(file)
-                ? jsonConverter.fromJson(jsonModifier.apply(Files.readString(file)), parameterType)
+                ? byte[].class.equals(parameterType) ? readBytes(file) : jsonConverter.fromJson(jsonModifier.apply(readString(file)), parameterType)
                 : generate(file, parameterType);
     }
 
