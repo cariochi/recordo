@@ -8,7 +8,7 @@
     <parent>
         <artifactId>recordo-parent</artifactId>
         <groupId>com.cariochi.recordo</groupId>
-        <version>1.2.6</version>
+        <version>1.2.7</version>
     </parent>
 
     <artifactId>recordo-spring-tests</artifactId>
@@ -39,6 +39,11 @@
         <dependency>
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-okhttp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.github.openfeign</groupId>

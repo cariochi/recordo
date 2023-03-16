@@ -26,7 +26,7 @@ public class ObjectReader {
 
     public Object read(String file, Type parameterType, UnaryOperator<String> jsonModifier) {
         return Files.exists(file)
-                ? jsonConverter.fromJson(jsonModifier.apply(Files.readString(file)), parameterType)
+                ? byte[].class.equals(parameterType) ? Files.readBytes(file) : jsonConverter.fromJson(jsonModifier.apply(Files.readString(file)), parameterType)
                 : generate(file, parameterType);
     }
 

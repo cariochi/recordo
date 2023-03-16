@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 public class JsonConverter {
 
     private final ObjectMapper objectMapper;
@@ -59,9 +57,6 @@ public class JsonConverter {
         }
         if (String.class.equals(type)) {
             return (T) json;
-        }
-        if (byte[].class.equals(type)) {
-            return (T) json.getBytes(UTF_8);
         }
         final JavaType valueType = objectMapper.constructType(type);
         return objectMapper.readValue(json, valueType);
