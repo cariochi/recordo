@@ -46,11 +46,11 @@ public class ReflectionSetSorter {
 
     private <T, U extends Comparable<? super U>> Optional<Comparator<T>> comparator(T object, Set<?> set) {
         final List<JavaField> fields = reflect(object).fields().all();
-        return findMostUniqueField(set, fields)
+        return findUniqueField(set, fields)
                 .map(field -> nullsLast(Comparator.<T, U>comparing(o -> reflect(o).field(field).getValue())));
     }
 
-    private <T> Optional<String> findMostUniqueField(Set<T> set, List<JavaField> fields) {
+    private <T> Optional<String> findUniqueField(Set<T> set, List<JavaField> fields) {
         final List<JavaField> uniqueFields = fields.stream()
                 .filter(field -> field.isPrimitive() || Comparable.class.isAssignableFrom(field.getType()))
                 .filter(field -> hasUniqueValues(field.getName(), set))
