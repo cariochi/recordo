@@ -8,7 +8,7 @@
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.7</version>
+    <version>1.2.8</version>
 
     <name>Recordo Parent</name>
     <description>Parent for Recordo JUnit extension modules.</description>

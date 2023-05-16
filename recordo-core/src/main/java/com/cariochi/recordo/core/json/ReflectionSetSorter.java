@@ -8,10 +8,8 @@ import java.util.function.Predicate;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.lang.String.CASE_INSENSITIVE_ORDER;
-import static java.util.Collections.emptyList;
 import static java.util.Comparator.nullsLast;
-import static java.util.Map.Entry.comparingByKey;
-import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 
 public class ReflectionSetSorter {
 
@@ -36,48 +34,43 @@ public class ReflectionSetSorter {
         if (isComparable) {
             return new TreeSet<>(set);
         } else {
-            final Comparator<Object> comparator = comparator(first, set);
-            if (comparator == null) {
-                return set;
-            } else {
-                final TreeSet<T> treeSet = new TreeSet<>(comparator);
-                treeSet.addAll(set);
-                return treeSet;
-            }
+            return comparator(first, set)
+                    .map(comparator -> {
+                        Set<T> treeSet = new TreeSet<>(comparator);
+                        treeSet.addAll(set);
+                        return treeSet;
+                    })
+                    .orElse(set);
         }
     }
 
-    private <T, U extends Comparable<? super U>> Comparator<T> comparator(T object, Set<?> set) {
+    private <T, U extends Comparable<? super U>> Optional<Comparator<T>> comparator(T object, Set<?> set) {
         final List<JavaField> fields = reflect(object).fields().all();
         return findMostUniqueField(set, fields)
-                .map(field -> nullsLast(Comparator.<T, U>comparing(o -> reflect(o).field(field).getValue())))
-                .orElse(null);
+                .map(field -> nullsLast(Comparator.<T, U>comparing(o -> reflect(o).field(field).getValue())));
     }
 
     private <T> Optional<String> findMostUniqueField(Set<T> set, List<JavaField> fields) {
-        final List<JavaField> mostUniqueFields = fields.stream()
+        final List<JavaField> uniqueFields = fields.stream()
                 .filter(field -> field.isPrimitive() || Comparable.class.isAssignableFrom(field.getType()))
-                .collect(groupingBy(field -> getUniqueValuesAmount(field.getName(), set))).entrySet().stream()
-                .max(comparingByKey())
-                .map(Map.Entry::getValue)
-                .orElse(emptyList());
-        for (JavaField field : mostUniqueFields) {
+                .filter(field -> hasUniqueValues(field.getName(), set))
+                .collect(toList());
+        for (JavaField field : uniqueFields) {
             for (Predicate<JavaField> predicate : FIELD_NAMES_PREDICATES) {
                 if (predicate.test(field)) {
                     return Optional.of(field).map(JavaField::getName);
                 }
             }
         }
-        return mostUniqueFields.stream().map(JavaField::getName).min(CASE_INSENSITIVE_ORDER);
+        return uniqueFields.stream().map(JavaField::getName).min(CASE_INSENSITIVE_ORDER);
     }
 
-    private <T> long getUniqueValuesAmount(String field, Set<T> set) {
+    private <T> boolean hasUniqueValues(String field, Set<T> set) {
         return set.stream()
                 .map(Reflecto::reflect)
                 .map(reflection -> reflection.field(field).getValue())
-                .filter(Objects::nonNull)
                 .distinct()
-                .count();
+                .count() == set.size();
     }
 
 }

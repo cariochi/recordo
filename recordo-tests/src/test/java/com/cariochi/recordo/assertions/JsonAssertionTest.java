@@ -122,11 +122,11 @@ public class JsonAssertionTest {
     @Test
     void should_sort_sets() {
         final TestDto testDto = testDto(1);
-        testDto.setItemsSet(Set.of(item(33), item(32), item(31)));
+        testDto.setItemsSet(Set.of(item(33, "thirty-three"), item(32, "thirty-two"), item(31, "thirty-one"), item(33, "thirty-one")));
         testDto.getChildren().forEach(child -> child.setItemsSet(Set.of(
-                item(child.getId() + 3),
-                item(child.getId() + 2),
-                item(child.getId() + 1)
+                item(child.getId() + 3, "three"),
+                item(child.getId() + 2, "two"),
+                item(child.getId() + 1, "one")
         )));
 
         assertAsJson(testDto)

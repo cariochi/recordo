@@ -39,8 +39,8 @@ public class TestDto {
                 .build();
     }
 
-    public static ItemDto item(int index) {
-        return new ItemDto(index);
+    public static ItemDto item(int index, String string) {
+        return new ItemDto(index, string);
     }
 
     public TestDto withChild(TestDto child) {
@@ -54,6 +54,7 @@ public class TestDto {
     public static class ItemDto {
 
         private Integer index;
+        private String string;
 
     }
 
