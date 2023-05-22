@@ -122,16 +122,31 @@ public class JsonAssertionTest {
     @Test
     void should_sort_sets() {
         final TestDto testDto = testDto(1);
-        testDto.setItemsSet(Set.of(item(33, "thirty-three"), item(32, "thirty-two"), item(31, "thirty-one"), item(33, "thirty-one")));
-        testDto.getChildren().forEach(child -> child.setItemsSet(Set.of(
-                item(child.getId() + 3, "three"),
-                item(child.getId() + 2, "two"),
-                item(child.getId() + 1, "one")
-        )));
+        testDto.setItemsSet(Set.of(item(2, "b"), item(1, "a"), item(null, null)));
 
         assertAsJson(testDto)
                 .withStrictOrder(false)
                 .isEqualTo("/verify_annotation_test/sorted_sets.json");
+    }
+
+    @Test
+    void should_not_sort_sets() {
+        final TestDto testDto = testDto(1);
+        testDto.setItemsSet(Set.of(item(2, "b"), item(1, "a"), item(2, "a")));
+
+        assertAsJson(testDto)
+                .withStrictOrder(false)
+                .isEqualTo("/verify_annotation_test/not_sorted_sets.json");
+    }
+
+    @Test
+    void should_sort_null_values() {
+        final TestDto testDto = testDto(1);
+        testDto.setItemsSet(Set.of(item(null, null)));
+
+        assertAsJson(testDto)
+                .withStrictOrder(false)
+                .isEqualTo("/verify_annotation_test/sorted_null_sets.json");
     }
 
     @Test
