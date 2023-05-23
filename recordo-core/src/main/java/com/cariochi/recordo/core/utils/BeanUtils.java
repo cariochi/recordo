@@ -20,7 +20,7 @@ public class BeanUtils {
 
     private static <T> Optional<T> findAnnotatedField(Class<T> aClass, ExtensionContext context) {
         return reflect(context.getRequiredTestInstance()).fields().includeEnclosing()
-                .withTypeAndAnnotation(aClass, EnableRecordo.class).stream().findAny()
+                .withTypeAndAnnotation(aClass, EnableRecordo.class).stream().findFirst()
                 .map(JavaField::getValue);
     }
 

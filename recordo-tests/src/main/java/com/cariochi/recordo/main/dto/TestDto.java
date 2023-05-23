@@ -39,7 +39,7 @@ public class TestDto {
                 .build();
     }
 
-    public static ItemDto item(int index, String string) {
+    public static ItemDto item(Integer index, String string) {
         return new ItemDto(index, string);
     }
 

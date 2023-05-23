@@ -27,10 +27,10 @@ class ReflectionSetSorterTest {
 
     @Test
     void should_sort_by_id() {
-        final Set<WithId> sorted = sorter.sort(Set.of(new WithId(3L, "A"), new WithId(1L, "B"), new WithId(2L, "C")));
+        final Set<WithId> sorted = sorter.sort(Set.of(new WithId(3L, "A"), new WithId(1L, "B"), new WithId(2L, "C"), new WithId(null, null)));
         assertThat(sorted)
                 .extracting(WithId::getId)
-                .containsExactly(1L, 2L, 3L);
+                .containsExactly(1L, 2L, 3L, null);
     }
 
     @Value

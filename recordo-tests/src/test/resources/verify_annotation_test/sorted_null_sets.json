@@ -9,14 +9,6 @@
   "date": "2020-01-02T00:00:00Z",
   "itemsSet": [
     {
-      "index": 1,
-      "string": "a"
-    },
-    {
-      "index": 2,
-      "string": "b"
-    },
-    {
       "index": null,
       "string": null
     }

@@ -17,8 +17,8 @@
       "string": "b"
     },
     {
-      "index": null,
-      "string": null
+      "index": 2,
+      "string": "a"
     }
   ],
   "children": [
