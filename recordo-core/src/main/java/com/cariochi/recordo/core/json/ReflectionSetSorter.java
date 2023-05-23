@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.lang.String.CASE_INSENSITIVE_ORDER;
+import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsLast;
 import static java.util.stream.Collectors.toList;
 
@@ -47,7 +48,7 @@ public class ReflectionSetSorter {
     private <T, U extends Comparable<? super U>> Optional<Comparator<T>> comparator(T object, Set<?> set) {
         final List<JavaField> fields = reflect(object).fields().all();
         return findUniqueField(set, fields)
-                .map(field -> nullsLast(Comparator.<T, U>comparing(o -> reflect(o).field(field).getValue())));
+                .map(field -> Comparator.<T, U>comparing(o -> reflect(o).field(field).getValue(), nullsLast(naturalOrder())));
     }
 
     private <T> Optional<String> findUniqueField(Set<T> set, List<JavaField> fields) {

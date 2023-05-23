@@ -9,20 +9,16 @@
   "date": "2020-01-02T00:00:00Z",
   "itemsSet": [
     {
-      "index": 33,
-      "string": "thirty-three"
+      "index": 1,
+      "string": "a"
     },
     {
-      "index": 32,
-      "string": "thirty-two"
+      "index": 2,
+      "string": "b"
     },
     {
-      "index": 31,
-      "string": "thirty-one"
-    },
-    {
-      "index": 33,
-      "string": "thirty-one"
+      "index": null,
+      "string": null
     }
   ],
   "children": [
@@ -34,21 +30,7 @@
         "3",
         "4"
       ],
-      "date": "2020-01-03T00:00:00Z",
-      "itemsSet": [
-        {
-          "index": 3,
-          "string": "one"
-        },
-        {
-          "index": 5,
-          "string": "three"
-        },
-        {
-          "index": 4,
-          "string": "two"
-        }
-      ]
+      "date": "2020-01-03T00:00:00Z"
     },
     {
       "id": 3,
@@ -58,21 +40,7 @@
         "4",
         "5"
       ],
-      "date": "2020-01-04T00:00:00Z",
-      "itemsSet": [
-        {
-          "index": 4,
-          "string": "one"
-        },
-        {
-          "index": 6,
-          "string": "three"
-        },
-        {
-          "index": 5,
-          "string": "two"
-        }
-      ]
+      "date": "2020-01-04T00:00:00Z"
     }
   ]
 }

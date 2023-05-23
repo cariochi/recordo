@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -25,7 +26,7 @@ import static org.junit.platform.commons.util.AnnotationUtils.findAnnotation;
 @Slf4j
 public class MockServerExtension implements Extension, BeforeEachCallback, AfterEachCallback {
 
-    private final ThreadLocal<List<RecordoMockServer>> mockServers = new ThreadLocal<>();
+    private final List<RecordoMockServer> mockServers = new ArrayList<>();
 
     @Override
     public void beforeEach(ExtensionContext context) {
@@ -40,7 +41,8 @@ public class MockServerExtension implements Extension, BeforeEachCallback, After
                             })
                             .collect(toList());
                     interceptor.init(new RoutingRequestHandler());
-                    mockServers.set(servers);
+                    mockServers.clear();
+                    mockServers.addAll(servers);
                 });
         findAnnotation(context.getRequiredTestMethod(), MockServer.class)
                 .ifPresent(annotation -> {
@@ -49,7 +51,8 @@ public class MockServerExtension implements Extension, BeforeEachCallback, After
                     final JSONCompareMode compareMode = compareMode(annotation.jsonCompareMode().extensible(), annotation.jsonCompareMode().strictOrder());
                     final RecordoMockServer mockServer = new RecordoMockServer(annotation.urlPattern(), annotation.value(), jsonConverter, compareMode);
                     interceptor.init(new RoutingRequestHandler());
-                    mockServers.set(List.of(mockServer));
+                    mockServers.clear();
+                    mockServers.add(mockServer);
                 });
     }
 
@@ -57,13 +60,13 @@ public class MockServerExtension implements Extension, BeforeEachCallback, After
     public void afterEach(ExtensionContext context) {
         findAnnotation(context.getRequiredTestMethod(), MockServers.class)
                 .ifPresent(a -> {
-                    mockServers.get().forEach(RecordoMockServer::close);
-                    mockServers.remove();
+                    mockServers.forEach(RecordoMockServer::close);
+                    mockServers.clear();
                 });
         findAnnotation(context.getRequiredTestMethod(), MockServer.class)
                 .ifPresent(a -> {
-                    mockServers.get().forEach(RecordoMockServer::close);
-                    mockServers.remove();
+                    mockServers.forEach(RecordoMockServer::close);
+                    mockServers.clear();
                 });
     }
 
@@ -80,7 +83,7 @@ public class MockServerExtension implements Extension, BeforeEachCallback, After
         }
 
         private RecordoRequestHandler findServer(MockRequest request) {
-            return mockServers.get().stream()
+            return mockServers.stream()
                     .filter(server -> server.match(request))
                     .findFirst()
                     .orElseThrow();
