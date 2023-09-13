@@ -7,7 +7,7 @@
 
     <groupId>com.cariochi</groupId>
     <artifactId>recordo</artifactId>
-    <version>1.1.10</version>
+    <version>1.1.11</version>
     <name>Recordo</name>
     <description>JUnit 5 extension for declarative testing.</description>
     <url>https://cariochi.com</url>
@@ -224,6 +224,11 @@
             <id>ossrh</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
         </repository>
+        <relocation>
+            <groupId>com.cariochi.recordo</groupId>
+            <artifactId>recordo-core</artifactId>
+            <version>1.2.0</version>
+        </relocation>
     </distributionManagement>
 
 </project>
