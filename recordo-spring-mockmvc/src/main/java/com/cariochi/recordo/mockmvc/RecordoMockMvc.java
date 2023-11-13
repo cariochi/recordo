@@ -6,6 +6,10 @@ import com.cariochi.recordo.mockmvc.dto.SliceBuilder;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.core.ParameterizedTypeReference;
@@ -20,16 +24,15 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Map;
-import java.util.Optional;
-
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.HttpMethod.*;
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.PATCH;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @RequiredArgsConstructor
@@ -138,15 +141,16 @@ public class RecordoMockMvc {
         MockHttpServletRequestBuilder requestBuilder;
 
         if (request.files().isEmpty()) {
-            requestBuilder = MockMvcRequestBuilders.request(request.method(), request.path(), request.uriVars())
-                    .params(request.params());
+            requestBuilder = MockMvcRequestBuilders.request(request.method(), request.path(), request.uriVars());
         } else {
             final MockMultipartHttpServletRequestBuilder multipart = MockMvcRequestBuilders.multipart(request.path(), request.uriVars());
-            request.files().forEach(file -> {
-                multipart.file(new MockMultipartFile(file.name(), file.originalFilename(), file.contentType(), file.content()));
-            });
+            request.files().stream()
+                    .map(file -> new MockMultipartFile(file.name(), file.originalFilename(), file.contentType(), file.content()))
+                    .forEach(multipart::file);
             requestBuilder = multipart;
         }
+
+        requestBuilder.params(request.params());
 
         if (request.body() != null) {
             requestBuilder.contentType(APPLICATION_JSON);
@@ -159,7 +163,6 @@ public class RecordoMockMvc {
                 .perform(requestBuilder)
                 .andReturn()
                 .getResponse();
-
 
         Optional.ofNullable(request.expectedStatus())
                 .map(HttpStatus::value)
