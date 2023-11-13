@@ -1,18 +1,34 @@
 package com.cariochi.recordo.mockmvc;
 
 import com.cariochi.recordo.mockmvc.dto.UserDto;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.springframework.data.domain.*;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStream;
-import java.util.List;
-import java.util.stream.IntStream;
-
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
@@ -29,11 +45,15 @@ public class UserController {
 
     @SneakyThrows
     @PostMapping("/{id}/upload")
-    public byte[] upload(@PathVariable int id,
+    public String upload(@PathVariable int id,
                          @RequestParam("file1") MultipartFile file1,
-                         @RequestParam("file2") MultipartFile file2) {
+                         @RequestParam("file2") MultipartFile file2,
+                         @RequestParam(value = "prefix", required = false) String prefix) {
         try (final InputStream inputStream = (id == 1 ? file1 : file2).getInputStream()) {
-            return IOUtils.toByteArray(inputStream);
+            final String fileContent = IOUtils.toString(inputStream);
+            return Stream.of(prefix, fileContent)
+                    .filter(Objects::nonNull)
+                    .collect(joining(": "));
         }
     }
 

@@ -159,10 +159,24 @@ class UserControllerTest {
                             @File(name = "file1", content = @Content(file = "/mockmvc/upload_file_1.txt")),
                             @File(name = "file2", content = @Content(file = "/mockmvc/upload_file_2.txt"))
                     }
-            ) byte[] content
+            ) String content
     ) {
-        assertThat(content).isEqualTo("Upload File 1\n".getBytes(UTF_8));
+        assertThat(content).isEqualTo("Upload File 1\n");
     }
+
+    @Test
+    void should_upload_files_with_param(
+            @Post("/users/1/upload") Request<String> request
+    ) {
+        final String content = request
+                .file(Request.File.builder().name("file1").content("Upload File 1".getBytes(UTF_8)).build())
+                .file(Request.File.builder().name("file2").content("Upload File 2".getBytes(UTF_8)).build())
+                .param("prefix", "File content")
+                .perform()
+                .getBody();
+        assertThat(content).isEqualTo("File content: Upload File 1");
+    }
+
 
     @Test
     void should_delete_user_by_id(RecordoMockMvc mockMvc) {
