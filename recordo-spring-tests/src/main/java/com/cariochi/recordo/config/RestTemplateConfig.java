@@ -4,6 +4,7 @@ import com.cariochi.recordo.mockserver.GitHub;
 import com.cariochi.recordo.mockserver.resttemplate.GitHubRestTemplate;
 import okhttp3.OkHttpClient;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,8 +23,8 @@ import static com.cariochi.recordo.config.Profiles.SIMPLE;
 public class RestTemplateConfig {
 
     @Bean
-    public GitHub gitHub(RestTemplate restTemplate) {
-        return new GitHubRestTemplate(restTemplate);
+    public GitHub gitHub(RestTemplate simpleRestTemplate, @Value("${github.key}") String key) {
+        return new GitHubRestTemplate(simpleRestTemplate, key);
     }
 
     @Bean
@@ -34,7 +35,7 @@ public class RestTemplateConfig {
 
     @Bean
     @ConditionalOnBean(OkHttpClient.class)
-    public RestTemplate restTemplate(OkHttpClient client) {
+    public RestTemplate okHttpRestTemplate(OkHttpClient client) {
         return new RestTemplate(new OkHttp3ClientHttpRequestFactory(client));
     }
 

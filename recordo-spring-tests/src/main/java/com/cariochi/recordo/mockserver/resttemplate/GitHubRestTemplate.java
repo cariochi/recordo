@@ -3,31 +3,36 @@ package com.cariochi.recordo.mockserver.resttemplate;
 import com.cariochi.recordo.mockserver.GitHub;
 import com.cariochi.recordo.mockserver.dto.Gist;
 import com.cariochi.recordo.mockserver.dto.GistResponse;
-import lombok.RequiredArgsConstructor;
+import java.net.URI;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-import java.util.List;
+import static org.springframework.http.RequestEntity.delete;
+import static org.springframework.http.RequestEntity.get;
+import static org.springframework.http.RequestEntity.patch;
+import static org.springframework.http.RequestEntity.post;
 
-import static org.springframework.http.RequestEntity.*;
-
-@RequiredArgsConstructor
 public class GitHubRestTemplate implements GitHub {
 
     private static final String URL = "https://api.github.com/gists";
 
     private final RestTemplate restTemplate;
 
-    @Value("${github.key}")
-    private String key;
+    private final String key;
+
+    public GitHubRestTemplate(RestTemplate restTemplate, @Value("${github.key}") String key) {
+        this.restTemplate = restTemplate;
+        this.key = key;
+    }
 
     @Override
     public List<GistResponse> getGists() {
         return restTemplate.exchange(
                 get(URI.create(URL)).header("Authorization", "Bearer " + key).build(),
-                new ParameterizedTypeReference<List<GistResponse>>() {}
+                new ParameterizedTypeReference<List<GistResponse>>() {
+                }
         ).getBody();
     }
 
