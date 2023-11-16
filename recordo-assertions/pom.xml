@@ -8,7 +8,7 @@
     <parent>
         <artifactId>recordo-parent</artifactId>
         <groupId>com.cariochi.recordo</groupId>
-        <version>1.2.11</version>
+        <version>1.2.12</version>
     </parent>
 
     <artifactId>recordo-assertions</artifactId>

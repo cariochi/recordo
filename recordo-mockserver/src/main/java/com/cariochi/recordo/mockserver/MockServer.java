@@ -1,6 +1,11 @@
 package com.cariochi.recordo.mockserver;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Repeatable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Records and replays REST requests.
@@ -27,6 +32,8 @@ import java.lang.annotation.*;
 @Repeatable(MockServers.class)
 @Inherited
 public @interface MockServer {
+
+    String name() default "DEFAULT";
 
     String value();
 

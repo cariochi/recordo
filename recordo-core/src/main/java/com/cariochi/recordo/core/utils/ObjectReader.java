@@ -2,12 +2,11 @@ package com.cariochi.recordo.core.utils;
 
 import com.cariochi.recordo.core.RandomObjectGenerator;
 import com.cariochi.recordo.core.json.JsonConverter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.function.UnaryOperator;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import static org.apache.commons.lang3.reflect.TypeUtils.isArrayType;
 import static org.apache.commons.lang3.reflect.TypeUtils.isAssignable;
@@ -16,7 +15,7 @@ import static org.apache.commons.lang3.reflect.TypeUtils.isAssignable;
 @RequiredArgsConstructor
 public class ObjectReader {
 
-    private final RandomObjectGenerator EMPTY_INSTANCE_GENERATOR = new RandomObjectGenerator();
+    private static final RandomObjectGenerator EMPTY_INSTANCE_GENERATOR = new RandomObjectGenerator();
 
     private final JsonConverter jsonConverter;
 
