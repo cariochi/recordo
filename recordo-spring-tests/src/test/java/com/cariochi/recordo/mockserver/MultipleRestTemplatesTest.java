@@ -1,7 +1,6 @@
-package com.cariochi.recordo;
+package com.cariochi.recordo.mockserver;
 
 import com.cariochi.recordo.core.RecordoExtension;
-import com.cariochi.recordo.mockserver.MockServer;
 import com.cariochi.recordo.mockserver.resttemplate.GitHubRestTemplate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
