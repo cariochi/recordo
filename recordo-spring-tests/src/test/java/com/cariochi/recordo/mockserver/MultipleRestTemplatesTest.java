@@ -1,5 +1,6 @@
 package com.cariochi.recordo.mockserver;
 
+import com.cariochi.recordo.core.EnableRecordo;
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.mockserver.resttemplate.GitHubRestTemplate;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import static com.cariochi.recordo.config.Profiles.SIMPLE;
 class MultipleRestTemplatesTest {
 
     @Autowired
+    @EnableRecordo
     private RestTemplate simpleRestTemplate;
 
     @Autowired
@@ -36,7 +38,7 @@ class MultipleRestTemplatesTest {
     @MockServer(httpClient = "simpleRestTemplate", value = "/mockserver/multiple-rest-templates/simple.rest.json")
     @MockServer(httpClient = "apacheRestTemplate", value = "/mockserver/multiple-rest-templates/apache.rest.json")
     @MockServer(httpClient = "okHttpRestTemplate", value = "/mockserver/multiple-rest-templates/okHttp.rest.json")
-    void should_retrieve_gists() {
+    void should_use_multiple_rest_templates() {
 
         final GitHubRestTemplate simpleGitHubClient = new GitHubRestTemplate(simpleRestTemplate, key);
         simpleGitHubClient.getGists();
@@ -46,6 +48,14 @@ class MultipleRestTemplatesTest {
 
         final GitHubRestTemplate okHttpGitHubClient = new GitHubRestTemplate(okHttpRestTemplate, key);
         okHttpGitHubClient.getGists();
+    }
+
+    @Test
+    @MockServer("/mockserver/multiple-rest-templates/simple.rest.json")
+    void should_use_default_rest_template() {
+
+        final GitHubRestTemplate simpleGitHubClient = new GitHubRestTemplate(simpleRestTemplate, key);
+        simpleGitHubClient.getGists();
     }
 
 }

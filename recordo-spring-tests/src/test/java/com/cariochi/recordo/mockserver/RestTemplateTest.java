@@ -4,14 +4,13 @@ import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.mockserver.dto.Gist;
 import com.cariochi.recordo.mockserver.dto.GistResponse;
 import com.cariochi.recordo.read.Read;
+import java.util.List;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.util.List;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 import static com.cariochi.recordo.config.Profiles.REST_TEMPLATE;
@@ -20,7 +19,7 @@ import static com.cariochi.recordo.config.Profiles.SIMPLE;
 @SpringBootTest
 @ActiveProfiles({REST_TEMPLATE, SIMPLE})
 @ExtendWith(RecordoExtension.class)
-public class RestTemplateTest {
+class RestTemplateTest {
 
     @Autowired
     protected GitHub gitHub;

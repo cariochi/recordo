@@ -47,7 +47,7 @@ public class Beans {
 
             return getFields(beanClass).stream()
                     .filter(javaField -> name.equals(javaField.getName()))
-                    .map(JavaField::getType)
+                    .map(JavaField::getValue)
                     .map(beanClass::cast)
                     .findFirst();
         }
