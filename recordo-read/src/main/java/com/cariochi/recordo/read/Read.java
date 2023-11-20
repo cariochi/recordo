@@ -1,6 +1,10 @@
 package com.cariochi.recordo.read;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Loads a resource from json file.
@@ -22,6 +26,8 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface Read {
+
+    String objectMapper() default "";
 
     String value();
 

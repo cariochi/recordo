@@ -1,74 +1,56 @@
 package com.cariochi.recordo.mockserver.interceptors;
 
+import com.cariochi.recordo.core.utils.Beans;
 import com.cariochi.recordo.mockserver.interceptors.apache.ApacheMockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.okhttp.OkMockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.resttemplate.RestTemplateInterceptor;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Optional;
 import lombok.experimental.UtilityClass;
 import okhttp3.OkHttpClient;
 import org.apache.http.client.HttpClient;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.web.client.RestTemplate;
 
-import static com.cariochi.recordo.core.utils.BeanUtils.findBeans;
-import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.toMap;
-
 
 @UtilityClass
 public class HttpClientInterceptors {
 
-
-    public Map<String, ? extends MockServerInterceptor> findAll(ExtensionContext context) {
-
-        final Map<String, ? extends MockServerInterceptor> restTemplates = restTemplate(context);
-        if (!restTemplates.isEmpty()) {
-            return restTemplates;
-        }
-
-        final Map<String, ? extends MockServerInterceptor> okHttpClients = okHttpClient(context);
-        if (!okHttpClients.isEmpty()) {
-            return okHttpClients;
-        }
-
-        final Map<String, ? extends MockServerInterceptor> apacheHttpClients = apacheHttpClient(context);
-        if (!apacheHttpClients.isEmpty()) {
-            return apacheHttpClients;
-        }
-
-        return emptyMap();
-    }
-
-    private Map<String, ? extends MockServerInterceptor> restTemplate(ExtensionContext context) {
+    public Optional<MockServerInterceptor> findInterceptor(String beanName, ExtensionContext context) {
         try {
-            return findBeans(RestTemplate.class, context).entrySet().stream()
-                    .collect(toMap(Map.Entry::getKey, e -> RestTemplateInterceptor.attachTo(e.getValue())));
+            final Beans beans = Beans.of(context);
+            return Optional.<MockServerInterceptor>empty()
+                    .or(() -> restTemplate(beanName, beans))
+                    .or(() -> okHttpClient(beanName, beans))
+                    .or(() -> apacheHttpClient(beanName, beans));
         } catch (Exception | NoClassDefFoundError e) {
-            return emptyMap();
+            return Optional.empty();
         }
     }
 
-    private Map<String, ? extends MockServerInterceptor> okHttpClient(ExtensionContext context) {
+    private Optional<RestTemplateInterceptor> restTemplate(String beanName, Beans beans) {
         try {
-            final Map<String, ? extends MockServerInterceptor> beans = findBeans(OkMockServerInterceptor.class, context);
-            if (!beans.isEmpty()) {
-                return beans;
-            } else {
-                return findBeans(OkHttpClient.class, context).entrySet().stream()
-                        .collect(toMap(Entry::getKey, e -> OkMockServerInterceptor.attachTo(e.getValue())));
-            }
+            return beans.find(beanName, RestTemplateInterceptor.class)
+                    .or(() -> beans.find(beanName, RestTemplate.class).map(RestTemplateInterceptor::attachTo));
         } catch (Exception | NoClassDefFoundError e) {
-            return emptyMap();
+            return Optional.empty();
         }
     }
 
-    private Map<String, ? extends MockServerInterceptor> apacheHttpClient(ExtensionContext context) {
+    private Optional<OkMockServerInterceptor> okHttpClient(String beanName, Beans beans) {
         try {
-            return findBeans(HttpClient.class, context).entrySet().stream()
-                    .collect(toMap(Map.Entry::getKey, e -> new ApacheMockServerInterceptor(e.getValue())));
+            return beans.find(beanName, OkMockServerInterceptor.class)
+                    .or(() -> beans.find(beanName, OkHttpClient.class).map(OkMockServerInterceptor::attachTo));
         } catch (Exception | NoClassDefFoundError e) {
-            return emptyMap();
+            return Optional.empty();
+        }
+    }
+
+    private Optional<ApacheMockServerInterceptor> apacheHttpClient(String beanName, Beans beans) {
+        try {
+            return beans.find(beanName, ApacheMockServerInterceptor.class)
+                    .or(() -> beans.find(beanName, HttpClient.class).map(ApacheMockServerInterceptor::new));
+        } catch (Exception | NoClassDefFoundError e) {
+            return Optional.empty();
         }
     }
 

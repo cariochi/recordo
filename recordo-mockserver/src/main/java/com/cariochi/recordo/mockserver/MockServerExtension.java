@@ -2,7 +2,6 @@ package com.cariochi.recordo.mockserver;
 
 import com.cariochi.recordo.core.Extension;
 import com.cariochi.recordo.core.json.JsonConverter;
-import com.cariochi.recordo.mockserver.interceptors.HttpClientInterceptors;
 import com.cariochi.recordo.mockserver.interceptors.MockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
 import com.cariochi.recordo.mockserver.model.MockRequest;
@@ -23,6 +22,10 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import static com.cariochi.recordo.core.json.JsonConverters.getJsonConverter;
 import static com.cariochi.recordo.core.json.JsonUtils.compareMode;
+import static com.cariochi.recordo.mockserver.interceptors.HttpClientInterceptors.findInterceptor;
+import static java.lang.String.format;
+import static java.lang.String.join;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.junit.platform.commons.util.AnnotationUtils.findAnnotation;
 
 @Slf4j
@@ -33,52 +36,49 @@ public class MockServerExtension implements Extension, BeforeEachCallback, After
     @Override
     public void beforeEach(ExtensionContext context) {
 
-        final Map<String, ? extends MockServerInterceptor> interceptors = HttpClientInterceptors.findAll(context);
-
         findAnnotation(context.getRequiredTestMethod(), MockServers.class)
                 .ifPresent(annotations -> {
                     clear();
                     Stream.of(annotations.value())
-                            .forEach(annotation -> {
-                                final JsonConverter jsonConverter = getJsonConverter(context);
-                                final JSONCompareMode compareMode = compareMode(annotation.jsonCompareMode().extensible(), annotation.jsonCompareMode().strictOrder());
-                                final RecordoMockServer mockServer = new RecordoMockServer(annotation.urlPattern(), annotation.value(), jsonConverter, compareMode);
-                                interceptor(annotation.name(), interceptors).init(new RoutingRequestHandler(annotation.name()));
-                                final List<RecordoMockServer> servers = mockServers.computeIfAbsent(annotation.name(), key -> new ArrayList<>());
-                                servers.add(mockServer);
-                            });
+                            .forEach(annotation -> createMockServer(annotation, context));
                 });
 
         findAnnotation(context.getRequiredTestMethod(), MockServer.class)
                 .ifPresent(annotation -> {
                     clear();
-                    final JsonConverter jsonConverter = getJsonConverter(context);
-                    final JSONCompareMode compareMode = compareMode(annotation.jsonCompareMode().extensible(), annotation.jsonCompareMode().strictOrder());
-                    final RecordoMockServer mockServer = new RecordoMockServer(annotation.urlPattern(), annotation.value(), jsonConverter, compareMode);
-                    interceptor(annotation.name(), interceptors).init(mockServer);
-                    final List<RecordoMockServer> servers = mockServers.computeIfAbsent(annotation.name(), key -> new ArrayList<>());
-                    servers.add(mockServer);
+                    createMockServer(annotation, context);
+
                 });
     }
 
-
-    public MockServerInterceptor interceptor(String name, Map<String, ? extends MockServerInterceptor> all) {
-        if (all.isEmpty()) {
-            throw new IllegalArgumentException("Http Client not found");
-        } else if ("DEFAULT".equals(name) && all.size() == 1) {
-            return all.values().stream().findFirst().orElseThrow();
+    public MockServerInterceptor interceptor(String clientName, Map<String, ? extends MockServerInterceptor> interceptors) {
+        if (interceptors.size() == 1) {
+            return interceptors.values().iterator().next();
+        }
+        if (interceptors.isEmpty()) {
+            throw new IllegalArgumentException("No http clients found");
         } else {
-            return Optional.ofNullable(all.get(name))
-                    .orElseThrow(() -> new IllegalArgumentException("Http Client not found"));
+            return Optional.ofNullable(interceptors.get(clientName))
+                    .orElseThrow(() -> new IllegalArgumentException(format("Multiple http clients found: %s", join(", ", interceptors.keySet()))));
         }
     }
 
     @Override
     public void afterEach(ExtensionContext context) {
-        findAnnotation(context.getRequiredTestMethod(), MockServers.class)
-                .ifPresent(a -> clear());
-        findAnnotation(context.getRequiredTestMethod(), MockServer.class)
-                .ifPresent(a -> clear());
+        findAnnotation(context.getRequiredTestMethod(), MockServers.class).ifPresent(a -> clear());
+        findAnnotation(context.getRequiredTestMethod(), MockServer.class).ifPresent(a -> clear());
+    }
+
+    private void createMockServer(MockServer annotation, ExtensionContext context) {
+        final JsonConverter jsonConverter = getJsonConverter(annotation.objectMapper(), context);
+        final JSONCompareMode compareMode = compareMode(annotation.jsonCompareMode().extensible(), annotation.jsonCompareMode().strictOrder());
+        final RecordoMockServer mockServer = new RecordoMockServer(annotation.urlPattern(), annotation.value(), jsonConverter, compareMode);
+        mockServers.computeIfAbsent(annotation.httpClient(), key -> new ArrayList<>()).add(mockServer);
+        final MockServerInterceptor interceptor = findInterceptor(annotation.httpClient(), context)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        isEmpty(annotation.httpClient()) ? "No httpClients found" : format("No bean named '%s' available", annotation.httpClient())
+                ));
+        interceptor.init(new RoutingRequestHandler(annotation.httpClient()));
     }
 
     private void clear() {

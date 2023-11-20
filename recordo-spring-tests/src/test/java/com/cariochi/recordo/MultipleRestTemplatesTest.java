@@ -34,9 +34,9 @@ class MultipleRestTemplatesTest {
     private String key;
 
     @Test
-    @MockServer(name = "simpleRestTemplate", value = "/mockserver/multiple-rest-templates/simple.rest.json")
-    @MockServer(name = "apacheRestTemplate", value = "/mockserver/multiple-rest-templates/apache.rest.json")
-    @MockServer(name = "okHttpRestTemplate", value = "/mockserver/multiple-rest-templates/okHttp.rest.json")
+    @MockServer(httpClient = "simpleRestTemplate", value = "/mockserver/multiple-rest-templates/simple.rest.json")
+    @MockServer(httpClient = "apacheRestTemplate", value = "/mockserver/multiple-rest-templates/apache.rest.json")
+    @MockServer(httpClient = "okHttpRestTemplate", value = "/mockserver/multiple-rest-templates/okHttp.rest.json")
     void should_retrieve_gists() {
 
         final GitHubRestTemplate simpleGitHubClient = new GitHubRestTemplate(simpleRestTemplate, key);

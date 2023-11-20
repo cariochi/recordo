@@ -1,24 +1,24 @@
 package com.cariochi.recordo.core.json;
 
+import com.cariochi.recordo.core.utils.Beans;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Optional;
 import lombok.experimental.UtilityClass;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-import java.util.Optional;
-
-import static com.cariochi.recordo.core.utils.BeanUtils.findBean;
+import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @UtilityClass
 public class JsonConverters {
 
-    public static Optional<JsonConverter> findJsonConverter(ExtensionContext context) {
-        return findBean(ObjectMapper.class, context)
-                .map(ObjectMapper.class::cast)
-                .map(JsonConverter::new);
-    }
-
-    public static JsonConverter getJsonConverter(ExtensionContext context) {
-        return findJsonConverter(context)
+    public static JsonConverter getJsonConverter(String beanName, ExtensionContext context) {
+        final Optional<ObjectMapper> objectMapper = Beans.of(context).find(beanName, ObjectMapper.class);
+        if (isNotEmpty(beanName) && objectMapper.isEmpty()) {
+            throw new IllegalArgumentException(format("No bean named '%s' available", beanName));
+        }
+        return objectMapper
+                .map(JsonConverter::new)
                 .orElseGet(JsonConverter::new);
     }
 

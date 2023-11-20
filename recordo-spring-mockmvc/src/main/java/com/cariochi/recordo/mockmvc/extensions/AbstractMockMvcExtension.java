@@ -1,16 +1,15 @@
 package com.cariochi.recordo.mockmvc.extensions;
 
 import com.cariochi.recordo.core.Extension;
+import com.cariochi.recordo.core.utils.Beans;
 import com.cariochi.recordo.mockmvc.Request;
 import com.cariochi.recordo.mockmvc.RequestInterceptor;
+import java.util.Optional;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
-import java.util.Optional;
-
-import static com.cariochi.recordo.core.utils.BeanUtils.findBean;
 import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.isRequestType;
 import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.isResponseType;
 
@@ -19,8 +18,8 @@ public abstract class AbstractMockMvcExtension implements Extension, ParameterRe
     protected Object processRequest(Request<Object> request,
                                     Class<? extends RequestInterceptor>[] interceptors,
                                     ParameterContext parameter,
-                                    ExtensionContext extensionContext) {
-        final Optional<RequestInterceptor> bean = findBean(RequestInterceptor.class, extensionContext);
+                                    ExtensionContext context) {
+        final Optional<RequestInterceptor> bean = Beans.of(context).findByType(RequestInterceptor.class);
         if (bean.isPresent()) {
             request = (Request<Object>) bean.get().apply(request);
         }

@@ -1,10 +1,15 @@
 package com.cariochi.recordo.mockserver.dto;
 
-import lombok.*;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Map;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.Singular;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Gist {
 
     private String description;
@@ -16,6 +21,7 @@ public class Gist {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class File {
         private String content;
     }
