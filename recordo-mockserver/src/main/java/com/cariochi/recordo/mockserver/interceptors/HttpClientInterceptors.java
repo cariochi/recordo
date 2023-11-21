@@ -1,56 +1,65 @@
 package com.cariochi.recordo.mockserver.interceptors;
 
 import com.cariochi.recordo.core.utils.Beans;
+import com.cariochi.recordo.core.utils.Beans.OptionalBean;
 import com.cariochi.recordo.mockserver.interceptors.apache.ApacheMockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.okhttp.OkMockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.resttemplate.RestTemplateInterceptor;
-import java.util.Optional;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.apache.http.client.HttpClient;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.web.client.RestTemplate;
 
-
+@Slf4j
 @UtilityClass
 public class HttpClientInterceptors {
 
-    public Optional<MockServerInterceptor> findInterceptor(String beanName, ExtensionContext context) {
+    public OptionalBean<MockServerInterceptor> findInterceptor(String beanName, ExtensionContext context) {
+        final Beans beans = Beans.of(context);
+        return OptionalBean.<MockServerInterceptor>empty()
+                .or(() -> interceptor(beanName, beans))
+                .or(() -> restTemplate(beanName, beans))
+                .or(() -> okHttpClient(beanName, beans))
+                .or(() -> apacheHttpClient(beanName, beans));
+    }
+
+    private OptionalBean<MockServerInterceptor> interceptor(String beanName, Beans beans) {
         try {
-            final Beans beans = Beans.of(context);
-            return Optional.<MockServerInterceptor>empty()
-                    .or(() -> restTemplate(beanName, beans))
-                    .or(() -> okHttpClient(beanName, beans))
-                    .or(() -> apacheHttpClient(beanName, beans));
+            return beans.find(beanName, MockServerInterceptor.class);
         } catch (Exception | NoClassDefFoundError e) {
-            return Optional.empty();
+            return OptionalBean.empty();
         }
     }
 
-    private Optional<RestTemplateInterceptor> restTemplate(String beanName, Beans beans) {
+    private OptionalBean<MockServerInterceptor> restTemplate(String beanName, Beans beans) {
         try {
-            return beans.find(beanName, RestTemplateInterceptor.class)
-                    .or(() -> beans.find(beanName, RestTemplate.class).map(RestTemplateInterceptor::attachTo));
+            return beans.find(beanName, RestTemplate.class)
+                    .map(RestTemplateInterceptor::attachTo)
+                    .map(MockServerInterceptor.class::cast);
         } catch (Exception | NoClassDefFoundError e) {
-            return Optional.empty();
+            return OptionalBean.empty();
         }
     }
 
-    private Optional<OkMockServerInterceptor> okHttpClient(String beanName, Beans beans) {
+    private OptionalBean<MockServerInterceptor> okHttpClient(String beanName, Beans beans) {
         try {
-            return beans.find(beanName, OkMockServerInterceptor.class)
-                    .or(() -> beans.find(beanName, OkHttpClient.class).map(OkMockServerInterceptor::attachTo));
+            return beans.find(beanName, OkHttpClient.class)
+                    .map(OkMockServerInterceptor::attachTo)
+                    .map(MockServerInterceptor.class::cast);
         } catch (Exception | NoClassDefFoundError e) {
-            return Optional.empty();
+            return OptionalBean.empty();
         }
     }
 
-    private Optional<ApacheMockServerInterceptor> apacheHttpClient(String beanName, Beans beans) {
+    private OptionalBean<MockServerInterceptor> apacheHttpClient(String beanName, Beans beans) {
         try {
-            return beans.find(beanName, ApacheMockServerInterceptor.class)
-                    .or(() -> beans.find(beanName, HttpClient.class).map(ApacheMockServerInterceptor::new));
+            return beans.find(beanName, HttpClient.class)
+                    .map(ApacheMockServerInterceptor::new)
+                    .map(MockServerInterceptor.class::cast);
         } catch (Exception | NoClassDefFoundError e) {
-            return Optional.empty();
+            return OptionalBean.empty();
         }
     }
 

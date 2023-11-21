@@ -1,20 +1,21 @@
 package com.cariochi.recordo.core;
 
-import lombok.extern.slf4j.Slf4j;
-import org.jeasy.random.EasyRandom;
-import org.jeasy.random.EasyRandomParameters;
-
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.IntStream;
+import lombok.extern.slf4j.Slf4j;
+import org.jeasy.random.EasyRandom;
+import org.jeasy.random.EasyRandomParameters;
 
 import static java.math.RoundingMode.HALF_UP;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.LocalDate.now;
-import static org.apache.commons.lang3.RandomUtils.*;
+import static org.apache.commons.lang3.RandomUtils.nextDouble;
+import static org.apache.commons.lang3.RandomUtils.nextInt;
+import static org.apache.commons.lang3.RandomUtils.nextLong;
 
 @Slf4j
 public class RandomObjectGenerator {
@@ -67,6 +68,7 @@ public class RandomObjectGenerator {
                 .randomize(Long.class, () -> nextLong(1, 1000))
                 .randomize(Double.class, () -> BigDecimal.valueOf(nextDouble(1, 1000)).setScale(2, HALF_UP).doubleValue())
                 .randomize(Float.class, () -> BigDecimal.valueOf(nextDouble(1, 1000)).setScale(2, HALF_UP).floatValue())
+                .randomize(BigDecimal.class, () -> BigDecimal.valueOf(nextDouble(1, 1000)).setScale(2, HALF_UP))
                 .objectPoolSize(1000);
     }
 

@@ -2,6 +2,7 @@ package com.cariochi.recordo.mockserver;
 
 import com.cariochi.recordo.core.Extension;
 import com.cariochi.recordo.core.json.JsonConverter;
+import com.cariochi.recordo.core.utils.Beans.OptionalBean;
 import com.cariochi.recordo.mockserver.interceptors.HttpClientInterceptors;
 import com.cariochi.recordo.mockserver.interceptors.MockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
@@ -24,7 +25,6 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import static com.cariochi.recordo.core.json.JsonConverters.getJsonConverter;
 import static com.cariochi.recordo.core.json.JsonUtils.compareMode;
 import static java.lang.String.format;
-import static java.lang.String.join;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.junit.platform.commons.util.AnnotationUtils.findAnnotation;
 
@@ -47,20 +47,7 @@ public class MockServerExtension implements Extension, BeforeEachCallback, After
                 .ifPresent(annotation -> {
                     clear();
                     createMockServer(annotation, context);
-
                 });
-    }
-
-    public MockServerInterceptor interceptor(String clientName, Map<String, ? extends MockServerInterceptor> interceptors) {
-        if (interceptors.size() == 1) {
-            return interceptors.values().iterator().next();
-        }
-        if (interceptors.isEmpty()) {
-            throw new IllegalArgumentException("No http clients found");
-        } else {
-            return Optional.ofNullable(interceptors.get(clientName))
-                    .orElseThrow(() -> new IllegalArgumentException(format("Multiple http clients found: %s", join(", ", interceptors.keySet()))));
-        }
     }
 
     @Override
@@ -74,10 +61,18 @@ public class MockServerExtension implements Extension, BeforeEachCallback, After
         final JSONCompareMode compareMode = compareMode(annotation.jsonCompareMode().extensible(), annotation.jsonCompareMode().strictOrder());
         final RecordoMockServer mockServer = new RecordoMockServer(annotation.urlPattern(), annotation.value(), jsonConverter, compareMode);
         mockServers.computeIfAbsent(annotation.httpClient(), key -> new ArrayList<>()).add(mockServer);
-        final MockServerInterceptor interceptor = HttpClientInterceptors.findInterceptor(annotation.httpClient(), context)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        isEmpty(annotation.httpClient()) ? "No httpClients found" : format("No bean named '%s' available", annotation.httpClient())
-                ));
+        final OptionalBean<MockServerInterceptor> optionalBean = HttpClientInterceptors.findInterceptor(annotation.httpClient(), context);
+        final MockServerInterceptor interceptor = optionalBean.value()
+                .orElseThrow(() -> {
+                    if (optionalBean.availableBeanNames().isEmpty()) {
+                        return new IllegalArgumentException("No http clients found");
+                    }
+                    if (isEmpty(annotation.httpClient())) {
+                        return new IllegalArgumentException(format("Multiple http clients found: %s", optionalBean.availableBeanNames()));
+                    } else {
+                        return new IllegalArgumentException(format("No http client bean named '%s' available. Available beans: %s", optionalBean.name(), optionalBean.availableBeanNames()));
+                    }
+                });
         interceptor.init(new RoutingRequestHandler(annotation.httpClient()));
     }
 

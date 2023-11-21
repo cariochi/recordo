@@ -6,7 +6,6 @@ import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.mockmvc.Post.File;
 import com.cariochi.recordo.mockmvc.dto.UserDto;
 import com.cariochi.recordo.read.Read;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,9 +28,6 @@ class UserControllerTest {
 
     @EnableRecordo
     private RequestInterceptor<?> defaultInterceptor = request -> request.header("Authorization", "Bearer token");
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Autowired
     private RecordoMockMvc mockMvc;

@@ -15,12 +15,12 @@ public class RecordoMockMvcExtension implements Extension, BeforeAllCallback {
     @Override
     public void beforeAll(ExtensionContext context) {
         final SpringBeans springBeans = Beans.of(context).springBeans();
-        springBeans.findByType(MockMvc.class).ifPresent(mockMvc -> {
-            springBeans.findByType(ObjectMapper.class).ifPresentOrElse(
+        springBeans.findByType(MockMvc.class).value().ifPresent(mockMvc -> {
+            springBeans.findByType(ObjectMapper.class).value().ifPresentOrElse(
                     objectMapper -> springBeans.register("jsonConverter", JsonConverter.class, objectMapper),
                     () -> springBeans.register("jsonConverter", JsonConverter.class)
             );
-            final JsonConverter jsonConverter = springBeans.findByType(JsonConverter.class).orElseThrow();
+            final JsonConverter jsonConverter = springBeans.findByType(JsonConverter.class).value().orElseThrow();
             springBeans.register("recordoMockMvc", RecordoMockMvc.class, mockMvc, jsonConverter);
         });
     }

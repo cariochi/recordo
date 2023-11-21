@@ -19,7 +19,7 @@ public abstract class AbstractMockMvcExtension implements Extension, ParameterRe
                                     Class<? extends RequestInterceptor>[] interceptors,
                                     ParameterContext parameter,
                                     ExtensionContext context) {
-        final Optional<RequestInterceptor> bean = Beans.of(context).findByType(RequestInterceptor.class);
+        final Optional<RequestInterceptor> bean = Beans.of(context).findByType(RequestInterceptor.class).value();
         if (bean.isPresent()) {
             request = (Request<Object>) bean.get().apply(request);
         }

@@ -2,6 +2,7 @@ package com.cariochi.recordo.mockmvc.utils;
 
 import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.core.utils.Beans;
+import com.cariochi.recordo.core.utils.Beans.OptionalBean;
 import com.cariochi.recordo.core.utils.ObjectReader;
 import com.cariochi.recordo.mockmvc.Content;
 import com.cariochi.recordo.mockmvc.RecordoMockMvc;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.apache.commons.lang3.StringUtils.substringBefore;
@@ -44,7 +46,13 @@ public class MockMvcUtils {
     }
 
     public static RecordoMockMvc getMockMvcClient(ExtensionContext context, JsonConverter jsonConverter) {
-        final MockMvc mockMvc = Beans.of(context).findByType(MockMvc.class).map(MockMvc.class::cast).orElseThrow();
+        final OptionalBean<MockMvc> optionalBean = Beans.of(context).findByType(MockMvc.class);
+        final MockMvc mockMvc = optionalBean
+                .map(MockMvc.class::cast)
+                .value()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        optionalBean.availableBeanNames().isEmpty() ? "No MockMvc beans found" : format("Multiple MockMvc beans found: %s", optionalBean.availableBeanNames())
+                ));
         return new RecordoMockMvc(mockMvc, jsonConverter);
     }
 
