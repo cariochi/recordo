@@ -33,9 +33,11 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface MockServer {
 
-    String name() default "DEFAULT";
-
     String value();
+
+    String httpClient() default "";
+
+    String objectMapper() default "";
 
     /**
      * The mapping matches URLs using the following rules:

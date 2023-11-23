@@ -1,30 +1,34 @@
 package com.cariochi.recordo.mockmvc.extensions;
 
+import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.mockmvc.Perform;
 import com.cariochi.recordo.mockmvc.Request;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 
-import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.*;
+import static com.cariochi.recordo.core.json.JsonConverters.getJsonConverter;
+import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.getBody;
+import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.getMockMvcClient;
+import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.getResponseType;
+import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.parseHeaders;
 
 public class PerformExtension extends AbstractMockMvcExtension {
 
     @Override
-    public boolean supportsParameter(ParameterContext parameterContext,
-                                     ExtensionContext extensionContext) throws ParameterResolutionException {
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         return parameterContext.isAnnotated(Perform.class);
     }
 
     @Override
-    public Object resolveParameter(ParameterContext parameterContext,
-                                   ExtensionContext extensionContext) throws ParameterResolutionException {
-        final Perform annotation = parameterContext.findAnnotation(Perform.class).get();
-        final Request<Object> request = getMockMvcClient(extensionContext)
+    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+        final Perform annotation = parameterContext.findAnnotation(Perform.class).orElseThrow();
+        final JsonConverter jsonConverter = getJsonConverter(annotation.objectMapper(), extensionContext);
+        final Request<Object> request = getMockMvcClient(extensionContext, jsonConverter)
                 .request(annotation.method(), annotation.path(), getResponseType(parameterContext))
                 .headers(parseHeaders(annotation.headers()))
                 .expectedStatus(annotation.expectedStatus())
-                .body(getBody(annotation.body(), extensionContext));
+                .body(getBody(annotation.body(), jsonConverter));
         return processRequest(request, annotation.interceptors(), parameterContext, extensionContext);
     }
 

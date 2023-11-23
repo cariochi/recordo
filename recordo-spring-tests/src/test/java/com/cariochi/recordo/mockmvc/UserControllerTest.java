@@ -1,5 +1,6 @@
 package com.cariochi.recordo.mockmvc;
 
+import com.cariochi.recordo.config.ObjectMapperConfig;
 import com.cariochi.recordo.core.EnableRecordo;
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.mockmvc.Post.File;
@@ -8,6 +9,7 @@ import com.cariochi.recordo.read.Read;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
@@ -20,15 +22,18 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.OK;
 
 @Slf4j
-@WebMvcTest(UserController.class)
+@WebMvcTest({UserController.class, ObjectMapperConfig.class})
 @ExtendWith(RecordoExtension.class)
 class UserControllerTest {
 
     @EnableRecordo
     private RequestInterceptor<?> defaultInterceptor = request -> request.header("Authorization", "Bearer token");
 
+    @Autowired
+    private RecordoMockMvc mockMvc;
+
     @Test
-    void should_get_user_by_id_with_mock_mvc(RecordoMockMvc mockMvc) {
+    void should_get_user_by_id_with_mock_mvc() {
         final Response<UserDto> response = mockMvc.get("/users/{id}", UserDto.class)
                 .uriVars(1)
                 .param("name", "Test User")
@@ -78,7 +83,7 @@ class UserControllerTest {
     }
 
     @Test
-    void should_get_all_users_with_mock_mvc(RecordoMockMvc mockMvc) {
+    void should_get_all_users_with_mock_mvc() {
         final Request<Page<UserDto>> request = mockMvc.get("/users", pageOf(UserDto.class));
         final Response<Page<UserDto>> response = request.perform();
         assertAsJson(response.getBody()).isEqualTo("/mockmvc/users_page.json");
@@ -86,7 +91,7 @@ class UserControllerTest {
 
     @Test
     void should_get_all_users(
-            @Get("/users") Request<Page<UserDto>> request
+            @Get(value = "/users", objectMapper = "objectMapper") Request<Page<UserDto>> request
     ) {
         final Response<Page<UserDto>> response = request.perform();
         assertAsJson(response.getBody()).isEqualTo("/mockmvc/users_page.json");
@@ -121,8 +126,7 @@ class UserControllerTest {
     }
 
     @Test
-    void should_create_user(
-            RecordoMockMvc mockMvc,
+    void should_create_user_1(
             @Read("/mockmvc/new_user.json") UserDto user
     ) {
         final Response<UserDto> response = mockMvc.post("/users", UserDto.class).body(user).perform();
@@ -130,7 +134,7 @@ class UserControllerTest {
     }
 
     @Test
-    void should_create_user(
+    void should_create_user_2(
             @Post(value = "/users", body = @Content(file = "/mockmvc/new_user.json")) Request<UserDto> request
     ) {
         final Response<UserDto> response = request.perform();
@@ -138,14 +142,14 @@ class UserControllerTest {
     }
 
     @Test
-    void should_create_user(
-            @Post(value = "/users", body = @Content(file = "/mockmvc/new_user.json")) Response<UserDto> response
+    void should_create_user_3(
+            @Post(value = "/users", body = @Content(file = "/mockmvc/new_user.json"), objectMapper = "objectMapper") Response<UserDto> response
     ) {
         assertAsJson(response.getBody()).isEqualTo("/mockmvc/created_user.json");
     }
 
     @Test
-    void should_create_user(
+    void should_create_user_4(
             @Post(value = "/users", body = @Content(file = "/mockmvc/new_user.json")) UserDto user
     ) {
         assertAsJson(user).isEqualTo("/mockmvc/user.json");
@@ -179,7 +183,7 @@ class UserControllerTest {
 
 
     @Test
-    void should_delete_user_by_id(RecordoMockMvc mockMvc) {
+    void should_delete_user_by_id() {
         mockMvc.delete("/users/{id}").uriVars(1).perform();
     }
 

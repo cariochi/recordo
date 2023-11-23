@@ -1,9 +1,12 @@
 package com.cariochi.recordo.mockmvc;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-
-import java.lang.annotation.*;
 
 import static org.springframework.http.HttpStatus.OK;
 
@@ -23,4 +26,6 @@ public @interface Perform {
     HttpStatus expectedStatus() default OK;
 
     Class<? extends RequestInterceptor>[] interceptors() default {};
+
+    String objectMapper() default "";
 }
