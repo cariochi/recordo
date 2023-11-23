@@ -1,12 +1,13 @@
 package com.cariochi.recordo.mockserver.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.time.Instant;
+import java.util.Map;
 import lombok.Data;
 import lombok.Singular;
 
-import java.time.Instant;
-import java.util.Map;
-
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class GistResponse {
 
     private String id;

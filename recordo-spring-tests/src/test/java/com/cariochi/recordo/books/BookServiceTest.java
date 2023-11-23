@@ -4,6 +4,7 @@ import com.cariochi.recordo.books.dto.Author;
 import com.cariochi.recordo.books.dto.Book;
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.read.Read;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,8 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
-
-import java.util.List;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 import static com.cariochi.recordo.assertions.JsonCondition.equalAsJsonTo;

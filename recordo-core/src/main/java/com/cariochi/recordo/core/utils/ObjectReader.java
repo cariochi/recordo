@@ -33,7 +33,7 @@ public class ObjectReader {
         Object givenObject = null;
         String json;
         try {
-            givenObject = EMPTY_INSTANCE_GENERATOR.generateInstance(parameterType, 2);
+            givenObject = EMPTY_INSTANCE_GENERATOR.generateInstance(parameterType, 3);
             json = givenObject == null
                     ? (isAssignable(Collection.class, parameterType) || isArrayType(parameterType) ? "[]" : "{}")
                     : jsonConverter.toJson(givenObject);

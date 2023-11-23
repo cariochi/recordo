@@ -3,6 +3,8 @@ package com.cariochi.recordo.mockserver;
 import com.cariochi.recordo.books.dto.Author;
 import com.cariochi.recordo.books.dto.Book;
 import com.cariochi.recordo.core.RecordoExtension;
+import java.net.URI;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +14,6 @@ import org.springframework.http.RequestEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-import java.util.List;
-
 import static com.cariochi.recordo.config.Profiles.REST_TEMPLATE;
 import static com.cariochi.recordo.config.Profiles.SIMPLE;
 import static com.cariochi.recordo.mockmvc.utils.TypeReferences.listOf;
@@ -23,7 +22,7 @@ import static com.cariochi.recordo.mockmvc.utils.TypeReferences.typeOf;
 @SpringBootTest
 @ActiveProfiles({REST_TEMPLATE, SIMPLE})
 @ExtendWith(RecordoExtension.class)
-public class MultipleServersTest {
+class MultipleServersTest {
 
     @Autowired
     private RestTemplate restTemplate;

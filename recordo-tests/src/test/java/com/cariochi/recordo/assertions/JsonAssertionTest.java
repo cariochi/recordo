@@ -2,11 +2,10 @@ package com.cariochi.recordo.assertions;
 
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.main.dto.TestDto;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import java.util.List;
 import java.util.Set;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 import static com.cariochi.recordo.assertions.JsonCondition.equalAsJsonTo;
@@ -17,7 +16,7 @@ import static java.util.Collections.shuffle;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(RecordoExtension.class)
-public class JsonAssertionTest {
+class JsonAssertionTest {
 
     @Test
     void extensible() {

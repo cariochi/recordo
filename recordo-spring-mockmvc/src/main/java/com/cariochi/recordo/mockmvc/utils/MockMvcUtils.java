@@ -1,25 +1,25 @@
 package com.cariochi.recordo.mockmvc.utils;
 
 import com.cariochi.recordo.core.json.JsonConverter;
+import com.cariochi.recordo.core.utils.Beans;
+import com.cariochi.recordo.core.utils.Beans.OptionalBean;
 import com.cariochi.recordo.core.utils.ObjectReader;
 import com.cariochi.recordo.mockmvc.Content;
 import com.cariochi.recordo.mockmvc.RecordoMockMvc;
 import com.cariochi.recordo.mockmvc.Request;
 import com.cariochi.recordo.mockmvc.Response;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import static com.cariochi.recordo.core.json.JsonConverters.getJsonConverter;
-import static com.cariochi.recordo.core.utils.BeanUtils.findBean;
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.apache.commons.lang3.StringUtils.substringBefore;
@@ -35,19 +35,24 @@ public class MockMvcUtils {
         ));
     }
 
-    public static String getBody(Content content, ExtensionContext context) {
+    public static String getBody(Content content, JsonConverter jsonConverter) {
         return Optional.ofNullable(content.value())
                 .filter(StringUtils::isNotBlank)
                 .or(() -> Optional.ofNullable(content.file())
                         .filter(StringUtils::isNotBlank)
-                        .map(file -> getBodyFromFile(file, context))
+                        .map(file -> getBodyFromFile(file, jsonConverter))
                 )
                 .orElse(null);
     }
 
-    public static RecordoMockMvc getMockMvcClient(ExtensionContext context) {
-        final MockMvc mockMvc = findBean(MockMvc.class, context).map(MockMvc.class::cast).orElseThrow();
-        final JsonConverter jsonConverter = getJsonConverter(context);
+    public static RecordoMockMvc getMockMvcClient(ExtensionContext context, JsonConverter jsonConverter) {
+        final OptionalBean<MockMvc> optionalBean = Beans.of(context).findByType(MockMvc.class);
+        final MockMvc mockMvc = optionalBean
+                .map(MockMvc.class::cast)
+                .value()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        optionalBean.availableBeanNames().isEmpty() ? "No MockMvc beans found" : format("Multiple MockMvc beans found: %s", optionalBean.availableBeanNames())
+                ));
         return new RecordoMockMvc(mockMvc, jsonConverter);
     }
 
@@ -71,8 +76,7 @@ public class MockMvcUtils {
         return Response.class.isAssignableFrom(type);
     }
 
-    private static String getBodyFromFile(String bodyFile, ExtensionContext context) {
-        final JsonConverter jsonConverter = getJsonConverter(context);
+    private static String getBodyFromFile(String bodyFile, JsonConverter jsonConverter) {
         final ObjectReader objectReader = new ObjectReader(jsonConverter);
         return (String) objectReader.read(bodyFile, String.class);
     }
