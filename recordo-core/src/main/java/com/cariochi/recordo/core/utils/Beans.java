@@ -25,13 +25,13 @@ public class Beans {
     private final ExtensionContext context;
 
     public <T> Optional<T> find(String name, Class<T> beanClass) {
-        return find(name, annotatedFields(beanClass))
-                .or(() -> find(name, springBeans(beanClass)));
+        return find(name, annotatedFields(beanClass), beanClass)
+                .or(() -> find(name, springBeans(beanClass), beanClass));
     }
 
     public <T> Optional<T> findByType(Class<T> beanClass) {
-        return singleBean(annotatedFields(beanClass))
-                .or(() -> singleBean(springBeans(beanClass)));
+        return singleBean(annotatedFields(beanClass), beanClass)
+                .or(() -> singleBean(springBeans(beanClass), beanClass));
     }
 
     public <T> Map<String, T> findAll(Class<T> beanClass) {
@@ -41,24 +41,24 @@ public class Beans {
         return map;
     }
 
-    private <T> Optional<T> find(String name, Map<String, T> beans) {
+    private <T> Optional<T> find(String name, Map<String, T> beans, Class<T> beanClass) {
         if (isEmpty(name)) {
-            return singleBean(beans);
+            return singleBean(beans, beanClass);
         }
         final T value = beans.get(name);
         if (value == null) {
-            log.warn("No bean named '{}' available. Available beans: {}", name, beans.keySet());
+            log.warn("No {} bean named '{}' available. Available beans: {}", beanClass.getName(), name, beans.keySet());
         }
         return Optional.ofNullable(value);
     }
 
-    private <T> Optional<T> singleBean(Map<String, T> beans) {
+    private <T> Optional<T> singleBean(Map<String, T> beans, Class<T> beanClass) {
         if (beans.isEmpty()) {
             return Optional.empty();
         } else if (beans.size() == 1) {
             return Optional.of(beans.values().iterator().next());
         } else {
-            log.warn("Multiple beans found: {}", beans.keySet());
+            log.warn("Multiple {} beans found: {}", beanClass.getName(), beans.keySet());
             return Optional.empty();
         }
     }

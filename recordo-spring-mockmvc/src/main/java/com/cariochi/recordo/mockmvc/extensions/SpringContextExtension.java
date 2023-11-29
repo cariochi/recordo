@@ -55,9 +55,8 @@ public class SpringContextExtension implements Extension, BeforeAllCallback {
     private <T> void registerRecordoClient(Class<T> targetClass, ExtensionContext context) {
         final RecordoClient annotation = targetClass.getAnnotation(RecordoClient.class);
 
-        final Beans beans = Beans.of(context);
         final List<RequestInterceptor> requestInterceptors = Stream.of(annotation.interceptors())
-                .map(interceptorClass -> createRequestInterceptor(interceptorClass, beans))
+                .map(interceptorClass -> createRequestInterceptor(interceptorClass, context))
                 .collect(toList());
 
         final JsonConverter jsonConverter = JsonConverters.getJsonConverter("", context);
@@ -67,8 +66,8 @@ public class SpringContextExtension implements Extension, BeforeAllCallback {
         registerBean(targetClass.getName(), recordoClient, context);
     }
 
-    private RequestInterceptor createRequestInterceptor(Class<? extends RequestInterceptor> interceptorClass, Beans beans) {
-        return beans.findByType(interceptorClass)
+    private RequestInterceptor createRequestInterceptor(Class<? extends RequestInterceptor> interceptorClass, ExtensionContext context) {
+        return Beans.of(context).findByType(interceptorClass)
                 .map(RequestInterceptor.class::cast)
                 .orElseGet(() -> createRequestInterceptor(interceptorClass));
     }
