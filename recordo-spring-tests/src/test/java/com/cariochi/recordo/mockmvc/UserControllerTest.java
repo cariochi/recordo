@@ -1,7 +1,6 @@
 package com.cariochi.recordo.mockmvc;
 
 import com.cariochi.recordo.config.ObjectMapperConfig;
-import com.cariochi.recordo.core.EnableRecordo;
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.mockmvc.Post.File;
 import com.cariochi.recordo.mockmvc.dto.UserDto;
@@ -11,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 
@@ -26,19 +27,25 @@ import static org.springframework.http.HttpStatus.OK;
 @ExtendWith(RecordoExtension.class)
 class UserControllerTest {
 
-    @EnableRecordo
-    private RequestInterceptor<?> defaultInterceptor = request -> request.header("Authorization", "Bearer token");
-
     @Autowired
     private RecordoMockMvc mockMvc;
+
+    @TestConfiguration
+    public static class TestConfig {
+
+        @Bean
+        public RequestInterceptor authInterceptor() {
+            return new AuthInterceptor();
+        }
+
+    }
 
     @Test
     void should_get_user_by_id_with_mock_mvc() {
         final Response<UserDto> response = mockMvc.get("/users/{id}", UserDto.class)
                 .uriVars(1)
                 .param("name", "Test User")
-                .header("locale", "UA")
-                .header("Authorization", "Bearer token")
+                .header("Locale", "UA")
                 .expectedStatus(OK)
                 .perform();
 
@@ -54,21 +61,21 @@ class UserControllerTest {
 
     @Test
     void should_get_user_by_id_with_get(
-            @Get(value = "/users/1?name=Test User", headers = "locale=UA") Response<UserDto> response
+            @Get(value = "/users/1?name=Test User", headers = "Locale=UA") Response<UserDto> response
     ) {
         assertAsJson(response.getBody()).isEqualTo("/mockmvc/user.json");
     }
 
     @Test
     void should_get_user_by_id_with_get(
-            @Get(value = "/users/1?name=Test User", headers = "locale=UA") UserDto user
+            @Get(value = "/users/1?name=Test User", headers = "Locale=UA") UserDto user
     ) {
         assertAsJson(user).isEqualTo("/mockmvc/user.json");
     }
 
     @Test
     void should_get_as_string(
-            @Get(value = "/users/1?name=Test User", headers = "locale=UA") String userString
+            @Get(value = "/users/1?name=Test User", headers = "Locale=UA") String userString
     ) {
         assertThat(userString)
                 .isEqualTo("{\"id\":1,\"name\":\"Test User UA\"}");
@@ -76,7 +83,7 @@ class UserControllerTest {
 
     @Test
     void should_get_as_bytes(
-            @Get(value = "/users/1?name=Test User", headers = "locale=UA") byte[] userBytes
+            @Get(value = "/users/1?name=Test User", headers = "Locale=UA") byte[] userBytes
     ) {
         assertThat(userBytes)
                 .isEqualTo("{\"id\":1,\"name\":\"Test User UA\"}".getBytes(UTF_8));
@@ -112,7 +119,7 @@ class UserControllerTest {
     }
 
     @Test
-    void should_get_all_users(
+    void should_get_user_slice(
             @Get("/users/slice") Slice<UserDto> users
     ) {
         assertAsJson(users).isEqualTo("/mockmvc/users_slice.json");
@@ -214,13 +221,13 @@ class UserControllerTest {
         assertAsJson(user).isEqualTo("/mockmvc/updated_user.json");
     }
 
-    public static class LocaleInterceptor implements RequestInterceptor<UserDto> {
+    public static class LocaleInterceptor implements RequestInterceptor {
 
         @Override
-        public Request<UserDto> apply(Request<UserDto> request) {
+        public Request<?> apply(Request<?> request) {
             final Request<UserDto> user = request.client().get("/users/1", UserDto.class);
             assertThat(user).isNotNull();
-            return request.header("locale", "UA");
+            return request.header("Locale", "UA");
         }
 
     }

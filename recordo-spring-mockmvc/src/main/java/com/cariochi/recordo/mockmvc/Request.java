@@ -1,17 +1,22 @@
 package com.cariochi.recordo.mockmvc;
 
-import lombok.*;
-import lombok.experimental.Accessors;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.Value;
+import lombok.experimental.Accessors;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import static java.util.Arrays.asList;
 import static lombok.AccessLevel.NONE;
@@ -40,7 +45,6 @@ public class Request<RESP> {
 
     private Object body;
 
-    @Setter(NONE)
     private List<File> files = new ArrayList<>();
 
     private HttpStatus expectedStatus;
@@ -62,6 +66,11 @@ public class Request<RESP> {
 
     public Request<RESP> uriVars(Object pathVar, Object... pathVars) {
         uriVars = addFirst(pathVars, pathVar);
+        return this;
+    }
+
+    public Request<RESP> uriVars(Object[] pathVars) {
+        uriVars = pathVars;
         return this;
     }
 

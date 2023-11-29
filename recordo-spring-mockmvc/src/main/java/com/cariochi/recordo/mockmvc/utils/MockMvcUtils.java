@@ -2,24 +2,23 @@ package com.cariochi.recordo.mockmvc.utils;
 
 import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.core.utils.Beans;
-import com.cariochi.recordo.core.utils.Beans.OptionalBean;
 import com.cariochi.recordo.core.utils.ObjectReader;
 import com.cariochi.recordo.mockmvc.Content;
 import com.cariochi.recordo.mockmvc.RecordoMockMvc;
 import com.cariochi.recordo.mockmvc.Request;
+import com.cariochi.recordo.mockmvc.RequestInterceptor;
 import com.cariochi.recordo.mockmvc.Response;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterContext;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static java.lang.String.format;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.apache.commons.lang3.StringUtils.substringBefore;
@@ -45,40 +44,61 @@ public class MockMvcUtils {
                 .orElse(null);
     }
 
-    public static RecordoMockMvc getMockMvcClient(ExtensionContext context, JsonConverter jsonConverter) {
-        final OptionalBean<MockMvc> optionalBean = Beans.of(context).findByType(MockMvc.class);
-        final MockMvc mockMvc = optionalBean
-                .map(MockMvc.class::cast)
-                .value()
-                .orElseThrow(() -> new IllegalArgumentException(
-                        optionalBean.availableBeanNames().isEmpty() ? "No MockMvc beans found" : format("Multiple MockMvc beans found: %s", optionalBean.availableBeanNames())
-                ));
-        return new RecordoMockMvc(mockMvc, jsonConverter);
+    public static RecordoMockMvc createRecordoMockMvc(ExtensionContext context, JsonConverter jsonConverter) {
+        final Collection<RequestInterceptor> requestInterceptors = Beans.of(context).findAll(RequestInterceptor.class).values();
+        return createRecordoMockMvc(context, jsonConverter, requestInterceptors);
     }
 
-    public static Type getResponseType(ParameterContext parameter) {
-        final Class<?> parameterClass = parameter.getParameter().getType();
-        final Type parameterType = parameter.getParameter().getParameterizedType();
-        if (isRequestType(parameterClass)) {
-            return ((ParameterizedType) parameterType).getActualTypeArguments()[0];
-        } else if (isResponseType(parameterClass)) {
-            return ((ParameterizedType) parameterType).getActualTypeArguments()[0];
+    public static RecordoMockMvc createRecordoMockMvc(ExtensionContext context, JsonConverter jsonConverter, Collection<RequestInterceptor> requestInterceptors) {
+        final Optional<MockMvc> optionalBean = Beans.of(context).findByType(MockMvc.class);
+        final MockMvc mockMvc = optionalBean
+                .map(MockMvc.class::cast)
+                .orElseThrow(() -> new IllegalArgumentException("Can't find single instance of MockMvc"));
+        return new RecordoMockMvc(mockMvc, jsonConverter, requestInterceptors);
+    }
+
+    public static Type getResponseType(Type type) {
+        if (isRequestType(type)) {
+            return ((ParameterizedType) type).getActualTypeArguments()[0];
+        } else if (isResponseType(type)) {
+            return ((ParameterizedType) type).getActualTypeArguments()[0];
         } else {
-            return parameterType;
+            return type;
         }
     }
 
-    public static boolean isRequestType(Class<?> type) {
-        return Request.class.isAssignableFrom(type);
+    public static Object getResponse(Request<Object> request, Type responseType) {
+        if (isRequestType(responseType)) {
+            return request;
+        } else if (isResponseType(responseType)) {
+            return request.perform();
+        } else {
+            return request.perform().getBody();
+        }
     }
 
-    public static boolean isResponseType(Class<?> type) {
-        return Response.class.isAssignableFrom(type);
+    public static boolean isRequestType(Type type) {
+        return Request.class.isAssignableFrom(getClassFromType(type));
+    }
+
+    public static boolean isResponseType(Type type) {
+        return Response.class.isAssignableFrom(getClassFromType(type));
     }
 
     private static String getBodyFromFile(String bodyFile, JsonConverter jsonConverter) {
         final ObjectReader objectReader = new ObjectReader(jsonConverter);
         return (String) objectReader.read(bodyFile, String.class);
+    }
+
+    private static Class<?> getClassFromType(Type type) {
+        if (type instanceof Class) {
+            return (Class<?>) type;
+        } else if (type instanceof ParameterizedType) {
+            return getClassFromType(((ParameterizedType) type).getRawType());
+        } else {
+            // Handle other types if needed
+            throw new IllegalArgumentException("Type is not a Class");
+        }
     }
 
 }
