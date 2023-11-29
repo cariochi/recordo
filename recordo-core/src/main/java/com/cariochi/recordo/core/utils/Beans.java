@@ -54,7 +54,6 @@ public class Beans {
 
     private <T> Optional<T> singleBean(Map<String, T> beans) {
         if (beans.isEmpty()) {
-            log.warn("No beans available");
             return Optional.empty();
         } else if (beans.size() == 1) {
             return Optional.of(beans.values().iterator().next());
