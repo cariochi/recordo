@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static java.util.Collections.emptySet;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
@@ -40,10 +42,18 @@ public class RecordoMockMvc {
 
     private final MockMvc mockMvc;
     private final JsonConverter jsonConverter;
+    private final Collection<RequestInterceptor> requestInterceptors;
 
     public RecordoMockMvc(MockMvc mockMvc, ObjectMapper objectMapper) {
         this.mockMvc = mockMvc;
         this.jsonConverter = new JsonConverter(objectMapper);
+        this.requestInterceptors = emptySet();
+    }
+
+    public RecordoMockMvc(MockMvc mockMvc, ObjectMapper objectMapper, Collection<RequestInterceptor> requestInterceptors) {
+        this.mockMvc = mockMvc;
+        this.jsonConverter = new JsonConverter(objectMapper);
+        this.requestInterceptors = requestInterceptors;
     }
 
     // Request
@@ -137,6 +147,10 @@ public class RecordoMockMvc {
 
     @SneakyThrows
     public <RESP> Response<RESP> perform(Request<RESP> request) {
+
+        for (RequestInterceptor interceptor : requestInterceptors) {
+            request = (Request<RESP>) interceptor.apply(request);
+        }
 
         MockHttpServletRequestBuilder requestBuilder;
 

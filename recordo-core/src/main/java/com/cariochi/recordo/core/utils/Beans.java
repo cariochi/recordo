@@ -2,132 +2,83 @@ package com.cariochi.recordo.core.utils;
 
 import com.cariochi.recordo.core.EnableRecordo;
 import com.cariochi.reflecto.fields.JavaField;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.GenericApplicationContext;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.springframework.test.context.junit.jupiter.SpringExtension.getApplicationContext;
 
+@Slf4j
 @RequiredArgsConstructor(staticName = "of")
 @Accessors(fluent = true)
 public class Beans {
 
     private final ExtensionContext context;
 
-    @Getter
-    private final AnnotatedBeans annotatedBeans = new AnnotatedBeans();
-
-    @Getter
-    private final SpringBeans springBeans = new SpringBeans();
-
-    public <T> OptionalBean<T> find(String name, Class<T> beanClass) {
-        return annotatedBeans().find(name, beanClass)
-                .or(() -> springBeans().find(name, beanClass));
+    public <T> Optional<T> find(String name, Class<T> beanClass) {
+        return find(name, annotatedFields(beanClass))
+                .or(() -> find(name, springBeans(beanClass)));
     }
 
-    public <T> OptionalBean<T> findByType(Class<T> beanClass) {
-        return annotatedBeans().findByType(beanClass)
-                .or(() -> springBeans().findByType(beanClass));
+    public <T> Optional<T> findByType(Class<T> beanClass) {
+        return singleBean(annotatedFields(beanClass))
+                .or(() -> singleBean(springBeans(beanClass)));
     }
 
-    @RequiredArgsConstructor
-    private abstract static class AbstractBeans {
-
-        public <T> OptionalBean<T> findByType(Class<T> beanClass) {
-            final Map<String, T> beans = getBeans(beanClass);
-            return beans.size() == 1
-                    ? beans.entrySet().stream().map(e -> new OptionalBean<>(e.getKey(), e.getValue(), beans.keySet())).findFirst().orElseThrow()
-                    : OptionalBean.empty();
-        }
-
-        public <T> OptionalBean<T> find(String name, Class<T> beanClass) {
-
-            if (isEmpty(name)) {
-                return findByType(beanClass);
-            }
-
-            final Map<String, T> beans = getBeans(beanClass);
-            return new OptionalBean<>(name, beans.get(name), beans.keySet());
-        }
-
-        protected abstract <T> Map<String, T> getBeans(Class<T> beanClass);
-
+    public <T> Map<String, T> findAll(Class<T> beanClass) {
+        final Map<String, T> map = new HashMap<>();
+        map.putAll(springBeans(beanClass));
+        map.putAll(annotatedFields(beanClass));
+        return map;
     }
 
-    public class AnnotatedBeans extends AbstractBeans {
-
-        @Override
-        protected <T> Map<String, T> getBeans(Class<T> beanClass) {
-            return reflect(context.getRequiredTestInstance()).fields().includeEnclosing()
-                    .withTypeAndAnnotation(beanClass, EnableRecordo.class).stream()
-                    .collect(toMap(JavaField::getName, JavaField::getValue));
+    private <T> Optional<T> find(String name, Map<String, T> beans) {
+        if (isEmpty(name)) {
+            return singleBean(beans);
         }
-
+        final T value = beans.get(name);
+        if (value == null) {
+            log.warn("No bean named '{}' available. Available beans: {}", name, beans.keySet());
+        }
+        return Optional.ofNullable(value);
     }
 
-    public class SpringBeans extends AbstractBeans {
-
-        @Override
-        protected <T> Map<String, T> getBeans(Class<T> beanClass) {
-            try {
-                return getApplicationContext(context).getBeansOfType(beanClass);
-            } catch (Exception | NoClassDefFoundError e) {
-                return emptyMap();
-            }
+    private <T> Optional<T> singleBean(Map<String, T> beans) {
+        if (beans.isEmpty()) {
+            log.warn("No beans available");
+            return Optional.empty();
+        } else if (beans.size() == 1) {
+            return Optional.of(beans.values().iterator().next());
+        } else {
+            log.warn("Multiple beans found: {}", beans.keySet());
+            return Optional.empty();
         }
-
-        public <T> void register(String beanName, Class<T> beanClass, Object... constructorArgs) {
-            try {
-                final ApplicationContext applicationContext = getApplicationContext(context);
-                ((GenericApplicationContext) applicationContext).registerBean(beanName, beanClass, constructorArgs);
-            } catch (NoClassDefFoundError e) {
-                //
-            }
-        }
-
     }
 
-    @Value
-    @RequiredArgsConstructor
-    public static class OptionalBean<T> {
+    private <T> Map<String, T> annotatedFields(Class<T> beanClass) {
+        return context.getTestInstance()
+                .map(instance -> reflect(instance).fields().includeEnclosing()
+                        .withTypeAndAnnotation(beanClass, EnableRecordo.class).stream()
+                        .collect(toMap(JavaField::getName, f -> (T) f.getValue()))
+                )
+                .orElseGet(Collections::emptyMap);
+    }
 
-        @Getter
-        String name;
-
-        T value;
-
-        Set<String> availableBeanNames;
-
-        public static <V> OptionalBean<V> empty() {
-            return new OptionalBean<>(null, null, emptySet());
+    private <T> Map<String, T> springBeans(Class<T> beanClass) {
+        try {
+            return getApplicationContext(context).getBeansOfType(beanClass);
+        } catch (Exception | NoClassDefFoundError e) {
+            return emptyMap();
         }
-
-        public <V> OptionalBean<V> map(Function<T, V> mapper) {
-            return new OptionalBean<>(name, value == null ? null : mapper.apply(value), availableBeanNames);
-        }
-
-        public OptionalBean<T> or(Supplier<OptionalBean<T>> supplier) {
-            return value != null ? this : supplier.get();
-        }
-
-        public Optional<T> value() {
-            return Optional.ofNullable(value);
-        }
-
     }
 
 }

@@ -73,10 +73,10 @@ public class UserController {
     @GetMapping("/{id}")
     public UserDto getById(@PathVariable int id,
                            @RequestParam(value = "name", required = false) String name,
-                           @RequestHeader(value = "locale", required = false) String locale,
-                           @RequestHeader(value = "authorization", required = false) String token
+                           @RequestHeader(value = "Locale", required = false) String locale,
+                           @RequestHeader(value = "Authorization", required = false) String token
     ) {
-        if (!"Bearer token".equals(token)) {
+        if (!"Bearer TOKEN".equals(token)) {
             throw new HttpClientErrorException(UNAUTHORIZED);
         }
         return UserDto.builder()

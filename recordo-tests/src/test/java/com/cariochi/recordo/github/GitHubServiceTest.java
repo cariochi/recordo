@@ -6,11 +6,10 @@ import com.cariochi.recordo.github.dto.GistDto;
 import com.cariochi.recordo.mockserver.MockServer;
 import com.cariochi.recordo.mockserver.RecordoMockServer;
 import com.cariochi.recordo.mockserver.interceptors.okhttp.OkMockServerInterceptor;
+import java.util.List;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.List;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 
@@ -19,6 +18,7 @@ class GitHubServiceTest {
 
     @EnableRecordo
     private final OkHttpClient client = new OkHttpClient();
+
     private final GitHubService service = new GitHubService(client);
 
     @Test

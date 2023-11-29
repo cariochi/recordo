@@ -1,50 +1,28 @@
 package com.cariochi.recordo.mockmvc.extensions;
 
 import com.cariochi.recordo.core.Extension;
-import com.cariochi.recordo.core.utils.Beans;
 import com.cariochi.recordo.mockmvc.Request;
 import com.cariochi.recordo.mockmvc.RequestInterceptor;
-import java.util.Optional;
+import com.cariochi.recordo.mockmvc.utils.MockMvcUtils;
+import java.lang.reflect.Type;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolver;
-
-import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.isRequestType;
-import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.isResponseType;
 
 public abstract class AbstractMockMvcExtension implements Extension, ParameterResolver {
 
-    protected Object processRequest(Request<Object> request,
-                                    Class<? extends RequestInterceptor>[] interceptors,
-                                    ParameterContext parameter,
-                                    ExtensionContext context) {
-        final Optional<RequestInterceptor> bean = Beans.of(context).findByType(RequestInterceptor.class).value();
-        if (bean.isPresent()) {
-            request = (Request<Object>) bean.get().apply(request);
+    protected Object processRequest(Request<Object> request, Type responseType, Class<? extends RequestInterceptor>[] interceptors) {
+
+        for (Class<? extends RequestInterceptor> interceptorClass : interceptors) {
+            final RequestInterceptor interceptor = createRequestInterceptor(interceptorClass);
+            request = (Request<Object>) interceptor.apply(request);
         }
-        request = intercept(interceptors, request);
-        return executeRequest(request, parameter);
+
+        return MockMvcUtils.getResponse(request, responseType);
     }
 
     @SneakyThrows
-    private Request<Object> intercept(Class<? extends RequestInterceptor>[] interceptors, Request<Object> request) {
-        for (Class<? extends RequestInterceptor> type : interceptors) {
-            final RequestInterceptor interceptor = type.getConstructor().newInstance();
-            request = (Request<Object>) interceptor.apply(request);
-        }
-        return request;
-    }
-
-    private Object executeRequest(Request<Object> request, ParameterContext parameter) {
-        final Class<?> parameterClass = parameter.getParameter().getType();
-        if (isRequestType(parameterClass)) {
-            return request;
-        } else if (isResponseType(parameterClass)) {
-            return request.perform();
-        } else {
-            return request.perform().getBody();
-        }
+    private RequestInterceptor createRequestInterceptor(Class<? extends RequestInterceptor> interceptorClass) {
+        return interceptorClass.getConstructor().newInstance();
     }
 
 }
