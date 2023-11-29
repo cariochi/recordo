@@ -50,8 +50,7 @@ public class MockMvcUtils {
     }
 
     public static RecordoMockMvc createRecordoMockMvc(ExtensionContext context, JsonConverter jsonConverter, Collection<RequestInterceptor> requestInterceptors) {
-        final Optional<MockMvc> optionalBean = Beans.of(context).findByType(MockMvc.class);
-        final MockMvc mockMvc = optionalBean
+        final MockMvc mockMvc = Beans.of(context).findByType(MockMvc.class)
                 .map(MockMvc.class::cast)
                 .orElseThrow(() -> new IllegalArgumentException("Can't find single instance of MockMvc"));
         return new RecordoMockMvc(mockMvc, jsonConverter, requestInterceptors);
