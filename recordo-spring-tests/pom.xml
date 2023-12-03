@@ -15,8 +15,8 @@
     <name>Recordo Spring Tests</name>
 
     <properties>
-        <spring.boot.version>2.7.12</spring.boot.version>
-        <spring-cloud.version>2021.0.7</spring-cloud.version>
+        <spring.boot.version>2.7.17</spring.boot.version>
+        <spring-cloud.version>2021.0.8</spring-cloud.version>
     </properties>
 
     <dependencies>

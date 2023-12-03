@@ -4,6 +4,7 @@ import com.cariochi.recordo.mockmvc.Request.File;
 import com.cariochi.recordo.mockmvc.dto.ErrorDto;
 import com.cariochi.recordo.mockmvc.dto.UserDto;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -101,6 +102,7 @@ public interface UserClient {
     }
 
     @Data
+    @EqualsAndHashCode(callSuper = true)
     @SuperBuilder
     class TestBodyDto extends TestBodyParentDto {
 
