@@ -2,6 +2,9 @@ package com.cariochi.recordo.mockmvc;
 
 import com.cariochi.recordo.config.ObjectMapperConfig;
 import com.cariochi.recordo.core.RecordoExtension;
+import com.cariochi.recordo.mockmvc.Request.File;
+import com.cariochi.recordo.mockmvc.UserClient.TestBodyDto;
+import com.cariochi.recordo.mockmvc.dto.ErrorDto;
 import com.cariochi.recordo.mockmvc.dto.UserDto;
 import com.cariochi.recordo.read.Read;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +50,9 @@ class UserControllerClientTest {
         assertAsJson(userClient.getById(1, "Test User"))
                 .isEqualTo("/mockmvc/user.json");
 
+        assertAsJson(userClient.getById_withParams(1))
+                .isEqualTo("/mockmvc/user.json");
+
         assertAsJson(userClient.getById_withHeader(1, "Test User", "UA"))
                 .isEqualTo("/mockmvc/user.json");
 
@@ -61,6 +67,13 @@ class UserControllerClientTest {
 
         assertThat(userClient.getById_asBytes(1, "Test User"))
                 .isEqualTo("{\"id\":1,\"name\":\"Test User UA\"}".getBytes());
+    }
+
+    @Test
+    void should_get_unauthorized() {
+        final ErrorDto error = userClient.getById_withErrors(1, "Test User", "Bearer Fake TOKEN");
+        assertThat(error.getMessage())
+                .isEqualTo("401 UNAUTHORIZED");
     }
 
     @Test
@@ -106,8 +119,27 @@ class UserControllerClientTest {
     @Test
     void should_upload_files_with_param() {
         final MultipartFile file1 = new MockMultipartFile("file1", "Upload File 1".getBytes());
-        final MultipartFile file2 = new MockMultipartFile("file2", "Upload File 2".getBytes());
+        final File file2 = File.builder().name("file2").content("Upload File 2".getBytes()).build();
         final String content = userClient.upload(1, file1, file2, "File content");
+        assertThat(content).isEqualTo("File content: Upload File 1");
+    }
+
+    @Test
+    void should_upload_with_body_dto() {
+        final TestBodyDto bodyDto = TestBodyDto.builder()
+                .file1(new MockMultipartFile("file1", "Upload File 1".getBytes()))
+                .file2(File.builder().name("file2").content("Upload File 2".getBytes()).build())
+                .prefix("File content")
+                .build();
+        final String content = userClient.upload_withObjectDto(1, bodyDto);
+        assertThat(content).isEqualTo("File content: Upload File 1");
+    }
+
+    @Test
+    void should_upload_files_with_param_and_put_method() {
+        final MultipartFile file1 = new MockMultipartFile("file1", "Upload File 1".getBytes());
+        final File file2 = File.builder().name("file2").content("Upload File 2".getBytes()).build();
+        final String content = userClient.uploadPut(1, file1, file2, "File content");
         assertThat(content).isEqualTo("File content: Upload File 1");
     }
 
