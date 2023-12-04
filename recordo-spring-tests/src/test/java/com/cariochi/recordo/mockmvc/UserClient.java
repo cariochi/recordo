@@ -98,6 +98,7 @@ public interface UserClient {
 
         private MultipartFile file1;
         private String prefix;
+        private String nullable;
 
     }
 

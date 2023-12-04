@@ -197,6 +197,9 @@ public class RecordoClientProxyFactory {
             final Object dto = arg.getValue();
             final List<JavaField> fields = Reflecto.reflect(dto).fields().all();
             for (JavaField field : fields) {
+                if (field.getValue() == null) {
+                    continue;
+                }
                 if (File.class.isAssignableFrom(field.getType()) || MultipartFile.class.isAssignableFrom(field.getType())) {
                     continue;
                 }
@@ -240,6 +243,9 @@ public class RecordoClientProxyFactory {
             final Object dto = arg.getValue();
             final List<JavaField> fields = Reflecto.reflect(dto).fields().all();
             for (JavaField field : fields) {
+                if (field.getValue() == null) {
+                    continue;
+                }
                 if (File.class.isAssignableFrom(field.getType())) {
                     files.add(field.getValue());
                 } else if (MultipartFile.class.isAssignableFrom(field.getType())) {
