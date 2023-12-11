@@ -1,6 +1,11 @@
 package com.cariochi.recordo.mockmvc;
 
+import com.cariochi.recordo.mockmvc.Request.File;
+import com.cariochi.recordo.mockmvc.dto.ErrorDto;
 import com.cariochi.recordo.mockmvc.dto.UserDto;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -14,7 +19,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
+
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RecordoClient(interceptors = {LocaleInterceptor.class, AuthInterceptor.class})
 @RequestMapping("/users")
@@ -38,6 +47,13 @@ public interface UserClient {
     @GetMapping("/{id}")
     byte[] getById_asBytes(@PathVariable int id, @RequestParam("name") String name);
 
+    @GetMapping(value = "/{id}", params = "name=Test User", produces = APPLICATION_JSON_VALUE)
+    UserDto getById_withParams(@PathVariable int id);
+
+    @GetMapping("/{id}")
+    @ResponseStatus(UNAUTHORIZED)
+    ErrorDto getById_withErrors(@PathVariable int id, @RequestParam("name") String name, @RequestHeader("Authorization") String auth);
+
     @GetMapping
     Page<UserDto> findAll();
 
@@ -47,11 +63,17 @@ public interface UserClient {
     @GetMapping
     Page<UserDto> findAll(@RequestParam("count") int count, Pageable pageable);
 
-    @PostMapping
+    @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     UserDto create(@RequestBody UserDto userDto);
 
     @PostMapping("/{id}/upload")
-    String upload(@PathVariable int id, @RequestParam MultipartFile file1, @RequestParam MultipartFile file2, @RequestParam("prefix") String prefix);
+    String upload(@PathVariable int id, @RequestParam MultipartFile file1, @RequestParam File file2, @RequestParam("prefix") String prefix);
+
+    @PostMapping("/{id}/upload")
+    String upload_withObjectDto(@PathVariable int id, TestBodyDto bodyDto);
+
+    @PutMapping("/{id}/upload")
+    String uploadPut(@PathVariable int id, @RequestParam MultipartFile file1, @RequestParam File file2, @RequestParam("prefix") String prefix);
 
     @PutMapping
     UserDto update(@RequestBody UserDto userDto);
@@ -68,5 +90,25 @@ public interface UserClient {
 
     @DeleteMapping("/{id}")
     void delete(@PathVariable int id);
+
+
+    @Data
+    @SuperBuilder
+    class TestBodyParentDto {
+
+        private MultipartFile file1;
+        private String prefix;
+        private String nullable;
+
+    }
+
+    @Data
+    @EqualsAndHashCode(callSuper = true)
+    @SuperBuilder
+    class TestBodyDto extends TestBodyParentDto {
+
+        private File file2;
+
+    }
 
 }
