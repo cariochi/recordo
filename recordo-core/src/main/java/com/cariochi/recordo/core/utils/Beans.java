@@ -2,9 +2,10 @@ package com.cariochi.recordo.core.utils;
 
 import com.cariochi.recordo.core.EnableRecordo;
 import com.cariochi.reflecto.fields.JavaField;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
@@ -47,7 +48,7 @@ public class Beans {
         }
         final T value = beans.get(name);
         if (value == null) {
-            log.warn("No {} bean named '{}' available. Available beans: {}", beanClass.getName(), name, beans.keySet());
+            log.warn("No {} bean named '{}' available. Available beans: {}", beanClass.getSimpleName(), name, beans.keySet());
         }
         return Optional.ofNullable(value);
     }
@@ -55,11 +56,12 @@ public class Beans {
     private <T> Optional<T> singleBean(Map<String, T> beans, Class<T> beanClass) {
         if (beans.isEmpty()) {
             return Optional.empty();
-        } else if (beans.size() == 1) {
-            return Optional.of(beans.values().iterator().next());
         } else {
-            log.warn("Multiple {} beans found: {}", beanClass.getName(), beans.keySet());
-            return Optional.empty();
+            final Entry<String, T> e = beans.entrySet().iterator().next();
+            if (beans.size() != 1) {
+                log.warn("Multiple {} beans found: {}, '{}' will be used", beanClass.getSimpleName(), beans.keySet(), e.getKey());
+            }
+            return Optional.of(e.getValue());
         }
     }
 
@@ -67,9 +69,14 @@ public class Beans {
         return context.getTestInstance()
                 .map(instance -> reflect(instance).fields().includeEnclosing()
                         .withTypeAndAnnotation(beanClass, EnableRecordo.class).stream()
-                        .collect(toMap(JavaField::getName, f -> (T) f.getValue()))
+                        .collect(toMap(
+                                JavaField::getName,
+                                f -> (T) f.getValue(),
+                                (a, b) -> a,
+                                LinkedHashMap::new
+                        ))
                 )
-                .orElseGet(Collections::emptyMap);
+                .orElseGet(LinkedHashMap::new);
     }
 
     private <T> Map<String, T> springBeans(Class<T> beanClass) {

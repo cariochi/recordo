@@ -25,17 +25,19 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RequiredArgsConstructor
 public class RecordoMockMvc {
@@ -157,18 +159,37 @@ public class RecordoMockMvc {
         if (request.files().isEmpty()) {
             requestBuilder = MockMvcRequestBuilders.request(request.method(), request.path(), request.uriVars());
         } else {
-            final MockMultipartHttpServletRequestBuilder multipart = MockMvcRequestBuilders.multipart(request.path(), request.uriVars());
+            MockMultipartHttpServletRequestBuilder multipart = MockMvcRequestBuilders.multipart(request.path(), request.uriVars());
             request.files().stream()
                     .map(file -> new MockMultipartFile(file.name(), file.originalFilename(), file.contentType(), file.content()))
                     .forEach(multipart::file);
+
+            final HttpMethod method = request.method();
+            if (!POST.equals(method)) {
+                multipart.with(r -> {
+                    r.setMethod(method.name());
+                    return r;
+                });
+            }
+
             requestBuilder = multipart;
         }
 
         requestBuilder.params(request.params());
 
-        if (request.body() != null) {
-            requestBuilder.contentType(APPLICATION_JSON);
-            requestBuilder.content(jsonConverter.toJson(request.body()));
+        final Object body = request.body();
+        if (body != null) {
+            String contentType = request.headers().getOrDefault(CONTENT_TYPE, APPLICATION_JSON_VALUE);
+            requestBuilder.contentType(contentType);
+            if (body instanceof String) {
+                requestBuilder.content((String) body);
+            } else if (body instanceof byte[]) {
+                requestBuilder.content((byte[]) body);
+            } else if (contentType.startsWith(APPLICATION_JSON_VALUE)) {
+                requestBuilder.content(jsonConverter.toJson(body));
+            } else {
+                throw new IllegalArgumentException(format("Content Type %s not supported", contentType));
+            }
         }
 
         request.headers().forEach(requestBuilder::header);
