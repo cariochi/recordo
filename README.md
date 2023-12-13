@@ -16,5 +16,3 @@ It consists of 4 modules, each serving a specific purpose in the testing lifecyc
 # Documentation
 The recently published documentation available at [cariochi.com/recordo](https://www.cariochi.com/recordo).
 
-# License
-**Recordo** extensions are licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) License. 
