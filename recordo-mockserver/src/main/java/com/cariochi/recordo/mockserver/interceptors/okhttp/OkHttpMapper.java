@@ -1,16 +1,19 @@
 package com.cariochi.recordo.mockserver.interceptors.okhttp;
 
-import com.cariochi.recordo.core.RecordoError;
 import com.cariochi.recordo.mockserver.model.MockRequest;
 import com.cariochi.recordo.mockserver.model.MockResponse;
-import okhttp3.*;
-import okio.Buffer;
-import okio.BufferedSource;
-import okio.GzipSource;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
+import lombok.SneakyThrows;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.Protocol;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okio.Buffer;
+import okio.BufferedSource;
+import okio.GzipSource;
 
 import static java.lang.String.join;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -58,35 +61,29 @@ public class OkHttpMapper {
                 .build();
     }
 
+    @SneakyThrows
     private String bodyOf(okhttp3.Request request) {
-        try {
-            String requestContent = null;
-            if (request.body() != null) {
-                final Buffer buffer = new Buffer();
-                request.body().writeTo(buffer);
-                requestContent = buffer.readByteString().string(UTF_8);
-            }
-            return isEmpty(requestContent) ? null : requestContent;
-        } catch (IOException e) {
-            throw new RecordoError(e);
+        String requestContent = null;
+        if (request.body() != null) {
+            final Buffer buffer = new Buffer();
+            request.body().writeTo(buffer);
+            requestContent = buffer.readByteString().string(UTF_8);
         }
+        return isEmpty(requestContent) ? null : requestContent;
     }
 
+    @SneakyThrows
     private String bodyOf(Response response) {
-        try {
-            String responseContent = null;
-            final ResponseBody body = response.body();
-            if (body != null) {
-                BufferedSource source = buffer(body.source());
-                if ("gzip".equals(response.header("Content-Encoding"))) {
-                    source = buffer(new GzipSource(source));
-                }
-                responseContent = source.readUtf8();
+        String responseContent = null;
+        final ResponseBody body = response.body();
+        if (body != null) {
+            BufferedSource source = buffer(body.source());
+            if ("gzip".equals(response.header("Content-Encoding"))) {
+                source = buffer(new GzipSource(source));
             }
-            return isEmpty(responseContent) ? null : responseContent;
-        } catch (IOException e) {
-            throw new RecordoError(e);
+            responseContent = source.readUtf8();
         }
+        return isEmpty(responseContent) ? null : responseContent;
     }
 
     private Map<String, String> headersOf(Headers headers) {

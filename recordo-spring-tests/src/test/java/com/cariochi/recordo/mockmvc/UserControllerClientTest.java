@@ -3,10 +3,9 @@ package com.cariochi.recordo.mockmvc;
 import com.cariochi.recordo.config.ObjectMapperConfig;
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.mockmvc.Request.File;
-import com.cariochi.recordo.mockmvc.UserClient.TestBodyDto;
+import com.cariochi.recordo.mockmvc.UserApiClient.TestBodyDto;
 import com.cariochi.recordo.mockmvc.dto.ErrorDto;
 import com.cariochi.recordo.mockmvc.dto.UserDto;
-import com.cariochi.recordo.read.Read;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +31,10 @@ import static org.springframework.data.domain.Sort.Order.desc;
 class UserControllerClientTest {
 
     @Autowired
-    private UserClient userClient;
+    private UserApiClient apiClient;
+
+    @Autowired
+    private UserObjectFactory objectFactory;
 
     @TestConfiguration
     public static class TestConfig {
@@ -45,33 +47,45 @@ class UserControllerClientTest {
     }
 
     @Test
+    void test_object_methods() {
+        assertThat(apiClient.hashCode()).isNotZero();
+        assertThat(apiClient.toString()).startsWith("com.cariochi.recordo.core.proxy.ProxyFactory$ProxyInvocationHandler");
+        assertThat(apiClient.equals(apiClient)).isTrue();
+    }
+
+    @Test
     void should_get_user_by_id_with_mock_mvc() {
 
-        assertAsJson(userClient.getById(1, "Test User"))
+        assertAsJson(apiClient.getById(1, "Test User"))
                 .isEqualTo("/mockmvc/user.json");
 
-        assertAsJson(userClient.getById_withParams(1))
+        assertAsJson(apiClient.getById_withParams(1))
                 .isEqualTo("/mockmvc/user.json");
 
-        assertAsJson(userClient.getById_withHeader(1, "Test User", "UA"))
+        assertAsJson(apiClient.getById_withHeader(1, "Test User", "UA"))
                 .isEqualTo("/mockmvc/user.json");
 
-        assertAsJson(userClient.getById_asRequest(1, "Test User").perform().getBody())
+        assertAsJson(apiClient.getById_asRequest(1, "Test User").perform().getBody())
                 .isEqualTo("/mockmvc/user.json");
 
-        assertAsJson(userClient.getById_asResponse(1, "Test User").getBody())
+        assertAsJson(apiClient.getById_asResponse(1, "Test User").getBody())
                 .isEqualTo("/mockmvc/user.json");
 
-        assertThat(userClient.getById_asString(1, "Test User"))
+        assertThat(apiClient.getById_asString(1, "Test User"))
                 .isEqualTo("{\"id\":1,\"name\":\"Test User UA\"}");
 
-        assertThat(userClient.getById_asBytes(1, "Test User"))
+        assertThat(apiClient.getById_asBytes(1, "Test User"))
                 .isEqualTo("{\"id\":1,\"name\":\"Test User UA\"}".getBytes());
     }
 
     @Test
+    void should_load_users() {
+      assertThat(objectFactory.users()).hasSize(2);
+    }
+
+    @Test
     void should_get_unauthorized() {
-        final ErrorDto error = userClient.getById_withErrors(1, "Test User", "Bearer Fake TOKEN");
+        final ErrorDto error = apiClient.getById_withErrors(1, "Test User", "Bearer Fake TOKEN");
         assertThat(error.getMessage())
                 .isEqualTo("401 UNAUTHORIZED");
     }
@@ -79,13 +93,13 @@ class UserControllerClientTest {
     @Test
     void should_get_all_users() {
 
-        assertAsJson(userClient.findAll())
+        assertAsJson(apiClient.findAll())
                 .isEqualTo("/mockmvc/users_page.json");
 
-        assertAsJson(userClient.findAll(2))
+        assertAsJson(apiClient.findAll(2))
                 .isEqualTo("/mockmvc/users_page.json");
 
-        final Page<UserDto> page = userClient.findAll(2, PageRequest.of(5, 50, Sort.by(asc("name"), desc("age"))));
+        final Page<UserDto> page = apiClient.findAll(2, PageRequest.of(5, 50, Sort.by(asc("name"), desc("age"))));
         assertThat(page.getNumber()).isEqualTo(5);
         assertThat(page.getSize()).isEqualTo(50);
 
@@ -94,25 +108,24 @@ class UserControllerClientTest {
     @Test
     void should_get_user_slice() {
 
-        assertAsJson(userClient.getSlice(2))
+        assertAsJson(apiClient.getSlice(2))
                 .isEqualTo("/mockmvc/users_slice.json");
 
-        final Slice<UserDto> slice = userClient.getSlice(2, PageRequest.of(5, 50, Sort.by(asc("name"), desc("age"))));
+        final Slice<UserDto> slice = apiClient.getSlice(2, PageRequest.of(5, 50, Sort.by(asc("name"), desc("age"))));
         assertThat(slice.getNumber()).isEqualTo(5);
         assertThat(slice.getSize()).isEqualTo(50);
     }
 
     @Test
     void should_get_empty_page() {
-        final Page<UserDto> users = userClient.findAll(0);
+        final Page<UserDto> users = apiClient.findAll(0);
         assertThat(users).isEmpty();
     }
 
     @Test
-    void should_create_user(
-            @Read("/mockmvc/new_user.json") UserDto user
-    ) {
-        final UserDto userDto = userClient.create(user);
+    void should_create_user() {
+        final UserDto user = objectFactory.user();
+        final UserDto userDto = apiClient.create(user);
         assertAsJson(userDto).isEqualTo("/mockmvc/created_user.json");
     }
 
@@ -120,7 +133,7 @@ class UserControllerClientTest {
     void should_upload_files_with_param() {
         final MultipartFile file1 = new MockMultipartFile("file1", "Upload File 1".getBytes());
         final File file2 = File.builder().name("file2").content("Upload File 2".getBytes()).build();
-        final String content = userClient.upload(1, file1, file2, "File content");
+        final String content = apiClient.upload(1, file1, file2, "File content");
         assertThat(content).isEqualTo("File content: Upload File 1");
     }
 
@@ -131,7 +144,7 @@ class UserControllerClientTest {
                 .file2(File.builder().name("file2").content("Upload File 2".getBytes()).build())
                 .prefix("File content")
                 .build();
-        final String content = userClient.upload_withObjectDto(1, bodyDto);
+        final String content = apiClient.upload_withObjectDto(1, bodyDto);
         assertThat(content).isEqualTo("File content: Upload File 1");
     }
 
@@ -139,28 +152,26 @@ class UserControllerClientTest {
     void should_upload_files_with_param_and_put_method() {
         final MultipartFile file1 = new MockMultipartFile("file1", "Upload File 1".getBytes());
         final File file2 = File.builder().name("file2").content("Upload File 2".getBytes()).build();
-        final String content = userClient.uploadPut(1, file1, file2, "File content");
+        final String content = apiClient.uploadPut(1, file1, file2, "File content");
         assertThat(content).isEqualTo("File content: Upload File 1");
     }
 
     @Test
     void should_delete_user_by_id() {
-        userClient.delete(1);
+        apiClient.delete(1);
     }
 
     @Test
-    void should_update_user(
-            @Read("/mockmvc/user.json") UserDto user
-    ) {
-        final UserDto updated = userClient.update(user);
+    void should_update_user() {
+        final UserDto user = objectFactory.id(1).user();
+        final UserDto updated = apiClient.update(user);
         assertAsJson(updated).isEqualTo("/mockmvc/updated_user.json");
     }
 
     @Test
-    void should_patch_user(
-            @Read("/mockmvc/user.json") UserDto user
-    ) {
-        final UserDto patched = userClient.patch(1, user);
+    void should_patch_user() {
+        final UserDto user = objectFactory.id(1).user();
+        final UserDto patched = apiClient.patch(1, user);
         assertAsJson(patched).isEqualTo("/mockmvc/updated_user.json");
     }
 

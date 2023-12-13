@@ -9,7 +9,11 @@ import org.springframework.http.HttpStatus;
 
 import static org.springframework.http.HttpStatus.OK;
 
-@Target({ElementType.PARAMETER, ElementType.METHOD})
+/**
+ * Annotation to indicate that a method should perform a GET request.
+ * This annotation can be added to a method parameter.
+ */
+@Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface Get {

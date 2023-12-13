@@ -1,6 +1,6 @@
 package com.cariochi.recordo.read;
 
-import com.cariochi.recordo.core.Extension;
+import com.cariochi.recordo.core.RegularExtension;
 import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.core.utils.ObjectReader;
 import com.cariochi.reflecto.fields.JavaField;
@@ -13,7 +13,7 @@ import static com.cariochi.recordo.core.json.JsonConverters.getJsonConverter;
 import static com.cariochi.reflecto.Reflecto.reflect;
 
 
-public class ReadExtension implements Extension, BeforeEachCallback {
+public class ReadFieldResolver implements RegularExtension, BeforeEachCallback {
 
     @Override
     public void beforeEach(ExtensionContext context) {

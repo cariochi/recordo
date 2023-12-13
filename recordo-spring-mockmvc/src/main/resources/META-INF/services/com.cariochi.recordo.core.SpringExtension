@@ -1,0 +1,9 @@
+com.cariochi.recordo.mockmvc.extensions.PerformParameterResolver
+com.cariochi.recordo.mockmvc.extensions.GetParameterResolver
+com.cariochi.recordo.mockmvc.extensions.PostParameterResolver
+com.cariochi.recordo.mockmvc.extensions.PutParameterResolver
+com.cariochi.recordo.mockmvc.extensions.PatchParameterResolver
+com.cariochi.recordo.mockmvc.extensions.DeleteParameterResolver
+com.cariochi.recordo.mockmvc.extensions.ApiClientFieldResolver
+com.cariochi.recordo.mockmvc.extensions.ApiClientBeanResolver
+com.cariochi.recordo.mockmvc.extensions.RecordoMockMvcBeanResolver

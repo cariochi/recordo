@@ -1,6 +1,6 @@
 package com.cariochi.recordo.mockserver;
 
-import com.cariochi.recordo.core.Extension;
+import com.cariochi.recordo.core.RegularExtension;
 import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.mockserver.interceptors.MockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
@@ -27,7 +27,7 @@ import static java.lang.String.format;
 import static org.junit.platform.commons.util.AnnotationUtils.findAnnotation;
 
 @Slf4j
-public class MockServerExtension implements Extension, BeforeEachCallback, AfterEachCallback {
+public class MockServerAnnotationResolver implements RegularExtension, BeforeEachCallback, AfterEachCallback {
 
     private final Map<String, List<RecordoMockServer>> mockServers = new HashMap<>();
 
