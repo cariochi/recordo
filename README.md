@@ -1,4 +1,4 @@
-# About Recordo
+# About Cariochi Recordo
 **Recordo** is a **JUnit** extension that simplifies common testing tasks, streamlining the process of creating fast, deterministic, and accurate tests. 
 It consists of 4 modules, each serving a specific purpose in the testing lifecycle.
 
@@ -14,7 +14,7 @@ It consists of 4 modules, each serving a specific purpose in the testing lifecyc
 * **Recordo MockServer Module** records real REST interactions during the first test run, which are then used for mocking in subsequent runs.
 
 # Documentation
-The recently published documentation available at [https://cariochi.com/recordo](https://www.cariochi.com/recordo).
+The recently published documentation available at [cariochi.com/recordo](https://www.cariochi.com/recordo).
 
 # License
 **Recordo** extensions are licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) License. 
