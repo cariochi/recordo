@@ -22,7 +22,7 @@ class TestDtoObjectFactoryTest {
         final TestDto dto = objectFactory
                 .text("Hello, world!")
                 .allChildrenStrings("FAKE")
-                .testDtoWithId(33);
+                .testDto(33);
 
         assertThat(dto)
                 .extracting(TestDto::getId, TestDto::getText)

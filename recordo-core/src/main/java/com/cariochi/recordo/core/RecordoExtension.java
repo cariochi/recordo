@@ -32,14 +32,10 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
                 .map(Provider::get)
                 .forEach(handlers::add);
 
-        try {
-            Class.forName("org.springframework.context.ApplicationContext");
+        if (isSpringContextAvailable()) {
             load(SpringExtension.class).stream()
                     .map(Provider::get)
                     .forEach(handlers::add);
-
-        } catch (ClassNotFoundException e) {
-            // do nothing
         }
 
     }
@@ -118,6 +114,15 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
                 .findFirst()
                 .map(r -> r.resolveParameter(parameter, extension))
                 .orElse(null);
+    }
+
+    private boolean isSpringContextAvailable() {
+        try {
+            Class.forName("org.springframework.context.ApplicationContext");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     private Comparator<? super Extension> orderAnnotationComparator() {

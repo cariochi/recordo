@@ -23,7 +23,7 @@ public interface TestDtoObjectFactory {
     List<TestDto> testDtoList();
 
     @Read("/read/dto.json")
-    TestDto testDtoWithId(@Param("id") Integer id);
+    TestDto testDto(@Param("id") Integer id);
 
     TestDtoObjectFactory text(@Param("text") String text);
 
