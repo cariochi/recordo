@@ -9,7 +9,11 @@ import org.springframework.http.HttpStatus;
 
 import static org.springframework.http.HttpStatus.OK;
 
-@Target({ElementType.PARAMETER, ElementType.METHOD})
+/**
+ * Annotation used to describe a PATCH request.
+ * It can be applied to a method parameter to specify the request details.
+ */
+@Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface Patch {

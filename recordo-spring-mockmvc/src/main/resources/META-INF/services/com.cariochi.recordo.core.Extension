@@ -1,7 +1,0 @@
-com.cariochi.recordo.mockmvc.extensions.PerformExtension
-com.cariochi.recordo.mockmvc.extensions.GetExtension
-com.cariochi.recordo.mockmvc.extensions.PostExtension
-com.cariochi.recordo.mockmvc.extensions.PutExtension
-com.cariochi.recordo.mockmvc.extensions.PatchExtension
-com.cariochi.recordo.mockmvc.extensions.DeleteExtension
-com.cariochi.recordo.mockmvc.extensions.SpringContextExtension

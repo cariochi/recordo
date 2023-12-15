@@ -3,17 +3,19 @@ package com.cariochi.recordo.assertions;
 import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.core.json.JsonPropertyFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.JSONCompareResult;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static com.cariochi.recordo.core.json.JsonUtils.compareMode;
 import static java.util.Arrays.asList;
 
+/**
+ * This class provides assertion methods for comparing objects to JSON files.
+ */
 @Slf4j
 @RequiredArgsConstructor(staticName = "assertAsJson")
 public class JsonAssertion<T> {

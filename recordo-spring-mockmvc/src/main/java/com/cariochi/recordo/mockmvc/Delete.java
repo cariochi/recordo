@@ -9,7 +9,11 @@ import org.springframework.http.HttpStatus;
 
 import static org.springframework.http.HttpStatus.OK;
 
-@Target({ElementType.PARAMETER, ElementType.METHOD})
+
+/**
+ * Annotation used to specify the request method and other properties for a Delete operation.
+ */
+@Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface Delete {
@@ -23,4 +27,5 @@ public @interface Delete {
     Class<? extends RequestInterceptor>[] interceptors() default {};
 
     String objectMapper() default "";
+
 }

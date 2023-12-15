@@ -25,9 +25,9 @@ import org.springframework.web.multipart.MultipartFile;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-@RecordoClient(interceptors = {LocaleInterceptor.class, AuthInterceptor.class})
+@RecordoApiClient(interceptors = {LocaleInterceptor.class, AuthInterceptor.class})
 @RequestMapping("/users")
-public interface UserClient {
+public interface UserApiClient {
 
     @GetMapping("/{id}")
     UserDto getById(@PathVariable int id, @RequestParam("name") String name);

@@ -2,19 +2,18 @@ package com.cariochi.recordo.read;
 
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.main.dto.TestDto;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.IntStream;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(RecordoExtension.class)
-class ReadExtensionTest {
+class ReadFieldResolverTest {
 
     private static final Instant DATE = Instant.parse("2020-01-02T00:00:00Z");
 
@@ -27,7 +26,7 @@ class ReadExtensionTest {
     @Test
     void should_create_object_from_factory() {
         TestDto dto = factory.with("children[1].strings[2]", "FAKE").create();
-        assertThat(dto.getChildren().get(1).getStrings().get(2)).isEqualTo("FAKE");
+        assertThat(dto.getChildren().get(1).getStrings()[2]).isEqualTo("FAKE");
     }
 
     @Test

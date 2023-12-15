@@ -1,19 +1,24 @@
 package com.cariochi.recordo;
 
-import com.cariochi.recordo.core.RandomObjectGenerator;
 import com.cariochi.recordo.core.RecordoExtension;
+import com.cariochi.recordo.core.utils.RandomObjectGenerator;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Data;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import java.lang.reflect.Type;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import lombok.Data;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import static com.cariochi.reflecto.types.Types.*;
+import static com.cariochi.reflecto.types.Types.listOf;
+import static com.cariochi.reflecto.types.Types.mapOf;
+import static com.cariochi.reflecto.types.Types.setOf;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 import static org.assertj.core.api.Assertions.assertThat;
 

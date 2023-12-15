@@ -1,29 +1,35 @@
 package com.cariochi.recordo.read;
 
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 /**
- * Loads a resource from json file.
+ * The Read annotation is used to specify that a resource should be loaded from a JSON file.
+ * This annotation can be applied to a method parameter or class field.
  *
- * <ul>
- *     <li>If the file is absent, a new file with empty object will be created.</li>
- * </ul>
+ * <p>
+ * Usage example:
+ * </p>
  *
- *<pre class="code"><code class="java">
+ * <pre class="code">
+ * &#064;Test
+ * void should_create_book(&#064;Read("/books/book.json") Book book) {
+ *     ...
+ * }
+ * </pre>
  *
- *  &#064;Test
- *  void should_create_book(&#064;Read("/books/book.json") Book book) {
- *      ...
- *  }
- *
- *</code></pre>
+ * <p>
+ * If the specified file path does not exist, a new file with a random object will be created.
+ * </p>
  */
-@Target({ElementType.PARAMETER, ElementType.FIELD})
-@Retention(RetentionPolicy.RUNTIME)
+@Target({PARAMETER, FIELD, METHOD})
+@Retention(RUNTIME)
 @Inherited
 public @interface Read {
 

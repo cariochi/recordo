@@ -1,10 +1,19 @@
 package com.cariochi.recordo.mockserver.interceptors.apache;
 
-import com.cariochi.recordo.core.utils.Exceptions;
 import com.cariochi.recordo.mockserver.model.MockRequest;
 import com.cariochi.recordo.mockserver.model.MockResponse;
+import java.io.ByteArrayInputStream;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.*;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.ProtocolVersion;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpRequestWrapper;
 import org.apache.http.entity.BasicHttpEntity;
@@ -12,13 +21,10 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.util.EntityUtils;
 
-import java.io.ByteArrayInputStream;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.mapping;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.apache.commons.lang3.StringUtils.substringBefore;
 
@@ -67,9 +73,14 @@ public class ApacheMapper {
 
     private String bodyOf(HttpEntity entity) {
         return Optional.ofNullable(entity)
-                .map(Exceptions.tryApply(EntityUtils::toString))
+                .map(ApacheMapper::entityToString)
                 .filter(StringUtils::isNotBlank)
                 .orElse(null);
+    }
+
+    @SneakyThrows
+    private static String entityToString(HttpEntity entity)  {
+        return EntityUtils.toString(entity);
     }
 
     public Map<String, String> headersOf(Header[] headers) {

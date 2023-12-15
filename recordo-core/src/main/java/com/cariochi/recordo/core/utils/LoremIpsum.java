@@ -1,10 +1,9 @@
-package com.cariochi.recordo.core;
-
-import lombok.experimental.UtilityClass;
-import org.apache.commons.lang3.StringUtils;
+package com.cariochi.recordo.core.utils;
 
 import java.util.List;
 import java.util.stream.Stream;
+import lombok.experimental.UtilityClass;
+import org.apache.commons.lang3.StringUtils;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;

@@ -1,6 +1,6 @@
 package com.cariochi.recordo.read;
 
-import com.cariochi.recordo.core.Extension;
+import com.cariochi.recordo.core.RegularExtension;
 import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.core.utils.ObjectReader;
 import java.lang.reflect.Parameter;
@@ -13,7 +13,7 @@ import org.junit.jupiter.api.extension.ParameterResolver;
 
 import static com.cariochi.recordo.core.json.JsonConverters.getJsonConverter;
 
-public class ReadParameterResolver implements Extension, ParameterResolver {
+public class ReadParameterResolver implements RegularExtension, ParameterResolver {
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
