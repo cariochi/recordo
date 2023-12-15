@@ -1,5 +1,6 @@
 package com.cariochi.recordo.core;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -16,54 +17,84 @@ import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
-import static com.cariochi.recordo.core.utils.Exceptions.tryAccept;
 import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
 public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback, ParameterResolver {
 
-    private final List<Extension> handlers;
+    private final List<Extension> handlers = new ArrayList<>();
 
     @SneakyThrows
     public RecordoExtension() {
-        handlers = load(Extension.class).stream().map(Provider::get).collect(toList());
+
+        load(RegularExtension.class).stream()
+                .map(Provider::get)
+                .forEach(handlers::add);
+
+        if (isSpringContextAvailable()) {
+            load(SpringExtension.class).stream()
+                    .map(Provider::get)
+                    .forEach(handlers::add);
+        }
+
     }
 
+    @SneakyThrows
     @Override
     public void beforeAll(ExtensionContext context) {
-        handlers.stream()
+        final List<BeforeAllCallback> callbacks = handlers.stream()
                 .filter(i -> BeforeAllCallback.class.isAssignableFrom(i.getClass()))
                 .sorted(orderAnnotationComparator())
                 .map(BeforeAllCallback.class::cast)
-                .forEach(tryAccept(processor -> processor.beforeAll(context)));
+                .collect(toList());
+
+        for (BeforeAllCallback callback : callbacks) {
+            callback.beforeAll(context);
+        }
     }
 
+    @SneakyThrows
     @Override
     public void beforeEach(ExtensionContext context) {
-        handlers.stream()
+        final List<BeforeEachCallback> callbacks = handlers.stream()
                 .filter(i -> BeforeEachCallback.class.isAssignableFrom(i.getClass()))
                 .sorted(orderAnnotationComparator())
                 .map(BeforeEachCallback.class::cast)
-                .forEach(tryAccept(processor -> processor.beforeEach(context)));
+                .collect(toList());
+
+        for (BeforeEachCallback callback : callbacks) {
+            callback.beforeEach(context);
+        }
     }
 
+    @SneakyThrows
     @Override
     public void afterEach(ExtensionContext context) {
-        handlers.stream()
+        final List<AfterEachCallback> callbacks = handlers.stream()
                 .filter(i -> AfterEachCallback.class.isAssignableFrom(i.getClass()))
                 .sorted(orderAnnotationComparator())
                 .map(AfterEachCallback.class::cast)
-                .forEach(tryAccept(processor -> processor.afterEach(context)));
+                .collect(toList());
+
+        for (AfterEachCallback callback : callbacks) {
+            callback.afterEach(context);
+        }
+
     }
 
+    @SneakyThrows
     @Override
     public void afterAll(ExtensionContext context) {
-        handlers.stream()
+        final List<AfterAllCallback> callbacks = handlers.stream()
                 .filter(i -> AfterAllCallback.class.isAssignableFrom(i.getClass()))
                 .sorted(orderAnnotationComparator())
                 .map(AfterAllCallback.class::cast)
-                .forEach(tryAccept(processor -> processor.afterAll(context)));
+                .collect(toList());
+
+        for (AfterAllCallback callback : callbacks) {
+            callback.afterAll(context);
+        }
     }
 
     @Override
@@ -83,6 +114,15 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
                 .findFirst()
                 .map(r -> r.resolveParameter(parameter, extension))
                 .orElse(null);
+    }
+
+    private boolean isSpringContextAvailable() {
+        try {
+            Class.forName("org.springframework.context.ApplicationContext");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     private Comparator<? super Extension> orderAnnotationComparator() {

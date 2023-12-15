@@ -1,13 +1,10 @@
 package com.cariochi.recordo.core.utils;
 
-import com.cariochi.recordo.core.RecordoError;
-import lombok.SneakyThrows;
-import lombok.experimental.UtilityClass;
-
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
+import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
 
 import static java.lang.System.getProperty;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -35,17 +32,14 @@ public class Files {
         return write(content, file, true);
     }
 
+    @SneakyThrows
     public Optional<Path> write(String content, String file, boolean addNewLine) {
         if (!java.nio.file.Files.exists(USER_DIR)) {
             return Optional.empty();
         }
         final Path path = path(file);
-        try {
-            java.nio.file.Files.createDirectories(path.getParent());
-            java.nio.file.Files.write(path, (content + (addNewLine ? '\n' : "")).getBytes(UTF_8));
-        } catch (IOException e) {
-            throw new RecordoError(e);
-        }
+        java.nio.file.Files.createDirectories(path.getParent());
+        java.nio.file.Files.write(path, (content + (addNewLine ? '\n' : "")).getBytes(UTF_8));
         return Optional.of(path);
     }
 

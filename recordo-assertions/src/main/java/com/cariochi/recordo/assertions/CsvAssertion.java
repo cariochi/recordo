@@ -5,19 +5,22 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-import java.util.Map;
-
 import static com.fasterxml.jackson.dataformat.csv.CsvParser.Feature.WRAP_AS_ARRAY;
 import static com.fasterxml.jackson.dataformat.csv.CsvSchema.emptySchema;
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * The CsvAssertion class provides methods for asserting the equality of CSV files.
+ * It can compare the contents of a given CSV file with the actual CSV string provided.
+ */
 @Slf4j
 @Accessors(fluent = true)
 @RequiredArgsConstructor(staticName = "assertCsv")

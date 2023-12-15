@@ -1,7 +1,7 @@
 package com.cariochi.recordo.mockmvc.extensions;
 
 import com.cariochi.recordo.core.json.JsonConverter;
-import com.cariochi.recordo.mockmvc.Put;
+import com.cariochi.recordo.mockmvc.Perform;
 import com.cariochi.recordo.mockmvc.Request;
 import java.lang.reflect.Type;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -13,22 +13,21 @@ import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.createRecordoMockM
 import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.getBody;
 import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.getResponseType;
 import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.parseHeaders;
-import static org.springframework.http.HttpMethod.PUT;
 
-public class PutExtension extends AbstractMockMvcExtension {
+public class PerformParameterResolver implements MockMvcParameterResolver {
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return parameterContext.isAnnotated(Put.class);
+        return parameterContext.isAnnotated(Perform.class);
     }
 
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        final Put annotation = parameterContext.findAnnotation(Put.class).orElseThrow();
+        final Perform annotation = parameterContext.findAnnotation(Perform.class).orElseThrow();
         final JsonConverter jsonConverter = getJsonConverter(annotation.objectMapper(), extensionContext);
         final Type type = parameterContext.getParameter().getParameterizedType();
         final Request<Object> request = createRecordoMockMvc(extensionContext, jsonConverter)
-                .request(PUT, annotation.value(), getResponseType(type))
+                .request(annotation.method(), annotation.path(), getResponseType(type))
                 .headers(parseHeaders(annotation.headers()))
                 .expectedStatus(annotation.expectedStatus())
                 .body(getBody(annotation.body(), jsonConverter));

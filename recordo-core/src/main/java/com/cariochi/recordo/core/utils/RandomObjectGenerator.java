@@ -1,4 +1,4 @@
-package com.cariochi.recordo.core;
+package com.cariochi.recordo.core.utils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

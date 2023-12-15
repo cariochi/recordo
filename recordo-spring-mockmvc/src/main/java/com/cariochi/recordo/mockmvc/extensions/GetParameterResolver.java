@@ -14,7 +14,7 @@ import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.getResponseType;
 import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.parseHeaders;
 import static org.springframework.http.HttpMethod.GET;
 
-public class GetExtension extends AbstractMockMvcExtension {
+public class GetParameterResolver implements MockMvcParameterResolver {
 
     @Override
     public boolean supportsParameter(ParameterContext parameter, ExtensionContext extensionContext) throws ParameterResolutionException {

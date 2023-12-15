@@ -2,12 +2,11 @@ package com.cariochi.recordo.read;
 
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.main.dto.TestDto;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,7 +20,7 @@ class ObjectFactoryTest {
     @Test
     void should_create_object_from_factory() {
         TestDto dto = factory.with("children[1].strings[2]", "FAKE").create();
-        assertThat(dto.getChildren().get(1).getStrings().get(2)).isEqualTo("FAKE");
+        assertThat(dto.getChildren().get(1).getStrings()[2]).isEqualTo("FAKE");
     }
 
     @Test
@@ -29,7 +28,7 @@ class ObjectFactoryTest {
             @Read("/read/dto.json") ObjectFactory<TestDto> factory
     ) {
         TestDto dto = factory.createWith(Map.of("children[1].strings[2]", "FAKE"));
-        assertThat(dto.getChildren().get(1).getStrings().get(2)).isEqualTo("FAKE");
+        assertThat(dto.getChildren().get(1).getStrings()[2]).isEqualTo("FAKE");
     }
 
     @Test

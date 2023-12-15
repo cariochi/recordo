@@ -8,6 +8,7 @@ import com.cariochi.recordo.mockmvc.utils.MockMvcUtils;
 import com.cariochi.reflecto.Reflecto;
 import com.cariochi.reflecto.fields.JavaField;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
@@ -22,9 +23,7 @@ import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.Value;
-import org.aopalliance.intercept.MethodInterceptor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -51,21 +50,13 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.OK;
 
 @RequiredArgsConstructor
-public class RecordoClientProxyFactory {
+public class RecordoApiClientInvocationHandler implements InvocationHandler {
 
-    private final ProxyFactory proxyFactory = new ProxyFactory();
     private final RecordoMockMvc recordoMockMvc;
     private final List<RequestInterceptor> requestInterceptors;
 
-    public <T> T getRecordoClient(Class<T> targetClass) {
-        proxyFactory.setTargetClass(targetClass);
-        proxyFactory.setProxyTargetClass(true);
-        proxyFactory.addAdvice((MethodInterceptor) invocation -> processApiCall(recordoMockMvc, invocation.getMethod(), invocation.getArguments()));
-        return (T) proxyFactory.getProxy();
-    }
-
-    @SneakyThrows
-    private Object processApiCall(RecordoMockMvc recordoMockMvc, Method method, Object[] args) {
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) {
 
         final RequestInfo baseRequestInfo = extractInfoFromClass(method.getDeclaringClass());
         final RequestInfo requestInfo = extractInfoFromMethod(method).applyBaseInfo(baseRequestInfo);
@@ -145,7 +136,7 @@ public class RecordoClientProxyFactory {
     private List<Argument> mapToArguments(Parameter[] parameters, Object[] arguments) {
         final List<Argument> argumentList = new ArrayList<>();
         for (int i = 0; i < parameters.length; i++) {
-            argumentList.add(new Argument(parameters[i].getType(), parameters[i].getAnnotations(), arguments[i]));
+            argumentList.add(new Argument(parameters[i], arguments[i]));
         }
         return argumentList;
     }
@@ -175,7 +166,12 @@ public class RecordoClientProxyFactory {
                 }
             } else {
                 argument.findAnnotation(RequestParam.class).ifPresent(requestParam -> {
-                    final String name = Optional.of(requestParam.value()).filter(StringUtils::isNotEmpty).orElseGet(requestParam::name);
+                    final String name = Optional.of(requestParam.value())
+                            .filter(StringUtils::isNotEmpty)
+                            .or(() -> Optional.of(requestParam.name()).filter(StringUtils::isNotEmpty))
+                            .or(() -> Optional.of(argument).map(Argument::getParameter).filter(Parameter::isNamePresent).map(Parameter::getName))
+                            .orElseThrow(() -> new IllegalArgumentException("Cannot recognize @RequestParam name"));
+
                     List<String> value;
                     if (Collection.class.isAssignableFrom(argument.getType())) {
                         Collection<?> collection = (Collection<?>) argument.getValue();
@@ -265,19 +261,19 @@ public class RecordoClientProxyFactory {
     @Value
     private static class Argument {
 
-        Class<?> type;
-        Annotation[] annotations;
+        Parameter parameter;
         Object value;
 
         public <T extends Annotation> boolean hasAnnotation(Class<T> annotationClass) {
             return findAnnotation(annotationClass).isPresent();
         }
 
+        public Class<?> getType() {
+            return parameter.getType();
+        }
+
         public <T extends Annotation> Optional<T> findAnnotation(Class<T> annotationClass) {
-            return Stream.of(annotations)
-                    .filter(annotationClass::isInstance)
-                    .map(annotationClass::cast)
-                    .findFirst();
+            return Optional.ofNullable(parameter.getAnnotation(annotationClass));
         }
 
         public ParamType getParamType() {
@@ -285,8 +281,8 @@ public class RecordoClientProxyFactory {
                 return ParamType.HEADER;
             } else if (hasAnnotation(PathVariable.class)) {
                 return ParamType.PATH_VAR;
-            } else if (hasAnnotation(RequestParam.class) || Pageable.class.isAssignableFrom(type)) {
-                return File.class.isAssignableFrom(type) || MultipartFile.class.isAssignableFrom(type) ? ParamType.FILE : ParamType.PARAMETER;
+            } else if (hasAnnotation(RequestParam.class) || Pageable.class.isAssignableFrom(getType())) {
+                return File.class.isAssignableFrom(getType()) || MultipartFile.class.isAssignableFrom(getType()) ? ParamType.FILE : ParamType.PARAMETER;
             } else if (hasAnnotation(RequestBody.class)) {
                 return ParamType.BODY;
             }

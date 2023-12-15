@@ -1,6 +1,5 @@
 package com.cariochi.recordo.core.utils;
 
-import com.cariochi.recordo.core.RandomObjectGenerator;
 import com.cariochi.recordo.core.json.JsonConverter;
 import java.lang.reflect.Type;
 import java.util.Collection;
