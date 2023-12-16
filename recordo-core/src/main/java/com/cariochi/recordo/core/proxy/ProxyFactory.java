@@ -24,6 +24,12 @@ public class ProxyFactory<T> {
         );
     }
 
+    public interface DefaultMethodHandler {
+
+        Object invokeDefault(Object proxy, Method method, Object[] args, Object result);
+
+    }
+
     @RequiredArgsConstructor
     private static class ProxyInvocationHandler implements InvocationHandler {
 
@@ -34,7 +40,12 @@ public class ProxyFactory<T> {
         public Object invoke(Object proxy, Method method, Object[] args) {
 
             if (method.isDefault()) {
-                return invokeDefaultMethod(proxy, method, args);
+                final Object result = invokeDefaultMethod(proxy, method, args);
+                if (handler instanceof DefaultMethodHandler) {
+                    return ((DefaultMethodHandler) handler).invokeDefault(proxy, method, args, result);
+                } else {
+                    return result;
+                }
             } else if (method.getDeclaringClass().equals(Object.class)) {
                 return invokeObjectMethod(proxy, method, args);
             } else {
