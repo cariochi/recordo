@@ -19,6 +19,10 @@ public interface TestDtoObjectFactory {
                 .build();
     }
 
+    default List<TestDto> defaultTestDtoList() {
+        return List.of(defaultTestDto());
+    }
+
     @Read("/read/dto-list.json")
     List<TestDto> testDtoList();
 

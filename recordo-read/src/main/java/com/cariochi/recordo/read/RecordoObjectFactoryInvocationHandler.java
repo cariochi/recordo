@@ -3,6 +3,7 @@ package com.cariochi.recordo.read;
 import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.core.json.JsonConverters;
 import com.cariochi.recordo.core.proxy.ProxyFactory;
+import com.cariochi.recordo.core.proxy.ProxyFactory.DefaultMethodHandler;
 import com.cariochi.recordo.core.utils.ObjectReader;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -13,11 +14,11 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 @RequiredArgsConstructor
-public class RecordoObjectFactoryInvocationHandler<T> implements InvocationHandler {
+public class RecordoObjectFactoryInvocationHandler<T> implements InvocationHandler, DefaultMethodHandler {
 
     private final ProxyFactory<T> proxyFactory;
     private final ExtensionContext context;
-    private final Map<String, Object> handlerParameters = new LinkedHashMap<>();
+    private final Map<String, Object> parameters = new LinkedHashMap<>();
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) {
@@ -37,12 +38,17 @@ public class RecordoObjectFactoryInvocationHandler<T> implements InvocationHandl
             final ObjectFactory<T> objectFactory = new ObjectFactory<>(new ObjectReader(jsonConverter), read.value(), method.getGenericReturnType());
 
             final Map<String, Object> tmp = new LinkedHashMap<>();
-            tmp.putAll(handlerParameters);
+            tmp.putAll(parameters);
             tmp.putAll(methodParameters);
 
             return objectFactory.createWith(tmp);
         }
 
+    }
+
+    @Override
+    public Object invokeDefault(Object proxy, Method method, Object[] args, Object result) {
+        return ObjectUtils.modifyObject(result, parameters);
     }
 
     private Map<String, Object> readMethodParameters(Method method, Object[] args) {
@@ -69,8 +75,8 @@ public class RecordoObjectFactoryInvocationHandler<T> implements InvocationHandl
     private T createChildProxyInstance(Map<String, Object> paramsMap) {
         return proxyFactory.newInstance(() -> {
             final RecordoObjectFactoryInvocationHandler<T> handler = new RecordoObjectFactoryInvocationHandler<>(proxyFactory, context);
-            handler.handlerParameters.putAll(handlerParameters);
-            handler.handlerParameters.putAll(paramsMap);
+            handler.parameters.putAll(parameters);
+            handler.parameters.putAll(paramsMap);
             return handler;
         });
     }

@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader.Provider;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Order;
@@ -22,6 +23,9 @@ import static java.util.stream.Collectors.toList;
 
 @Slf4j
 public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback, ParameterResolver {
+
+    @Getter
+    private static ExtensionContext context;
 
     private final List<Extension> handlers = new ArrayList<>();
 
@@ -43,6 +47,7 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
     @SneakyThrows
     @Override
     public void beforeAll(ExtensionContext context) {
+        RecordoExtension.context = context;
         final List<BeforeAllCallback> callbacks = handlers.stream()
                 .filter(i -> BeforeAllCallback.class.isAssignableFrom(i.getClass()))
                 .sorted(orderAnnotationComparator())
