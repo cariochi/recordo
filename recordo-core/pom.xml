@@ -56,8 +56,9 @@
             <artifactId>commons-text</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jeasy</groupId>
-            <artifactId>easy-random-core</artifactId>
+            <groupId>org.instancio</groupId>
+            <artifactId>instancio-core</artifactId>
+            <version>3.7.1</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
