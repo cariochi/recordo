@@ -14,7 +14,7 @@ import static org.apache.commons.lang3.reflect.TypeUtils.isAssignable;
 @RequiredArgsConstructor
 public class ObjectReader {
 
-    private static final RandomObjectGenerator EMPTY_INSTANCE_GENERATOR = new RandomObjectGenerator();
+    private static final RandomObjectGenerator RANDOM_OBJECT_GENERATOR = new RandomObjectGenerator();
 
     private final JsonConverter jsonConverter;
 
@@ -32,7 +32,7 @@ public class ObjectReader {
         Object givenObject = null;
         String json;
         try {
-            givenObject = EMPTY_INSTANCE_GENERATOR.generateInstance(parameterType, 3);
+            givenObject = RANDOM_OBJECT_GENERATOR.generateInstance(parameterType);
             json = givenObject == null
                     ? (isAssignable(Collection.class, parameterType) || isArrayType(parameterType) ? "[]" : "{}")
                     : jsonConverter.toJson(givenObject);

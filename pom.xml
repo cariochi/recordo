@@ -63,7 +63,6 @@
         <reflecto.version>1.1.4</reflecto.version>
         <assertj.version>3.24.2</assertj.version>
         <commons-lang3.version>3.14.0</commons-lang3.version>
-        <easy-random.version>5.0.0</easy-random.version>
         <okhttp.version>4.11.0</okhttp.version>
         <httpclient.version>4.5.14</httpclient.version>
         <spring.version>5.3.31</spring.version>
@@ -130,12 +129,6 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons-lang3.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jeasy</groupId>
-                <artifactId>easy-random-core</artifactId>
-                <version>${easy-random.version}</version>
             </dependency>
 
             <dependency>
