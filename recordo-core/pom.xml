@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.cariochi.recordo</groupId>
         <artifactId>recordo-parent</artifactId>
-        <version>1.2.16</version>
+        <version>1.2.17</version>
     </parent>
 
     <artifactId>recordo-core</artifactId>
@@ -17,10 +17,6 @@
     <url>https://cariochi.com/recordo</url>
 
     <dependencies>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
@@ -32,12 +28,22 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.cariochi.reflecto</groupId>
-            <artifactId>reflecto</artifactId>
+            <groupId>com.cariochi.objecto</groupId>
+            <artifactId>objecto</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
+            <groupId>com.cariochi.reflecto</groupId>
+            <artifactId>reflecto</artifactId>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
@@ -55,20 +61,7 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.instancio</groupId>
-            <artifactId>instancio-core</artifactId>
-            <version>3.7.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <scope>test</scope>
-        </dependency>
+
     </dependencies>
 
 </project>

@@ -36,8 +36,8 @@ class UserControllerClientTest {
     private final UserApiClient apiClient2 = Recordo.create(UserApiClient.class);
 
     @Autowired
-    private UserObjectFactory userFactory;
-    private final UserObjectFactory userFactory2 = Recordo.create(UserObjectFactory.class);
+    private UserFactory userFactory;
+    private final UserFactory userFactory2 = Recordo.create(UserFactory.class);
 
     @TestConfiguration
     public static class TestConfig {
@@ -68,7 +68,7 @@ class UserControllerClientTest {
     @Test
     void test_object_methods() {
         assertThat(apiClient.hashCode()).isNotZero();
-        assertThat(apiClient.toString()).startsWith("com.cariochi.recordo.core.proxy.ProxyFactory$ProxyInvocationHandler");
+        assertThat(apiClient.toString()).startsWith(UserApiClient.class.getName());
         assertThat(apiClient.equals(apiClient)).isTrue();
     }
 

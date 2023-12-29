@@ -4,18 +4,21 @@ import com.cariochi.recordo.mockserver.interceptors.MockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
 import com.cariochi.recordo.mockserver.model.MockRequest;
 import com.cariochi.recordo.mockserver.model.MockResponse;
+import java.io.IOException;
+import java.util.List;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import java.io.IOException;
-import java.util.List;
-
 import static com.cariochi.reflecto.Reflecto.reflect;
+import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toList;
+import static lombok.AccessLevel.PRIVATE;
 
+@NoArgsConstructor(access = PRIVATE)
 public class OkMockServerInterceptor implements Interceptor, MockServerInterceptor {
 
     private final OkHttpMapper mapper = new OkHttpMapper();
@@ -23,13 +26,14 @@ public class OkMockServerInterceptor implements Interceptor, MockServerIntercept
     private RecordoRequestHandler handler;
 
     public static OkMockServerInterceptor attachTo(OkHttpClient httpClient) {
-        final OkMockServerInterceptor interceptor = new OkMockServerInterceptor();
         final List<Interceptor> interceptors = httpClient.interceptors().stream()
-                .filter(interceptor1 -> !(interceptor1 instanceof OkMockServerInterceptor))
+                .filter(not(OkMockServerInterceptor.class::isInstance))
                 .collect(toList());
-        interceptors.add(interceptor);
+
+        final OkMockServerInterceptor okMockServerInterceptor = new OkMockServerInterceptor();
+        interceptors.add(okMockServerInterceptor);
         reflect(httpClient).get("interceptors").setValue(interceptors);
-        return interceptor;
+        return okMockServerInterceptor;
     }
 
     @Override
@@ -51,4 +55,5 @@ public class OkMockServerInterceptor implements Interceptor, MockServerIntercept
         final Response response = chain.proceed(request);
         return mapper.toRecordoResponse(response);
     }
+
 }

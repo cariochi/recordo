@@ -1,5 +1,6 @@
 package com.cariochi.recordo.read;
 
+import com.cariochi.objecto.utils.ObjectUtils;
 import com.cariochi.recordo.core.utils.ObjectReader;
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -23,8 +24,8 @@ public class ObjectFactory<T> {
     }
 
     public T create() {
-        final Object o = objectReader.read(fileName, parameterType);
-        return (T) ObjectUtils.modifyObject(o, fieldValues);
+        final T o = (T) objectReader.read(fileName, parameterType);
+        return ObjectUtils.modifyObject(o, fieldValues);
     }
 
     public ObjectFactory<T> with(String name, Object value) {

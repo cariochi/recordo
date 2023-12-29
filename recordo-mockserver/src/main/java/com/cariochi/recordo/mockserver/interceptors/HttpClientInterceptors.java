@@ -56,7 +56,7 @@ public class HttpClientInterceptors {
     private static Optional<MockServerInterceptor> apacheHttpClient(String beanName, Beans beans) {
         try {
             return beans.find(beanName, HttpClient.class)
-                    .map(ApacheMockServerInterceptor::new)
+                    .map(ApacheMockServerInterceptor::attachTo)
                     .map(MockServerInterceptor.class::cast);
         } catch (Exception | NoClassDefFoundError e) {
             return Optional.empty();

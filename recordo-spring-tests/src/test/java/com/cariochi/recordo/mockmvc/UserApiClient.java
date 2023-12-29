@@ -91,7 +91,6 @@ public interface UserApiClient {
     @DeleteMapping("/{id}")
     void delete(@PathVariable int id);
 
-
     @Data
     @SuperBuilder
     class TestBodyParentDto {
