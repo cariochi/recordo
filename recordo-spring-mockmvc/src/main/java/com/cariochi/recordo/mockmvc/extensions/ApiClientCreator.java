@@ -1,11 +1,11 @@
 package com.cariochi.recordo.mockmvc.extensions;
 
 import com.cariochi.recordo.core.ObjectCreator;
-import com.cariochi.recordo.core.proxy.ProxyFactory;
 import com.cariochi.recordo.core.utils.Beans;
 import com.cariochi.recordo.mockmvc.RecordoApiClient;
 import com.cariochi.recordo.mockmvc.RecordoMockMvc;
 import com.cariochi.recordo.mockmvc.RequestInterceptor;
+import com.cariochi.reflecto.proxy.ProxyFactory;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -34,8 +34,8 @@ public class ApiClientCreator implements ObjectCreator {
                 .flatMap(interceptorClass -> createRequestInterceptor(interceptorClass, context).stream())
                 .collect(toList());
 
-        return ProxyFactory.of(targetClass)
-                .newInstance(() -> new RecordoApiClientInvocationHandler(recordoMockMvc, requestInterceptors));
+        final RecordoApiClientMethodHandler methodHandler = new RecordoApiClientMethodHandler(recordoMockMvc, requestInterceptors);
+        return ProxyFactory.createInstance(methodHandler, targetClass);
     }
 
     private <T extends RequestInterceptor> Collection<T> createRequestInterceptor(Class<T> interceptorClass, ExtensionContext context) {

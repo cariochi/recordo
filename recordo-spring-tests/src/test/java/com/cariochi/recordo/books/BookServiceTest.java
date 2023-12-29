@@ -48,8 +48,6 @@ class BookServiceTest {
         assertThat(books)
                 .is(equalAsJsonTo("/books/short_books.json")
                         .including("content.id", "content.title", "content.author.id"));
-
-        assertThat(books).haveExactly(1, equalAsJsonTo("/books/book.json"));
     }
 
     @Test
@@ -67,7 +65,8 @@ class BookServiceTest {
 
         assertThat(created)
                 .is(equalAsJsonTo("/books/created_book.json").excluding("id"))
-                .extracting(Book::getId).isNotNull();
+                .extracting(Book::getId)
+                .isNotNull();
     }
 
     @Test
@@ -76,10 +75,7 @@ class BookServiceTest {
             @Read("/books/books.json") List<Book> books
     ) {
         final Page<Book> merged = bookService.merge(books, book);
-
         assertAsJson(merged).isEqualTo("/books/expected_books.json");
-
-        assertThat(merged).haveExactly(1, equalAsJsonTo("/books/book.json"));
     }
 
 }

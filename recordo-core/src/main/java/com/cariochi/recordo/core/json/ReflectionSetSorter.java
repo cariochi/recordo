@@ -2,8 +2,12 @@ package com.cariochi.recordo.core.json;
 
 import com.cariochi.reflecto.Reflecto;
 import com.cariochi.reflecto.fields.JavaField;
-
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.function.Predicate;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
@@ -46,7 +50,7 @@ public class ReflectionSetSorter {
     }
 
     private <T, U extends Comparable<? super U>> Optional<Comparator<T>> comparator(T object, Set<?> set) {
-        final List<JavaField> fields = reflect(object).fields().all();
+        final List<JavaField> fields = reflect(object).fields().asList();
         return findUniqueField(set, fields)
                 .map(field -> Comparator.<T, U>comparing(o -> reflect(o).field(field).getValue(), nullsLast(naturalOrder())));
     }

@@ -1,21 +1,18 @@
 package com.cariochi.recordo.read;
 
 import com.cariochi.recordo.core.Recordo;
-import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.main.dto.TestDto;
-import com.cariochi.recordo.read.factories.TestDtoObjectFactory;
+import com.cariochi.recordo.read.factories.TestDtoFactory;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-@ExtendWith(RecordoExtension.class)
 class TestDtoObjectFactoryTest {
 
-    private final TestDtoObjectFactory objectFactory = Recordo.create(TestDtoObjectFactory.class);
+    private final TestDtoFactory objectFactory = Recordo.create(TestDtoFactory.class);
 
     @Test
     void should_get_object() {
