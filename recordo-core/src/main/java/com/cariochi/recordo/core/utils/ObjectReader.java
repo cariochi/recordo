@@ -22,7 +22,7 @@ public class ObjectReader {
 
     public ObjectReader(JsonConverter jsonConverter) {
         this.jsonConverter = jsonConverter;
-        this.generator = objecto::generateInstance;
+        this.generator = objecto::generate;
     }
 
     public Object read(String file, Type parameterType) {

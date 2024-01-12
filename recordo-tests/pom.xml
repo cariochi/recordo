@@ -8,7 +8,7 @@
   <parent>
     <artifactId>recordo-parent</artifactId>
     <groupId>com.cariochi.recordo</groupId>
-    <version>1.2.17</version>
+    <version>1.2.18</version>
   </parent>
 
   <artifactId>recordo-tests</artifactId>
@@ -33,6 +33,12 @@
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
+      <exclusions>
+        <exclusion>
+          <artifactId>kotlin-stdlib-jdk8</artifactId>
+          <groupId>org.jetbrains.kotlin</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jetbrains.kotlin</groupId>

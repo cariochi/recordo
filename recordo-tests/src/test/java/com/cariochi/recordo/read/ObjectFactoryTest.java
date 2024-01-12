@@ -27,14 +27,14 @@ class ObjectFactoryTest {
     void should_create_object_from_factory_2(
             @Read("/read/dto.json") ObjectFactory<TestDto> factory
     ) {
-        TestDto dto = factory.createWith(Map.of("children[1].strings[2]", "FAKE"));
+        TestDto dto = factory.createWith(Map.of("children[1].strings[2]", new Object[]{"FAKE"}));
         assertThat(dto.getChildren().get(1).getStrings()[2]).isEqualTo("FAKE");
     }
 
     @Test
     void should_create_objects_from_factory() {
         final List<TestDto> dtos = IntStream.rangeClosed(100, 102)
-                .mapToObj(i -> factory.createWith(Map.of("id", i)))
+                .mapToObj(i -> factory.createWith(Map.of("id", new Object[]{i})))
                 .collect(toList());
         assertThat(dtos)
                 .extracting(TestDto::getId)

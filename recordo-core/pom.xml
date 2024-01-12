@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.cariochi.recordo</groupId>
         <artifactId>recordo-parent</artifactId>
-        <version>1.2.17</version>
+        <version>1.2.18</version>
     </parent>
 
     <artifactId>recordo-core</artifactId>
@@ -31,10 +31,6 @@
             <groupId>com.cariochi.objecto</groupId>
             <artifactId>objecto</artifactId>
             <exclusions>
-                <exclusion>
-                    <artifactId>logback-classic</artifactId>
-                    <groupId>ch.qos.logback</groupId>
-                </exclusion>
                 <exclusion>
                     <artifactId>slf4j-api</artifactId>
                     <groupId>org.slf4j</groupId>
