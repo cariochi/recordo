@@ -1,3 +1,2 @@
 com.cariochi.recordo.read.ReadFieldResolver
 com.cariochi.recordo.read.ReadParameterResolver
-com.cariochi.recordo.read.ObjectFactoryFieldResolver

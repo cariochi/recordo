@@ -1,8 +1,6 @@
 package com.cariochi.recordo.mockmvc.extensions;
 
 import com.cariochi.recordo.core.SpringContextExtension;
-import com.cariochi.recordo.core.json.JsonConverter;
-import com.cariochi.recordo.core.json.JsonConverters;
 import com.cariochi.recordo.mockmvc.RecordoMockMvc;
 import java.lang.reflect.Field;
 import java.util.stream.Stream;
@@ -10,9 +8,9 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.createRecordoMockMvc;
-
 public class RecordoMockMvcBeanResolver implements SpringContextExtension, BeforeAllCallback {
+
+    private final RecordoMockMvcCreator recordoMockMvcCreator = new RecordoMockMvcCreator();
 
     @Override
     public void beforeAll(ExtensionContext context) {
@@ -31,8 +29,7 @@ public class RecordoMockMvcBeanResolver implements SpringContextExtension, Befor
     }
 
     private void registerDefaultRecordoMockMvc(ExtensionContext context) {
-        final JsonConverter jsonConverter = JsonConverters.getJsonConverter("", context);
-        final RecordoMockMvc recordoMockMvc = createRecordoMockMvc(context, jsonConverter);
+        final RecordoMockMvc recordoMockMvc = recordoMockMvcCreator.create("", context);
         registerBean("recordoMockMvc", recordoMockMvc, context);
     }
 

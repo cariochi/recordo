@@ -7,8 +7,9 @@ import com.cariochi.recordo.mockmvc.RequestInterceptor;
 import com.cariochi.recordo.mockmvc.utils.MockMvcUtils;
 import com.cariochi.reflecto.Reflecto;
 import com.cariochi.reflecto.fields.JavaField;
+import com.cariochi.reflecto.proxy.ProxyFactory.MethodHandler;
+import com.cariochi.reflecto.proxy.ProxyFactory.MethodProceed;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
@@ -50,13 +51,17 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.OK;
 
 @RequiredArgsConstructor
-public class RecordoApiClientInvocationHandler implements InvocationHandler {
+public class RecordoApiClientMethodHandler implements MethodHandler {
 
     private final RecordoMockMvc recordoMockMvc;
     private final List<RequestInterceptor> requestInterceptors;
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) {
+    public Object invoke(Object proxy, Method method, Object[] args, MethodProceed proceed) throws Throwable {
+
+        if (Object.class.equals(method.getDeclaringClass())) {
+            return proceed.proceed();
+        }
 
         final RequestInfo baseRequestInfo = extractInfoFromClass(method.getDeclaringClass());
         final RequestInfo requestInfo = extractInfoFromMethod(method).applyBaseInfo(baseRequestInfo);
@@ -191,7 +196,7 @@ public class RecordoApiClientInvocationHandler implements InvocationHandler {
         final MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         for (Argument arg : arguments) {
             final Object dto = arg.getValue();
-            final List<JavaField> fields = Reflecto.reflect(dto).fields().all();
+            final List<JavaField> fields = Reflecto.reflect(dto).fields().asList();
             for (JavaField field : fields) {
                 if (field.getValue() == null) {
                     continue;
@@ -237,7 +242,7 @@ public class RecordoApiClientInvocationHandler implements InvocationHandler {
         final List<File> files = new ArrayList<>();
         for (Argument arg : arguments) {
             final Object dto = arg.getValue();
-            final List<JavaField> fields = Reflecto.reflect(dto).fields().all();
+            final List<JavaField> fields = Reflecto.reflect(dto).fields().asList();
             for (JavaField field : fields) {
                 if (field.getValue() == null) {
                     continue;

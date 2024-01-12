@@ -1,13 +1,13 @@
 package com.cariochi.recordo.read.factories;
 
+import com.cariochi.objecto.Modifier;
 import com.cariochi.recordo.main.dto.TestDto;
-import com.cariochi.recordo.read.Param;
 import com.cariochi.recordo.read.Read;
 import com.cariochi.recordo.read.RecordoObjectFactory;
 import java.util.List;
 
 @RecordoObjectFactory
-public interface TestDtoObjectFactory {
+public interface TestDtoFactory {
 
     @Read("/read/dto.json")
     TestDto testDto();
@@ -19,14 +19,20 @@ public interface TestDtoObjectFactory {
                 .build();
     }
 
+    default List<TestDto> defaultTestDtoList() {
+        return List.of(defaultTestDto());
+    }
+
     @Read("/read/dto-list.json")
     List<TestDto> testDtoList();
 
     @Read("/read/dto.json")
-    TestDto testDto(@Param("id") Integer id);
+    TestDto testDto(@Modifier("id") Integer id);
 
-    TestDtoObjectFactory text(@Param("text") String text);
+    @Modifier("text")
+    TestDtoFactory text(String text);
 
-    TestDtoObjectFactory allChildrenStrings(@Param("children[*].strings[*]") String value);
+    @Modifier("children[*].strings[*]")
+    TestDtoFactory allChildrenStrings(String value);
 
 }
