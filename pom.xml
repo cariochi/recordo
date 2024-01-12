@@ -8,7 +8,7 @@
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.16</version>
+    <version>1.2.18</version>
 
     <name>Recordo Parent</name>
     <description>Parent for Recordo JUnit extension modules.</description>
@@ -58,13 +58,13 @@
         <commons-text.version>1.11.0</commons-text.version>
         <junit-jupiter.version>5.10.1</junit-jupiter.version>
         <jsonassert.version>1.5.1</jsonassert.version>
-        <slf4j-api.version>2.0.9</slf4j-api.version>
+        <slf4j.version>1.7.36</slf4j.version>
         <lombok.version>1.18.30</lombok.version>
-        <reflecto.version>1.1.4</reflecto.version>
+        <reflecto.version>1.1.7</reflecto.version>
+        <objecto.version>1.0.3</objecto.version>
         <assertj.version>3.24.2</assertj.version>
         <commons-lang3.version>3.14.0</commons-lang3.version>
-        <easy-random.version>5.0.0</easy-random.version>
-        <okhttp.version>4.11.0</okhttp.version>
+        <okhttp.version>4.12.0</okhttp.version>
         <httpclient.version>4.5.14</httpclient.version>
         <spring.version>5.3.31</spring.version>
         <spring-data.version>2.7.18</spring-data.version>
@@ -72,28 +72,52 @@
         <classgraph.version>4.8.165</classgraph.version>
         <objenesis.version>3.3</objenesis.version>
         <jetbrains-annotations.version>24.0.1</jetbrains-annotations.version>
-        <kotlin-stdlib.version>1.8.21</kotlin-stdlib.version>
+        <kotlin-stdlib.version>1.9.22</kotlin-stdlib.version>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit-jupiter.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
     <dependencyManagement>
         <dependencies>
 
             <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-params</artifactId>
-                <version>${junit-jupiter.version}</version>
+                <groupId>com.cariochi.objecto</groupId>
+                <artifactId>objecto</artifactId>
+                <version>${objecto.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.cariochi.reflecto</groupId>
                 <artifactId>reflecto</artifactId>
                 <version>${reflecto.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
             </dependency>
 
             <dependency>
@@ -133,12 +157,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jeasy</groupId>
-                <artifactId>easy-random-core</artifactId>
-                <version>${easy-random.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>io.github.classgraph</groupId>
                 <artifactId>classgraph</artifactId>
                 <version>${classgraph.version}</version>
@@ -151,31 +169,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j-api.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.assertj</groupId>
-                <artifactId>assertj-core</artifactId>
-                <version>${assertj.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>com.squareup.okhttp3</groupId>
                 <artifactId>okhttp</artifactId>
                 <version>${okhttp.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jetbrains.kotlin</groupId>
-                        <artifactId>kotlin-stdlib</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jetbrains.kotlin</groupId>
-                        <artifactId>kotlin-stdlib-common</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>

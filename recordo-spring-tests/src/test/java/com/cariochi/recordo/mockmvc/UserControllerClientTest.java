@@ -1,6 +1,7 @@
 package com.cariochi.recordo.mockmvc;
 
 import com.cariochi.recordo.config.ObjectMapperConfig;
+import com.cariochi.recordo.core.Recordo;
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.mockmvc.Request.File;
 import com.cariochi.recordo.mockmvc.UserApiClient.TestBodyDto;
@@ -32,9 +33,11 @@ class UserControllerClientTest {
 
     @Autowired
     private UserApiClient apiClient;
+    private final UserApiClient apiClient2 = Recordo.create(UserApiClient.class);
 
     @Autowired
-    private UserObjectFactory objectFactory;
+    private UserFactory userFactory;
+    private final UserFactory userFactory2 = Recordo.create(UserFactory.class);
 
     @TestConfiguration
     public static class TestConfig {
@@ -47,9 +50,25 @@ class UserControllerClientTest {
     }
 
     @Test
+    void should_create_two_api_clients() {
+        assertThat(apiClient).isNotNull();
+        assertThat(apiClient2).isNotNull();
+
+        assertThat(apiClient.findAll()).isEqualTo(apiClient2.findAll());
+    }
+
+    @Test
+    void should_create_two_user_factories() {
+        assertThat(userFactory).isNotNull();
+        assertThat(userFactory2).isNotNull();
+
+        assertThat(userFactory.users()).isEqualTo(userFactory2.users());
+    }
+
+    @Test
     void test_object_methods() {
         assertThat(apiClient.hashCode()).isNotZero();
-        assertThat(apiClient.toString()).startsWith("com.cariochi.recordo.core.proxy.ProxyFactory$ProxyInvocationHandler");
+        assertThat(apiClient.toString()).startsWith(UserApiClient.class.getName());
         assertThat(apiClient.equals(apiClient)).isTrue();
     }
 
@@ -80,7 +99,7 @@ class UserControllerClientTest {
 
     @Test
     void should_load_users() {
-      assertThat(objectFactory.users()).hasSize(2);
+        assertThat(userFactory.users()).hasSize(2);
     }
 
     @Test
@@ -124,7 +143,7 @@ class UserControllerClientTest {
 
     @Test
     void should_create_user() {
-        final UserDto user = objectFactory.user();
+        final UserDto user = userFactory.user();
         final UserDto userDto = apiClient.create(user);
         assertAsJson(userDto).isEqualTo("/mockmvc/created_user.json");
     }
@@ -163,14 +182,14 @@ class UserControllerClientTest {
 
     @Test
     void should_update_user() {
-        final UserDto user = objectFactory.id(1).user();
+        final UserDto user = userFactory.id(1).user();
         final UserDto updated = apiClient.update(user);
         assertAsJson(updated).isEqualTo("/mockmvc/updated_user.json");
     }
 
     @Test
     void should_patch_user() {
-        final UserDto user = objectFactory.id(1).user();
+        final UserDto user = userFactory.id(1).user();
         final UserDto patched = apiClient.patch(1, user);
         assertAsJson(patched).isEqualTo("/mockmvc/updated_user.json");
     }

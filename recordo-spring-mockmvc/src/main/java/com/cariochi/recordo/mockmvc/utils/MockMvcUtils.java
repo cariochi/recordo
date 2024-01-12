@@ -1,23 +1,17 @@
 package com.cariochi.recordo.mockmvc.utils;
 
 import com.cariochi.recordo.core.json.JsonConverter;
-import com.cariochi.recordo.core.utils.Beans;
 import com.cariochi.recordo.core.utils.ObjectReader;
 import com.cariochi.recordo.mockmvc.Content;
-import com.cariochi.recordo.mockmvc.RecordoMockMvc;
 import com.cariochi.recordo.mockmvc.Request;
-import com.cariochi.recordo.mockmvc.RequestInterceptor;
 import com.cariochi.recordo.mockmvc.Response;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.springframework.test.web.servlet.MockMvc;
 
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
@@ -42,18 +36,6 @@ public class MockMvcUtils {
                         .map(file -> getBodyFromFile(file, jsonConverter))
                 )
                 .orElse(null);
-    }
-
-    public static RecordoMockMvc createRecordoMockMvc(ExtensionContext context, JsonConverter jsonConverter) {
-        final Collection<RequestInterceptor> requestInterceptors = Beans.of(context).findAll(RequestInterceptor.class).values();
-        return createRecordoMockMvc(context, jsonConverter, requestInterceptors);
-    }
-
-    public static RecordoMockMvc createRecordoMockMvc(ExtensionContext context, JsonConverter jsonConverter, Collection<RequestInterceptor> requestInterceptors) {
-        final MockMvc mockMvc = Beans.of(context).findByType(MockMvc.class)
-                .map(MockMvc.class::cast)
-                .orElseThrow(() -> new IllegalArgumentException("Can't find single instance of MockMvc"));
-        return new RecordoMockMvc(mockMvc, jsonConverter, requestInterceptors);
     }
 
     public static Type getResponseType(Type type) {

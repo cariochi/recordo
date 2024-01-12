@@ -1,8 +1,10 @@
 package com.cariochi.recordo.core.utils;
 
+import com.cariochi.objecto.generators.ObjectoGenerator;
 import com.cariochi.recordo.core.json.JsonConverter;
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +16,14 @@ import static org.apache.commons.lang3.reflect.TypeUtils.isAssignable;
 @RequiredArgsConstructor
 public class ObjectReader {
 
-    private static final RandomObjectGenerator EMPTY_INSTANCE_GENERATOR = new RandomObjectGenerator();
-
     private final JsonConverter jsonConverter;
+    private final Function<Type, Object> generator;
+    private final ObjectoGenerator objecto = new ObjectoGenerator();
+
+    public ObjectReader(JsonConverter jsonConverter) {
+        this.jsonConverter = jsonConverter;
+        this.generator = objecto::generate;
+    }
 
     public Object read(String file, Type parameterType) {
         return read(file, parameterType, UnaryOperator.identity());
@@ -32,7 +39,7 @@ public class ObjectReader {
         Object givenObject = null;
         String json;
         try {
-            givenObject = EMPTY_INSTANCE_GENERATOR.generateInstance(parameterType, 3);
+            givenObject = generator.apply(parameterType);
             json = givenObject == null
                     ? (isAssignable(Collection.class, parameterType) || isArrayType(parameterType) ? "[]" : "{}")
                     : jsonConverter.toJson(givenObject);
