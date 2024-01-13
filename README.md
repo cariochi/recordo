@@ -1,4 +1,5 @@
-# About Cariochi Recordo
+# Overview
+
 **Recordo** is a **JUnit** extension that simplifies common testing tasks, streamlining the process of creating fast, deterministic, and accurate tests. 
 It consists of 4 modules, each serving a specific purpose in the testing lifecycle.
 
