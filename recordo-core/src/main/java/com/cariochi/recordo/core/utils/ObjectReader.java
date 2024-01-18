@@ -44,6 +44,7 @@ public class ObjectReader {
                     ? (isAssignable(Collection.class, parameterType) || isArrayType(parameterType) ? "[]" : "{}")
                     : jsonConverter.toJson(givenObject);
         } catch (Exception e) {
+            log.error("Cannot serialize object into JSON", e);
             json = "{}";
         }
         Files.write(json, file)

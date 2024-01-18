@@ -3,22 +3,28 @@ package com.cariochi.recordo.core.json;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonStreamContext;
+import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.BeanSerializer;
+import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
 public class JsonConverter {
 
@@ -26,16 +32,30 @@ public class JsonConverter {
     private final JacksonPrinter printer = new JacksonPrinter();
 
     public JsonConverter() {
-        this(
-                new ObjectMapper()
-                        .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-                        .registerModule(new JavaTimeModule())
-                        .setDateFormat(new StdDateFormat())
-        );
+        this.objectMapper = new ObjectMapper()
+                .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+                .registerModule(getJsonModule())
+                .registerModule(new JavaTimeModule())
+                .setDateFormat(new StdDateFormat());
     }
 
     public JsonConverter(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper.copy().registerModule(SortedSetJsonSerializer.getJsonModule());
+        this.objectMapper = objectMapper.copy()
+                .registerModule(getJsonModule());
+    }
+
+    private SimpleModule getJsonModule() {
+        final SimpleModule module = new SimpleModule();
+        module.addSerializer(Set.class, new SortedSetJsonSerializer());
+        module.setSerializerModifier(new BeanSerializerModifier() {
+            @Override
+            public JsonSerializer<?> modifySerializer(SerializationConfig config, BeanDescription beanDesc, JsonSerializer<?> serializer) {
+                return serializer instanceof BeanSerializer
+                        ? new MaxDepthCyclicObjectSerializer((BeanSerializer) serializer)
+                        : serializer;
+            }
+        });
+        return module;
     }
 
     public String toJson(Object object) {

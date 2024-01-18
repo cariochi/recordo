@@ -1,21 +1,17 @@
 package com.cariochi.recordo.core.json;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
 import java.util.Set;
 
-public class SortedSetJsonSerializer extends JsonSerializer<Set> {
+public class SortedSetJsonSerializer extends StdSerializer<Set> {
 
     private final ReflectionSetSorter setSorter = new ReflectionSetSorter();
 
-    public static SimpleModule getJsonModule() {
-        final SimpleModule module = new SimpleModule();
-        module.addSerializer(Set.class, new SortedSetJsonSerializer());
-        return module;
+    protected SortedSetJsonSerializer() {
+        super(Set.class);
     }
 
     @Override
