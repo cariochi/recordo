@@ -2,6 +2,7 @@ package com.cariochi.recordo.core.json;
 
 import com.cariochi.reflecto.Reflecto;
 import com.cariochi.reflecto.fields.JavaField;
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +17,7 @@ import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsLast;
 import static java.util.stream.Collectors.toList;
 
-public class ReflectionSetSorter {
+public class ReflectionSetSorter implements Serializable {
 
     public static final List<Predicate<JavaField>> FIELD_NAMES_PREDICATES = List.of(
             field -> "id".equalsIgnoreCase(field.getName()),

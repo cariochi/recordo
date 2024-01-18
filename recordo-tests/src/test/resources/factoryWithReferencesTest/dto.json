@@ -1,0 +1,131 @@
+{
+  "name": "RKMBEGTS",
+  "parent": {
+    "name": "YOACJHVQZSE",
+    "parent": null,
+    "children": [
+      {
+        "name": "RKMBEGTS",
+        "parent": {
+          "name": "YOACJHVQZSE",
+          "parent": null,
+          "children": [
+            null
+          ]
+        },
+        "children": [
+          {
+            "name": "HXRDKPYIBGBQTO",
+            "parent": null,
+            "children": []
+          },
+          {
+            "name": "JHJLMBJPTLI",
+            "parent": null,
+            "children": []
+          },
+          {
+            "name": "FYEJKDTYWN",
+            "parent": null,
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  "children": [
+    {
+      "name": "HXRDKPYIBGBQTO",
+      "parent": {
+        "name": "RKMBEGTS",
+        "parent": {
+          "name": "YOACJHVQZSE",
+          "parent": null,
+          "children": [
+            null
+          ]
+        },
+        "children": [
+          {
+            "name": "HXRDKPYIBGBQTO",
+            "parent": null,
+            "children": []
+          },
+          {
+            "name": "JHJLMBJPTLI",
+            "parent": null,
+            "children": []
+          },
+          {
+            "name": "FYEJKDTYWN",
+            "parent": null,
+            "children": []
+          }
+        ]
+      },
+      "children": []
+    },
+    {
+      "name": "JHJLMBJPTLI",
+      "parent": {
+        "name": "RKMBEGTS",
+        "parent": {
+          "name": "YOACJHVQZSE",
+          "parent": null,
+          "children": [
+            null
+          ]
+        },
+        "children": [
+          {
+            "name": "HXRDKPYIBGBQTO",
+            "parent": null,
+            "children": []
+          },
+          {
+            "name": "JHJLMBJPTLI",
+            "parent": null,
+            "children": []
+          },
+          {
+            "name": "FYEJKDTYWN",
+            "parent": null,
+            "children": []
+          }
+        ]
+      },
+      "children": []
+    },
+    {
+      "name": "FYEJKDTYWN",
+      "parent": {
+        "name": "RKMBEGTS",
+        "parent": {
+          "name": "YOACJHVQZSE",
+          "parent": null,
+          "children": [
+            null
+          ]
+        },
+        "children": [
+          {
+            "name": "HXRDKPYIBGBQTO",
+            "parent": null,
+            "children": []
+          },
+          {
+            "name": "JHJLMBJPTLI",
+            "parent": null,
+            "children": []
+          },
+          {
+            "name": "FYEJKDTYWN",
+            "parent": null,
+            "children": []
+          }
+        ]
+      },
+      "children": []
+    }
+  ]
+}

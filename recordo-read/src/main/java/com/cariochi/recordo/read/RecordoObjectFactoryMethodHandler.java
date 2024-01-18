@@ -23,72 +23,74 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 
 public class RecordoObjectFactoryMethodHandler<T> implements MethodHandler {
 
-  private final Class<T> targetClass;
-  private final ExtensionContext context;
-  private final Object objecto;
+    private final Class<T> targetClass;
+    private final ExtensionContext context;
+    private final Object objecto;
 
-  public RecordoObjectFactoryMethodHandler(Class<T> targetClass, ExtensionContext context) {
-    this(targetClass, context, Objecto.create(targetClass));
-  }
-
-  public RecordoObjectFactoryMethodHandler(Class<T> targetClass, ExtensionContext context, Object objecto) {
-    this.targetClass = targetClass;
-    this.context = context;
-    this.objecto = objecto;
-  }
-
-  @Override
-  public Object invoke(Object proxy, Method method, Object[] args, MethodProceed proceed) throws Throwable {
-
-    if (Object.class.equals(method.getDeclaringClass())) {
-      return proceed.proceed();
+    public RecordoObjectFactoryMethodHandler(Class<T> targetClass, ExtensionContext context) {
+        this(targetClass, context, Objecto.create(targetClass));
     }
 
-    if (proceed == null) {
-
-      if (method.getReturnType().equals(method.getDeclaringClass())) {
-        final Object newObjecto = invokeObjecto(method, args);
-        final RecordoObjectFactoryMethodHandler<T> handler = new RecordoObjectFactoryMethodHandler<>(targetClass, context, newObjecto);
-        return ProxyFactory.createInstance(handler, targetClass);
-      } else {
-        return Optional.ofNullable(method.getAnnotation(Read.class))
-            .map(read -> {
-              final JsonConverter jsonConverter = JsonConverters.getJsonConverter(read.objectMapper(), context);
-              final Function<Type, Object> generator = type -> invokeObjecto(method, args);
-              final ObjectReader objectReader = new ObjectReader(jsonConverter, generator);
-              final ObjectFactory<?> objectFactory = new ObjectFactory<>(objectReader, read.value(), method.getGenericReturnType());
-              Object instance = objectFactory.create();
-              instance = ((ObjectModifier) objecto).modifyObject(instance);
-              return ObjectoModifier.modifyObject(instance, readMethodParameters(method.getParameters(), args));
-            })
-            .orElseGet(() -> invokeObjecto(method, args));
-      }
-    } else {
-      return invokeObjecto(method, args);
+    public RecordoObjectFactoryMethodHandler(Class<T> targetClass, ExtensionContext context, Object objecto) {
+        this.targetClass = targetClass;
+        this.context = context;
+        this.objecto = objecto;
     }
-  }
 
-  @SneakyThrows
-  private Object invokeObjecto(Method method, Object[] args) {
-    return method.invoke(objecto, args);
-  }
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args, MethodProceed proceed) throws Throwable {
 
-  private Map<String, Object[]> readMethodParameters(Parameter[] parameters, Object[] args) {
-    final Map<String, Object[]> methodParameters = new LinkedHashMap<>();
-    for (int i = 0; i < parameters.length; i++) {
-      final Parameter param = parameters[i];
-      final Modifier modifierParameter = param.getAnnotation(Modifier.class);
-      if (modifierParameter == null) {
-        if (param.isNamePresent()) {
-          methodParameters.put(param.getName(), Stream.of(args[i]).toArray());
-        } else {
-          throw new IllegalArgumentException("Cannot recognize parameter name. Please use @Modifier annotation");
+        if (Object.class.equals(method.getDeclaringClass())) {
+            return proceed.proceed();
         }
-      } else {
-        methodParameters.put(modifierParameter.value(), Stream.of(args[i]).toArray());
-      }
+
+        if (proceed == null) {
+
+            if (method.getReturnType().equals(method.getDeclaringClass())) {
+                final Object newObjecto = invokeObjecto(method, args);
+                final RecordoObjectFactoryMethodHandler<T> handler = new RecordoObjectFactoryMethodHandler<>(targetClass, context, newObjecto);
+                return ProxyFactory.createInstance(handler, targetClass);
+            } else {
+                return Optional.ofNullable(method.getAnnotation(Read.class))
+                        .map(read -> {
+                            final JsonConverter jsonConverter = JsonConverters.getJsonConverter(read.objectMapper(), context);
+                            final Function<Type, Object> generator = type -> invokeObjecto(method, args);
+                            final ObjectReader objectReader = new ObjectReader(jsonConverter, generator);
+                            final ObjectFactory<?> objectFactory = new ObjectFactory<>(objectReader, read.value(), method.getGenericReturnType());
+                            Object instance = objectFactory.create();
+                            instance = ((ObjectModifier) objecto).modifyObject(instance);
+                            return ObjectoModifier.modifyObject(instance, readMethodParameters(method.getParameters(), args));
+                        })
+                        .orElseGet(() -> invokeObjecto(method, args));
+            }
+        } else {
+            return invokeObjecto(method, args);
+        }
     }
-    return methodParameters;
-  }
+
+    @SneakyThrows
+    private Object invokeObjecto(Method method, Object[] args) {
+        return method.invoke(objecto, args);
+    }
+
+    private Map<String, Object[]> readMethodParameters(Parameter[] parameters, Object[] args) {
+        final Map<String, Object[]> methodParameters = new LinkedHashMap<>();
+        for (int i = 0; i < parameters.length; i++) {
+            final Parameter param = parameters[i];
+            final Modifier modifierParameter = param.getAnnotation(Modifier.class);
+            if (modifierParameter == null) {
+                if (param.isNamePresent()) {
+                    methodParameters.put(param.getName(), Stream.of(args[i]).toArray());
+                } else {
+                    throw new IllegalArgumentException("Cannot recognize parameter name. Please use @Modifier annotation");
+                }
+            } else {
+                for (String value : modifierParameter.value()) {
+                    methodParameters.put(value, Stream.of(args[i]).toArray());
+                }
+            }
+        }
+        return methodParameters;
+    }
 
 }
