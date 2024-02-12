@@ -6,7 +6,7 @@ import com.cariochi.recordo.mockmvc.Content;
 import com.cariochi.recordo.mockmvc.Post;
 import com.cariochi.recordo.mockmvc.RecordoMockMvc;
 import com.cariochi.recordo.mockmvc.Request;
-import java.lang.reflect.Type;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +18,7 @@ import static com.cariochi.recordo.core.json.JsonConverters.getJsonConverter;
 import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.getBody;
 import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.getResponseType;
 import static com.cariochi.recordo.mockmvc.utils.MockMvcUtils.parseHeaders;
+import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.springframework.http.HttpMethod.POST;
 
@@ -36,13 +37,11 @@ public class PostParameterResolver implements MockMvcParameterResolver {
         final Post annotation = parameterContext.findAnnotation(Post.class).orElseThrow();
 
         final JsonConverter jsonConverter = getJsonConverter(annotation.objectMapper(), extensionContext);
-
-        final Type type = parameterContext.getParameter().getParameterizedType();
-
+        final ReflectoType type = reflect(parameterContext.getParameter()).type();
         final RecordoMockMvc recordoMockMvc = recordoMockMvcCreator.create(annotation.objectMapper(), extensionContext);
 
         final Request<Object> request = recordoMockMvc
-                .request(POST, annotation.value(), getResponseType(type))
+                .request(POST, annotation.value(), getResponseType(type).actualType())
                 .headers(parseHeaders(annotation.headers()))
                 .expectedStatus(annotation.expectedStatus())
                 .body(getBody(annotation.body(), jsonConverter));

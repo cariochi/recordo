@@ -14,10 +14,10 @@ public class ObjectFactoryFieldResolver implements RegularExtension, BeforeEachC
 
     @Override
     public void beforeEach(ExtensionContext context) {
-        reflect(context.getRequiredTestInstance()).fields().includeEnclosing()
-                .withAnnotation(EnableRecordo.class).stream()
-                .filter(field -> objectFactoryCreator.isSupported(field.getType()))
-                .forEach(field -> field.setValue(objectFactoryCreator.create(field.getType(), context)));
+        reflect(context.getRequiredTestInstance()).includeEnclosing().fields().stream()
+                .filter(field -> field.annotations().contains(EnableRecordo.class))
+                .filter(field -> objectFactoryCreator.isSupported(field.type()))
+                .forEach(field -> field.setValue(objectFactoryCreator.create(field.type(), context)));
     }
 
 }

@@ -1,13 +1,14 @@
 package com.cariochi.recordo.mockmvc.extensions;
 
 import com.cariochi.recordo.core.SpringContextExtension;
-import java.lang.reflect.Field;
+import com.cariochi.reflecto.fields.ReflectoField;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.util.List;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.stream.Collectors.toList;
 
 public class ApiClientBeanResolver implements SpringContextExtension, BeforeAllCallback {
@@ -17,23 +18,23 @@ public class ApiClientBeanResolver implements SpringContextExtension, BeforeAllC
     @Override
     public void beforeAll(ExtensionContext context) {
 
-        final List<Field> recordoClientFields = Stream.of(context.getRequiredTestClass().getDeclaredFields())
+        final List<ReflectoField> recordoClientFields = reflect(context.getRequiredTestClass()).includeEnclosing().fields().stream()
                 .filter(this::isRecordoClientField)
                 .collect(toList());
 
         recordoClientFields.stream()
-                .map(Field::getType)
-                .filter(type -> isBeanAbsent(type, context))
+                .map(ReflectoField::type)
+                .filter(type -> isBeanAbsent(type.actualClass(), context))
                 .forEach(type -> registerRecordoClient(type, context));
     }
 
-    private boolean isRecordoClientField(Field field) {
-        return apiClientCreator.isSupported(field.getType()) && field.isAnnotationPresent(Autowired.class);
+    private boolean isRecordoClientField(ReflectoField field) {
+        return apiClientCreator.isSupported(field.type()) && field.annotations().contains(Autowired.class);
     }
 
-    private <T> void registerRecordoClient(Class<T> targetClass, ExtensionContext context) {
-        final T recordoClient = apiClientCreator.create(targetClass, context);
-        registerBean(targetClass.getName(), recordoClient, context);
+    private <T> void registerRecordoClient(ReflectoType type, ExtensionContext context) {
+        final T recordoClient = apiClientCreator.create(type, context);
+        registerBean(type.name(), recordoClient, context);
     }
 
 }

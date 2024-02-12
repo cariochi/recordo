@@ -3,7 +3,6 @@ package com.cariochi.recordo.core;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.ServiceLoader.Provider;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -18,6 +17,7 @@ import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
+import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.toList;
 
@@ -49,7 +49,7 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
     public void beforeAll(ExtensionContext context) {
         RecordoExtension.context = context;
         final List<BeforeAllCallback> callbacks = handlers.stream()
-                .filter(i -> BeforeAllCallback.class.isAssignableFrom(i.getClass()))
+                .filter(extension -> reflect(extension).type().is(BeforeAllCallback.class))
                 .sorted(orderAnnotationComparator())
                 .map(BeforeAllCallback.class::cast)
                 .collect(toList());
@@ -63,7 +63,7 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
     @Override
     public void beforeEach(ExtensionContext context) {
         final List<BeforeEachCallback> callbacks = handlers.stream()
-                .filter(i -> BeforeEachCallback.class.isAssignableFrom(i.getClass()))
+                .filter(extension -> reflect(extension).type().is(BeforeEachCallback.class))
                 .sorted(orderAnnotationComparator())
                 .map(BeforeEachCallback.class::cast)
                 .collect(toList());
@@ -77,7 +77,7 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
     @Override
     public void afterEach(ExtensionContext context) {
         final List<AfterEachCallback> callbacks = handlers.stream()
-                .filter(i -> AfterEachCallback.class.isAssignableFrom(i.getClass()))
+                .filter(extension -> reflect(extension).type().is(AfterEachCallback.class))
                 .sorted(orderAnnotationComparator())
                 .map(AfterEachCallback.class::cast)
                 .collect(toList());
@@ -92,7 +92,7 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
     @Override
     public void afterAll(ExtensionContext context) {
         final List<AfterAllCallback> callbacks = handlers.stream()
-                .filter(i -> AfterAllCallback.class.isAssignableFrom(i.getClass()))
+                .filter(extension -> reflect(extension).type().is(AfterAllCallback.class))
                 .sorted(orderAnnotationComparator())
                 .map(AfterAllCallback.class::cast)
                 .collect(toList());
@@ -103,21 +103,21 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
     }
 
     @Override
-    public boolean supportsParameter(ParameterContext parameter, ExtensionContext extension) throws ParameterResolutionException {
+    public boolean supportsParameter(ParameterContext parameter, ExtensionContext context) throws ParameterResolutionException {
         return handlers.stream()
-                .filter(i -> ParameterResolver.class.isAssignableFrom(i.getClass()))
+                .filter(extension -> reflect(extension).type().is(ParameterResolver.class))
                 .map(ParameterResolver.class::cast)
-                .anyMatch(r -> r.supportsParameter(parameter, extension));
+                .anyMatch(r -> r.supportsParameter(parameter, context));
     }
 
     @Override
-    public Object resolveParameter(ParameterContext parameter, ExtensionContext extension) throws ParameterResolutionException {
+    public Object resolveParameter(ParameterContext parameter, ExtensionContext context) throws ParameterResolutionException {
         return handlers.stream()
-                .filter(i -> ParameterResolver.class.isAssignableFrom(i.getClass()))
+                .filter(extension -> reflect(extension).type().is(ParameterResolver.class))
                 .map(ParameterResolver.class::cast)
-                .filter(r -> r.supportsParameter(parameter, extension))
+                .filter(parameterResolver -> parameterResolver.supportsParameter(parameter, context))
                 .findFirst()
-                .map(r -> r.resolveParameter(parameter, extension))
+                .map(parameterResolver -> parameterResolver.resolveParameter(parameter, context))
                 .orElse(null);
     }
 
@@ -131,9 +131,9 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
     }
 
     private Comparator<? super Extension> orderAnnotationComparator() {
-        return (e1, e2) -> {
-            final int v1 = Optional.of(e1.getClass()).map(c -> c.getAnnotation(Order.class)).map(Order::value).orElse(Integer.MAX_VALUE / 2);
-            final int v2 = Optional.of(e2.getClass()).map(c -> c.getAnnotation(Order.class)).map(Order::value).orElse(Integer.MAX_VALUE / 2);
+        return (extensionA, extensionB) -> {
+            final int v1 = reflect(extensionA).type().annotations().find(Order.class).map(Order::value).orElse(Integer.MAX_VALUE / 2);
+            final int v2 = reflect(extensionB).type().annotations().find(Order.class).map(Order::value).orElse(Integer.MAX_VALUE / 2);
             return v1 - v2;
         };
     }

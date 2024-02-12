@@ -1,7 +1,7 @@
 package com.cariochi.recordo.core.utils;
 
 import com.cariochi.recordo.core.EnableRecordo;
-import com.cariochi.reflecto.fields.JavaField;
+import com.cariochi.reflecto.fields.TargetField;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -67,10 +67,11 @@ public class Beans {
 
     private <T> Map<String, T> annotatedFields(Class<T> beanClass) {
         return context.getTestInstance()
-                .map(instance -> reflect(instance).fields().includeEnclosing()
-                        .withTypeAndAnnotation(beanClass, EnableRecordo.class).stream()
+                .map(instance -> reflect(instance).includeEnclosing().fields().stream()
+                        .filter(field -> field.type().is(beanClass))
+                        .filter(field -> field.annotations().contains(EnableRecordo.class))
                         .collect(toMap(
-                                JavaField::getName,
+                                TargetField::name,
                                 f -> (T) f.getValue(),
                                 (a, b) -> a,
                                 LinkedHashMap::new

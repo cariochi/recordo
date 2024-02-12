@@ -2,7 +2,7 @@ package com.cariochi.recordo.mockmvc.extensions;
 
 import com.cariochi.recordo.core.EnableRecordo;
 import com.cariochi.recordo.core.SpringExtension;
-import com.cariochi.reflecto.fields.JavaField;
+import com.cariochi.reflecto.fields.TargetField;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
@@ -15,13 +15,14 @@ public class ApiClientFieldResolver implements SpringExtension, BeforeEachCallba
 
     @Override
     public void beforeEach(ExtensionContext context) {
-        reflect(context.getRequiredTestInstance()).fields().includeEnclosing().withAnnotation(EnableRecordo.class).stream()
-                .filter(field -> apiClientCreator.isSupported(field.getType()))
+        reflect(context.getRequiredTestInstance()).includeEnclosing().fields().stream()
+                .filter(field -> field.annotations().contains(EnableRecordo.class))
+                .filter(field -> apiClientCreator.isSupported(field.type()))
                 .forEach(field -> createRecordoClient(context, field));
     }
 
-    private void createRecordoClient(ExtensionContext context, JavaField field) {
-        final Object recordoClient = apiClientCreator.create(field.getType(), context);
+    private void createRecordoClient(ExtensionContext context, TargetField field) {
+        final Object recordoClient = apiClientCreator.create(field.type(), context);
         field.setValue(recordoClient);
     }
 

@@ -1,9 +1,11 @@
 package com.cariochi.recordo.core;
 
+import com.cariochi.reflecto.types.ReflectoType;
 import java.util.List;
 import java.util.ServiceLoader.Provider;
 import lombok.experimental.UtilityClass;
 
+import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.toList;
 
@@ -15,10 +17,12 @@ public class Recordo {
             .collect(toList());
 
     public static <T> T create(Class<T> type) {
+        final ReflectoType reflectoType = reflect(type);
         return creators.stream()
-                .filter(c -> c.isSupported(type))
-                .map(c -> c.create(type, RecordoExtension.getContext()))
+                .filter(c -> c.isSupported(reflectoType))
+                .map(c -> c.create(reflectoType, RecordoExtension.getContext()))
                 .findFirst()
+                .map(type::cast)
                 .orElseThrow();
     }
 

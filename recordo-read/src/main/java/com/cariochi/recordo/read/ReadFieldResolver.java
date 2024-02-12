@@ -3,9 +3,8 @@ package com.cariochi.recordo.read;
 import com.cariochi.recordo.core.RegularExtension;
 import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.core.utils.ObjectReader;
-import com.cariochi.reflecto.fields.JavaField;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import com.cariochi.reflecto.fields.TargetField;
+import com.cariochi.reflecto.types.ReflectoType;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
@@ -17,25 +16,22 @@ public class ReadFieldResolver implements RegularExtension, BeforeEachCallback {
 
     @Override
     public void beforeEach(ExtensionContext context) {
-        reflect(context.getRequiredTestInstance()).fields().includeEnclosing()
-                .withAnnotation(Read.class)
+        reflect(context.getRequiredTestInstance()).includeEnclosing().fields().stream()
+                .filter(field -> field.annotations().contains(Read.class))
                 .forEach(field -> processRead(context, field));
     }
 
-    public void processRead(ExtensionContext context, JavaField field) {
-        final Read annotation = field.findAnnotation(Read.class).orElseThrow();
+    public void processRead(ExtensionContext context, TargetField field) {
+        final Read annotation = field.annotations().find(Read.class).orElseThrow();
         final String file = annotation.value();
-        final Type parameterType = field.getGenericType();
+        final ReflectoType type = field.type();
         final JsonConverter jsonConverter = getJsonConverter(annotation.objectMapper(), context);
         final ObjectReader objectReader = new ObjectReader(jsonConverter);
-        if (ObjectFactory.class.isAssignableFrom(field.getType())) {
-            final Type actualTypeArgument = ((ParameterizedType) parameterType).getActualTypeArguments()[0];
-            field.setValue(new ObjectFactory<>(objectReader, file, actualTypeArgument));
-        } else if (ObjectTemplate.class.isAssignableFrom(field.getType())) {
-            final Type actualTypeArgument = ((ParameterizedType) parameterType).getActualTypeArguments()[0];
-            field.setValue(new ObjectTemplate<>(objectReader, file, actualTypeArgument));
+        if (field.type().is(ObjectFactory.class)) {
+            final ReflectoType typeArgument = type.arguments().get(0);
+            field.setValue(new ObjectFactory<>(objectReader, file, typeArgument));
         } else {
-            field.setValue(objectReader.read(file, parameterType));
+            field.setValue(objectReader.read(file, type));
         }
     }
 

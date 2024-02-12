@@ -9,27 +9,29 @@ import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
 import com.cariochi.recordo.mockserver.model.MockInteraction;
 import com.cariochi.recordo.mockserver.model.MockRequest;
 import com.cariochi.recordo.mockserver.model.MockResponse;
-import com.fasterxml.jackson.core.type.TypeReference;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.JSONCompareResult;
 
-import java.lang.reflect.Type;
-import java.util.*;
-import java.util.stream.Stream;
-
 import static com.cariochi.recordo.core.json.JsonUtils.compareMode;
+import static com.cariochi.reflecto.types.Types.listOf;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.text.StringSubstitutor.replace;
 import static org.skyscreamer.jsonassert.JSONCompare.compareJSON;
 
 @Slf4j
 public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
-
-    private static final Type TYPE = new TypeReference<List<MockInteraction>>() {}.getType();
 
     private final UrlPatternMatcher urlPatternMatcher;
     private final String fileName;
@@ -130,7 +132,7 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
     private List<MockInteraction> loadExpectedMocks(String fileName) {
         if (Files.exists(fileName)) {
             final String json = applyVariables(Files.readString(fileName));
-            final List<MockInteraction> mocks = jsonConverter.fromJson(json, TYPE);
+            final List<MockInteraction> mocks = jsonConverter.fromJson(json, listOf(MockInteraction.class));
             log.info("Read Http Mocks from file://{}\nRequests:\n{}", Files.path(fileName), urlsOf(mocks));
             return mocks;
         } else {
