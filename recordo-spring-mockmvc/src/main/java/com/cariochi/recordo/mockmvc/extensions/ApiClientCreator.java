@@ -6,6 +6,7 @@ import com.cariochi.recordo.mockmvc.RecordoApiClient;
 import com.cariochi.recordo.mockmvc.RecordoMockMvc;
 import com.cariochi.recordo.mockmvc.RequestInterceptor;
 import com.cariochi.reflecto.proxy.ProxyFactory;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -20,13 +21,13 @@ public class ApiClientCreator implements ObjectCreator {
     private final RecordoMockMvcCreator recordoMockMvcCreator = new RecordoMockMvcCreator();
 
     @Override
-    public boolean isSupported(Class<?> targetClass) {
-        return targetClass.isAnnotationPresent(RecordoApiClient.class);
+    public boolean isSupported(ReflectoType type) {
+        return type.annotations().contains(RecordoApiClient.class);
     }
 
     @Override
-    public <T> T create(Class<T> targetClass, ExtensionContext context) {
-        final RecordoApiClient annotation = targetClass.getAnnotation(RecordoApiClient.class);
+    public <T> T create(ReflectoType type, ExtensionContext context) {
+        final RecordoApiClient annotation = type.annotations().find(RecordoApiClient.class).orElseThrow();
 
         final RecordoMockMvc recordoMockMvc = recordoMockMvcCreator.create(annotation.objectMapper(), context);
 
@@ -35,7 +36,7 @@ public class ApiClientCreator implements ObjectCreator {
                 .collect(toList());
 
         final RecordoApiClientMethodHandler methodHandler = new RecordoApiClientMethodHandler(recordoMockMvc, requestInterceptors);
-        return ProxyFactory.createInstance(methodHandler, targetClass);
+        return ProxyFactory.createInstance(methodHandler, type.actualClass());
     }
 
     private <T extends RequestInterceptor> Collection<T> createRequestInterceptor(Class<T> interceptorClass, ExtensionContext context) {

@@ -2,15 +2,12 @@ package com.cariochi.recordo.core.utils;
 
 import com.cariochi.objecto.generators.ObjectoGenerator;
 import com.cariochi.recordo.core.json.JsonConverter;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import static org.apache.commons.lang3.reflect.TypeUtils.isArrayType;
-import static org.apache.commons.lang3.reflect.TypeUtils.isAssignable;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -25,24 +22,25 @@ public class ObjectReader {
         this.generator = objecto::generate;
     }
 
-    public Object read(String file, Type parameterType) {
-        return read(file, parameterType, UnaryOperator.identity());
+    public Object read(String file, ReflectoType type) {
+        if (!Files.exists(file)) {
+            return generate(file, type);
+        }
+        return byte[].class.equals(type.actualClass())
+                ? Files.readBytes(file)
+                : jsonConverter.fromJson(Files.readString(file), type.actualType());
     }
 
-    public Object read(String file, Type parameterType, UnaryOperator<String> jsonModifier) {
-        return Files.exists(file)
-                ? byte[].class.equals(parameterType) ? Files.readBytes(file) : jsonConverter.fromJson(jsonModifier.apply(Files.readString(file)), parameterType)
-                : generate(file, parameterType);
-    }
-
-    private Object generate(String file, Type parameterType) {
+    private Object generate(String file, ReflectoType type) {
         Object givenObject = null;
         String json;
         try {
-            givenObject = generator.apply(parameterType);
-            json = givenObject == null
-                    ? (isAssignable(Collection.class, parameterType) || isArrayType(parameterType) ? "[]" : "{}")
-                    : jsonConverter.toJson(givenObject);
+            givenObject = generator.apply(type.actualType());
+            if (givenObject == null) {
+                json = type.is(Collection.class) || type.isArray() ? "[]" : "{}";
+            } else {
+                json = jsonConverter.toJson(givenObject);
+            }
         } catch (Exception e) {
             log.error("Cannot serialize object into JSON", e);
             json = "{}";

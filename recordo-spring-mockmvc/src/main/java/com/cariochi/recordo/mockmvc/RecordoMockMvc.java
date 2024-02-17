@@ -3,17 +3,16 @@ package com.cariochi.recordo.mockmvc;
 import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.mockmvc.dto.PageBuilder;
 import com.cariochi.recordo.mockmvc.dto.SliceBuilder;
+import com.cariochi.reflecto.types.ReflectoType;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpMethod;
@@ -25,6 +24,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static java.util.function.Function.identity;
@@ -68,10 +68,6 @@ public class RecordoMockMvc {
         return request(method, path, (Type) responseType);
     }
 
-    public <RESP> Request<RESP> request(HttpMethod method, String path, ParameterizedTypeReference<RESP> responseType) {
-        return request(method, path, responseType.getType());
-    }
-
     // GET
 
     public <RESP> Request<RESP> get(String path, Type responseType) {
@@ -79,10 +75,6 @@ public class RecordoMockMvc {
     }
 
     public <RESP> Request<RESP> get(String path, Class<RESP> responseType) {
-        return request(GET, path, responseType);
-    }
-
-    public <RESP> Request<RESP> get(String path, ParameterizedTypeReference<RESP> responseType) {
         return request(GET, path, responseType);
     }
 
@@ -96,10 +88,6 @@ public class RecordoMockMvc {
         return request(POST, path, responseType);
     }
 
-    public <RESP> Request<RESP> post(String path, ParameterizedTypeReference<RESP> responseType) {
-        return request(POST, path, responseType);
-    }
-
     // PUT
 
     public <RESP> Request<RESP> put(String path, Type responseType) {
@@ -107,10 +95,6 @@ public class RecordoMockMvc {
     }
 
     public <RESP> Request<RESP> put(String path, Class<RESP> responseType) {
-        return request(PUT, path, responseType);
-    }
-
-    public <RESP> Request<RESP> put(String path, ParameterizedTypeReference<RESP> responseType) {
         return request(PUT, path, responseType);
     }
 
@@ -124,10 +108,6 @@ public class RecordoMockMvc {
         return request(PATCH, path, responseType);
     }
 
-    public <RESP> Request<RESP> patch(String path, ParameterizedTypeReference<RESP> responseType) {
-        return request(PATCH, path, responseType);
-    }
-
     // DELETE
 
     public <RESP> Request<RESP> delete(String path, Type responseType) {
@@ -135,10 +115,6 @@ public class RecordoMockMvc {
     }
 
     public <RESP> Request<RESP> delete(String path, Class<RESP> responseType) {
-        return request(DELETE, path, responseType);
-    }
-
-    public <RESP> Request<RESP> delete(String path, ParameterizedTypeReference<RESP> responseType) {
         return request(DELETE, path, responseType);
     }
 
@@ -213,23 +189,22 @@ public class RecordoMockMvc {
 
     @SneakyThrows
     private <RESP> RESP getBody(Request<RESP> request, MockHttpServletResponse response) {
-        final Type responseType = request.responseType();
+        final ReflectoType responseType = reflect(request.responseType());
         if (response.getContentAsByteArray().length == 0) {
             return null;
-        } else if (byte[].class.equals(responseType)) {
+        } else if (responseType.is(byte[].class)) {
             return (RESP) response.getContentAsByteArray();
-        } else if (String.class.equals(responseType)) {
+        } else if (responseType.is(String.class)) {
             return (RESP) response.getContentAsString();
-        } else if (responseType instanceof ParameterizedType) {
+        } else if (responseType.isParametrized()) {
             final String contentAsString = response.getContentAsString();
-            ParameterizedType parameterizedType = (ParameterizedType) responseType;
-            if (parameterizedType.getRawType().equals(Page.class)) {
-                return pageFromJson(contentAsString, parameterizedType);
-            } else if (parameterizedType.getRawType().equals(Slice.class)) {
-                return sliceFromJson(contentAsString, parameterizedType);
+            if (responseType.is(Page.class)) {
+                return pageFromJson(contentAsString, responseType);
+            } else if (responseType.is(Slice.class)) {
+                return sliceFromJson(contentAsString, responseType);
             }
         }
-        return jsonConverter.fromJson(response.getContentAsString(), responseType);
+        return jsonConverter.fromJson(response.getContentAsString(), responseType.actualType());
     }
 
     private Map<String, String> headersOf(MockHttpServletResponse response) {
@@ -240,17 +215,17 @@ public class RecordoMockMvc {
                 ));
     }
 
-    private <RESP> RESP pageFromJson(String json, ParameterizedType parameterizedType) {
+    private <RESP> RESP pageFromJson(String json, ReflectoType type) {
         final TypeFactory typeFactory = TypeFactory.defaultInstance();
-        final JavaType pageItemType = typeFactory.constructType(parameterizedType.getActualTypeArguments()[0]);
+        final JavaType pageItemType = typeFactory.constructType(type.arguments().get(0).actualType());
         final JavaType pageType = typeFactory.constructParametricType(PageBuilder.class, pageItemType);
         final PageBuilder<?> pageBuilder = jsonConverter.fromJson(json, pageType);
         return (RESP) pageBuilder.build();
     }
 
-    private <RESP> RESP sliceFromJson(String json, ParameterizedType parameterizedType) {
+    private <RESP> RESP sliceFromJson(String json, ReflectoType type) {
         final TypeFactory typeFactory = TypeFactory.defaultInstance();
-        final JavaType sliceItemType = typeFactory.constructType(parameterizedType.getActualTypeArguments()[0]);
+        final JavaType sliceItemType = typeFactory.constructType(type.arguments().get(0).actualType());
         final JavaType pageType = typeFactory.constructParametricType(SliceBuilder.class, sliceItemType);
         final SliceBuilder<?> sliceBuilder = jsonConverter.fromJson(json, pageType);
         return (RESP) sliceBuilder.build();

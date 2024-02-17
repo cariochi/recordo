@@ -1,11 +1,13 @@
 package com.cariochi.recordo.read;
 
 import com.cariochi.recordo.core.SpringContextExtension;
-import java.lang.reflect.Field;
-import java.util.stream.Stream;
+import com.cariochi.reflecto.fields.ReflectoField;
+import com.cariochi.reflecto.types.ReflectoType;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import static com.cariochi.reflecto.Reflecto.reflect;
 
 
 public class ObjectFactoryBeanResolver implements SpringContextExtension, BeforeAllCallback {
@@ -14,15 +16,15 @@ public class ObjectFactoryBeanResolver implements SpringContextExtension, Before
 
     @Override
     public void beforeAll(ExtensionContext context) {
-        Stream.of(context.getRequiredTestClass().getDeclaredFields())
-                .filter(field -> objectFactoryCreator.isSupported(field.getType()) && field.isAnnotationPresent(Autowired.class))
-                .map(Field::getType)
+        reflect(context.getRequiredTestClass()).fields().stream()
+                .filter(field -> objectFactoryCreator.isSupported(field.type()) && field.annotations().contains(Autowired.class))
+                .map(ReflectoField::type)
                 .forEach(type -> registerRecordoClient(type, context));
     }
 
-    private <T> void registerRecordoClient(Class<T> targetClass, ExtensionContext context) {
-        final T proxyInstance = objectFactoryCreator.create(targetClass, context);
-        registerBean(targetClass.getName(), proxyInstance, context);
+    private void registerRecordoClient(ReflectoType type, ExtensionContext context) {
+        final Object proxyInstance = objectFactoryCreator.create(type, context);
+        registerBean(type.name(), proxyInstance, context);
     }
 
 }

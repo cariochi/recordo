@@ -6,6 +6,7 @@ import com.cariochi.recordo.core.json.JsonConverters;
 import com.cariochi.recordo.core.utils.Beans;
 import com.cariochi.recordo.mockmvc.RecordoMockMvc;
 import com.cariochi.recordo.mockmvc.RequestInterceptor;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.util.Collection;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.test.web.servlet.MockMvc;
@@ -13,14 +14,14 @@ import org.springframework.test.web.servlet.MockMvc;
 public class RecordoMockMvcCreator implements ObjectCreator {
 
     @Override
-    public boolean isSupported(Class<?> targetClass) {
-        return RecordoMockMvc.class.equals(targetClass);
+    public boolean isSupported(ReflectoType type) {
+        return type.is(RecordoMockMvc.class);
     }
 
     @Override
-    public <T> T create(Class<T> targetClass, ExtensionContext context) {
-        if (!isSupported(targetClass)) {
-            throw new IllegalArgumentException(targetClass.getName() + " not supported");
+    public <T> T create(ReflectoType type, ExtensionContext context) {
+        if (!isSupported(type)) {
+            throw new IllegalArgumentException(type.name() + " not supported");
         }
         return (T) create("", context);
     }

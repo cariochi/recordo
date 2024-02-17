@@ -16,7 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
-import static com.cariochi.recordo.mockmvc.utils.TypeReferences.pageOf;
+import static com.cariochi.reflecto.types.Types.type;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.GET;
@@ -91,7 +91,7 @@ class UserControllerTest {
 
     @Test
     void should_get_all_users_with_mock_mvc() {
-        final Request<Page<UserDto>> request = mockMvc.get("/users", pageOf(UserDto.class));
+        final Request<Page<UserDto>> request = mockMvc.get("/users", type(Page.class, UserDto.class));
         final Response<Page<UserDto>> response = request.perform();
         assertAsJson(response.getBody()).isEqualTo("/mockmvc/users_page.json");
     }
