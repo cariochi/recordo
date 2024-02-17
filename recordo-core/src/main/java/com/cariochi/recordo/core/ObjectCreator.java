@@ -1,11 +1,12 @@
 package com.cariochi.recordo.core;
 
+import com.cariochi.reflecto.types.ReflectoType;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 public interface ObjectCreator {
 
-    boolean isSupported(Class<?> targetClass);
+    boolean isSupported(ReflectoType type);
 
-    <T> T create(Class<T> targetClass, ExtensionContext context);
+    <T> T create(ReflectoType type, ExtensionContext context);
 
 }

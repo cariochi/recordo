@@ -32,7 +32,8 @@ public class OkMockServerInterceptor implements Interceptor, MockServerIntercept
 
         final OkMockServerInterceptor okMockServerInterceptor = new OkMockServerInterceptor();
         interceptors.add(okMockServerInterceptor);
-        reflect(httpClient).get("interceptors").setValue(interceptors);
+        reflect(httpClient).fields().find("interceptors")
+                .ifPresent(field -> field.setValue(interceptors));
         return okMockServerInterceptor;
     }
 

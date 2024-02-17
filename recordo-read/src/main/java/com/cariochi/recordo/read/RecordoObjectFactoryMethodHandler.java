@@ -7,15 +7,15 @@ import com.cariochi.objecto.proxy.ObjectModifier;
 import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.core.json.JsonConverters;
 import com.cariochi.recordo.core.utils.ObjectReader;
+import com.cariochi.reflecto.methods.ReflectoMethod;
+import com.cariochi.reflecto.methods.TargetMethod;
+import com.cariochi.reflecto.parameters.ReflectoParameter;
+import com.cariochi.reflecto.parameters.ReflectoParameters;
 import com.cariochi.reflecto.proxy.ProxyFactory;
 import com.cariochi.reflecto.proxy.ProxyFactory.MethodHandler;
-import com.cariochi.reflecto.proxy.ProxyFactory.MethodProceed;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
@@ -38,49 +38,49 @@ public class RecordoObjectFactoryMethodHandler<T> implements MethodHandler {
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args, MethodProceed proceed) throws Throwable {
+    public Object invoke(Object proxy, ReflectoMethod thisMethod, Object[] args, TargetMethod proceed) {
 
-        if (Object.class.equals(method.getDeclaringClass())) {
-            return proceed.proceed();
+        if (Object.class.equals(thisMethod.declaringType().actualClass())) {
+            return proceed.invoke(args);
         }
 
         if (proceed == null) {
 
-            if (method.getReturnType().equals(method.getDeclaringClass())) {
-                final Object newObjecto = invokeObjecto(method, args);
+            if (thisMethod.returnType().equals(thisMethod.declaringType())) {
+                final Object newObjecto = invokeObjecto(thisMethod, args);
                 final RecordoObjectFactoryMethodHandler<T> handler = new RecordoObjectFactoryMethodHandler<>(targetClass, context, newObjecto);
                 return ProxyFactory.createInstance(handler, targetClass);
             } else {
-                return Optional.ofNullable(method.getAnnotation(Read.class))
+                return thisMethod.annotations().find(Read.class)
                         .map(read -> {
                             final JsonConverter jsonConverter = JsonConverters.getJsonConverter(read.objectMapper(), context);
-                            final Function<Type, Object> generator = type -> invokeObjecto(method, args);
+                            final Function<Type, Object> generator = type -> invokeObjecto(thisMethod, args);
                             final ObjectReader objectReader = new ObjectReader(jsonConverter, generator);
-                            final ObjectFactory<?> objectFactory = new ObjectFactory<>(objectReader, read.value(), method.getGenericReturnType());
+                            final ObjectFactory<?> objectFactory = new ObjectFactory<>(objectReader, read.value(), thisMethod.returnType());
                             Object instance = objectFactory.create();
                             instance = ((ObjectModifier) objecto).modifyObject(instance);
-                            return ObjectoModifier.modifyObject(instance, readMethodParameters(method.getParameters(), args));
+                            return ObjectoModifier.modifyObject(instance, readMethodParameters(thisMethod.parameters(), args));
                         })
-                        .orElseGet(() -> invokeObjecto(method, args));
+                        .orElseGet(() -> invokeObjecto(thisMethod, args));
             }
         } else {
-            return invokeObjecto(method, args);
+            return invokeObjecto(thisMethod, args);
         }
     }
 
     @SneakyThrows
-    private Object invokeObjecto(Method method, Object[] args) {
-        return method.invoke(objecto, args);
+    private Object invokeObjecto(ReflectoMethod method, Object[] args) {
+        return method.withTarget(objecto).invoke(args);
     }
 
-    private Map<String, Object[]> readMethodParameters(Parameter[] parameters, Object[] args) {
+    private Map<String, Object[]> readMethodParameters(ReflectoParameters parameters, Object[] args) {
         final Map<String, Object[]> methodParameters = new LinkedHashMap<>();
-        for (int i = 0; i < parameters.length; i++) {
-            final Parameter param = parameters[i];
-            final Modifier modifierParameter = param.getAnnotation(Modifier.class);
+        for (int i = 0; i < parameters.size(); i++) {
+            final ReflectoParameter param = parameters.get(i);
+            final Modifier modifierParameter = param.annotations().find(Modifier.class).orElse(null);
             if (modifierParameter == null) {
                 if (param.isNamePresent()) {
-                    methodParameters.put(param.getName(), Stream.of(args[i]).toArray());
+                    methodParameters.put(param.name(), Stream.of(args[i]).toArray());
                 } else {
                     throw new IllegalArgumentException("Cannot recognize parameter name. Please use @Modifier annotation");
                 }

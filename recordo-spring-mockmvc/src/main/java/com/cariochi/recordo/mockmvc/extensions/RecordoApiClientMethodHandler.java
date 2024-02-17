@@ -6,13 +6,14 @@ import com.cariochi.recordo.mockmvc.Request.File;
 import com.cariochi.recordo.mockmvc.RequestInterceptor;
 import com.cariochi.recordo.mockmvc.utils.MockMvcUtils;
 import com.cariochi.reflecto.Reflecto;
-import com.cariochi.reflecto.fields.JavaField;
+import com.cariochi.reflecto.fields.TargetField;
+import com.cariochi.reflecto.methods.ReflectoMethod;
+import com.cariochi.reflecto.methods.TargetMethod;
+import com.cariochi.reflecto.parameters.ReflectoParameter;
+import com.cariochi.reflecto.parameters.ReflectoParameters;
 import com.cariochi.reflecto.proxy.ProxyFactory.MethodHandler;
-import com.cariochi.reflecto.proxy.ProxyFactory.MethodProceed;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -57,19 +58,19 @@ public class RecordoApiClientMethodHandler implements MethodHandler {
     private final List<RequestInterceptor> requestInterceptors;
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args, MethodProceed proceed) throws Throwable {
+    public Object invoke(Object proxy, ReflectoMethod method, Object[] args, TargetMethod proceed) throws Throwable {
 
-        if (Object.class.equals(method.getDeclaringClass())) {
-            return proceed.proceed();
+        if (Object.class.equals(method.declaringType().actualClass())) {
+            return proceed.invoke(args);
         }
 
-        final RequestInfo baseRequestInfo = extractInfoFromClass(method.getDeclaringClass());
+        final RequestInfo baseRequestInfo = extractInfoFromClass(method.declaringType());
         final RequestInfo requestInfo = extractInfoFromMethod(method).applyBaseInfo(baseRequestInfo);
 
-        final Type methodReturnType = method.getGenericReturnType();
+        final ReflectoType methodReturnType = method.returnType();
         final HttpStatus expectedStatus = extractExpectedStatus(method);
 
-        final Map<ParamType, List<Argument>> arguments = mapToArguments(method.getParameters(), args).stream()
+        final Map<ParamType, List<Argument>> arguments = mapToArguments(method.parameters(), args).stream()
                 .filter(a -> a.getValue() != null)
                 .collect(groupingBy(Argument::getParamType, toList()));
 
@@ -91,7 +92,7 @@ public class RecordoApiClientMethodHandler implements MethodHandler {
         files.addAll(getFiles(fileArguments));
         files.addAll(getFilesFromObjects(otherArguments));
 
-        Request<Object> request = recordoMockMvc.request(requestInfo.getHttpMethod(), requestInfo.getPath(), getResponseType(methodReturnType))
+        Request<Object> request = recordoMockMvc.request(requestInfo.getHttpMethod(), requestInfo.getPath(), getResponseType(methodReturnType).actualType())
                 .expectedStatus(expectedStatus)
                 .uriVars(pathVarArguments.stream().map(Argument::getValue).toArray())
                 .headers(headers)
@@ -106,8 +107,8 @@ public class RecordoApiClientMethodHandler implements MethodHandler {
         return MockMvcUtils.getResponse(request, methodReturnType);
     }
 
-    private HttpStatus extractExpectedStatus(Method method) {
-        return Optional.ofNullable(method.getAnnotation(ResponseStatus.class))
+    private HttpStatus extractExpectedStatus(ReflectoMethod method) {
+        return method.annotations().find(ResponseStatus.class)
                 .map(a -> Stream.of(a.value(), a.code())
                         .filter(c -> !INTERNAL_SERVER_ERROR.equals(c))
                         .findFirst()
@@ -116,32 +117,32 @@ public class RecordoApiClientMethodHandler implements MethodHandler {
                 .orElse(OK);
     }
 
-    private static RequestInfo extractInfoFromClass(Class<?> type) {
+    private static RequestInfo extractInfoFromClass(ReflectoType type) {
         return Optional.<RequestInfo>empty()
-                .or(() -> Optional.ofNullable(type.getAnnotation(RequestMapping.class)).map(RequestInfoMapper::mapToRequestInfo))
-                .or(() -> Optional.ofNullable(type.getAnnotation(GetMapping.class)).map(RequestInfoMapper::mapToRequestInfo))
-                .or(() -> Optional.ofNullable(type.getAnnotation(PostMapping.class)).map(RequestInfoMapper::mapToRequestInfo))
-                .or(() -> Optional.ofNullable(type.getAnnotation(PutMapping.class)).map(RequestInfoMapper::mapToRequestInfo))
-                .or(() -> Optional.ofNullable(type.getAnnotation(PatchMapping.class)).map(RequestInfoMapper::mapToRequestInfo))
-                .or(() -> Optional.ofNullable(type.getAnnotation(DeleteMapping.class)).map(RequestInfoMapper::mapToRequestInfo))
+                .or(() -> type.annotations().find(RequestMapping.class).map(RequestInfoMapper::mapToRequestInfo))
+                .or(() -> type.annotations().find(GetMapping.class).map(RequestInfoMapper::mapToRequestInfo))
+                .or(() -> type.annotations().find(PostMapping.class).map(RequestInfoMapper::mapToRequestInfo))
+                .or(() -> type.annotations().find(PutMapping.class).map(RequestInfoMapper::mapToRequestInfo))
+                .or(() -> type.annotations().find(PatchMapping.class).map(RequestInfoMapper::mapToRequestInfo))
+                .or(() -> type.annotations().find(DeleteMapping.class).map(RequestInfoMapper::mapToRequestInfo))
                 .orElseThrow();
     }
 
-    private static RequestInfo extractInfoFromMethod(Method method) {
+    private static RequestInfo extractInfoFromMethod(ReflectoMethod method) {
         return Optional.<RequestInfo>empty()
-                .or(() -> Optional.ofNullable(method.getAnnotation(RequestMapping.class)).map(RequestInfoMapper::mapToRequestInfo))
-                .or(() -> Optional.ofNullable(method.getAnnotation(GetMapping.class)).map(RequestInfoMapper::mapToRequestInfo))
-                .or(() -> Optional.ofNullable(method.getAnnotation(PostMapping.class)).map(RequestInfoMapper::mapToRequestInfo))
-                .or(() -> Optional.ofNullable(method.getAnnotation(PutMapping.class)).map(RequestInfoMapper::mapToRequestInfo))
-                .or(() -> Optional.ofNullable(method.getAnnotation(PatchMapping.class)).map(RequestInfoMapper::mapToRequestInfo))
-                .or(() -> Optional.ofNullable(method.getAnnotation(DeleteMapping.class)).map(RequestInfoMapper::mapToRequestInfo))
+                .or(() -> method.annotations().find(RequestMapping.class).map(RequestInfoMapper::mapToRequestInfo))
+                .or(() -> method.annotations().find(GetMapping.class).map(RequestInfoMapper::mapToRequestInfo))
+                .or(() -> method.annotations().find(PostMapping.class).map(RequestInfoMapper::mapToRequestInfo))
+                .or(() -> method.annotations().find(PutMapping.class).map(RequestInfoMapper::mapToRequestInfo))
+                .or(() -> method.annotations().find(PatchMapping.class).map(RequestInfoMapper::mapToRequestInfo))
+                .or(() -> method.annotations().find(DeleteMapping.class).map(RequestInfoMapper::mapToRequestInfo))
                 .orElseThrow();
     }
 
-    private List<Argument> mapToArguments(Parameter[] parameters, Object[] arguments) {
+    private List<Argument> mapToArguments(ReflectoParameters parameters, Object[] arguments) {
         final List<Argument> argumentList = new ArrayList<>();
-        for (int i = 0; i < parameters.length; i++) {
-            argumentList.add(new Argument(parameters[i], arguments[i]));
+        for (int i = 0; i < parameters.size(); i++) {
+            argumentList.add(new Argument(parameters.get(i), arguments[i]));
         }
         return argumentList;
     }
@@ -160,7 +161,7 @@ public class RecordoApiClientMethodHandler implements MethodHandler {
     private MultiValueMap<String, String> getRequestParams(List<Argument> arguments) {
         final MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         for (Argument argument : arguments) {
-            if (Pageable.class.isAssignableFrom(argument.getType())) {
+            if (argument.getType().is(Pageable.class)) {
                 Pageable pageable = (Pageable) argument.getValue();
                 params.put("page", List.of(String.valueOf(pageable.getPageNumber())));
                 params.put("size", List.of(String.valueOf(pageable.getPageSize())));
@@ -174,11 +175,11 @@ public class RecordoApiClientMethodHandler implements MethodHandler {
                     final String name = Optional.of(requestParam.value())
                             .filter(StringUtils::isNotEmpty)
                             .or(() -> Optional.of(requestParam.name()).filter(StringUtils::isNotEmpty))
-                            .or(() -> Optional.of(argument).map(Argument::getParameter).filter(Parameter::isNamePresent).map(Parameter::getName))
+                            .or(() -> Optional.of(argument).map(Argument::getParameter).filter(ReflectoParameter::isNamePresent).map(ReflectoParameter::name))
                             .orElseThrow(() -> new IllegalArgumentException("Cannot recognize @RequestParam name"));
 
                     List<String> value;
-                    if (Collection.class.isAssignableFrom(argument.getType())) {
+                    if (argument.getType().is(Collection.class)) {
                         Collection<?> collection = (Collection<?>) argument.getValue();
                         value = collection.stream().map(Object::toString).collect(toList());
                     } else {
@@ -196,22 +197,22 @@ public class RecordoApiClientMethodHandler implements MethodHandler {
         final MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         for (Argument arg : arguments) {
             final Object dto = arg.getValue();
-            final List<JavaField> fields = Reflecto.reflect(dto).fields().asList();
-            for (JavaField field : fields) {
+            final List<TargetField> fields = Reflecto.reflect(dto).fields().list();
+            for (TargetField field : fields) {
                 if (field.getValue() == null) {
                     continue;
                 }
-                if (File.class.isAssignableFrom(field.getType()) || MultipartFile.class.isAssignableFrom(field.getType())) {
+                if (field.type().is(File.class) || field.type().is(MultipartFile.class)) {
                     continue;
                 }
                 List<String> value;
-                if (Collection.class.isAssignableFrom(field.getType())) {
+                if (field.type().is(Collection.class)) {
                     Collection<?> collection = field.getValue();
                     value = collection.stream().map(Object::toString).collect(toList());
                 } else {
                     value = List.of(field.getValue().toString());
                 }
-                params.put(field.getName(), value);
+                params.put(field.name(), value);
             }
         }
         return params;
@@ -221,9 +222,9 @@ public class RecordoApiClientMethodHandler implements MethodHandler {
     private List<File> getFiles(List<Argument> arguments) {
         final List<File> files = new ArrayList<>();
         for (Argument argument : arguments) {
-            if (File.class.isAssignableFrom(argument.getType())) {
+            if (argument.getType().is(File.class)) {
                 files.add((File) argument.getValue());
-            } else if (MultipartFile.class.isAssignableFrom(argument.getType())) {
+            } else if (argument.getType().is(MultipartFile.class)) {
                 final MultipartFile multipartFile = (MultipartFile) argument.getValue();
                 files.add(File.builder()
                         .name(multipartFile.getName())
@@ -242,14 +243,14 @@ public class RecordoApiClientMethodHandler implements MethodHandler {
         final List<File> files = new ArrayList<>();
         for (Argument arg : arguments) {
             final Object dto = arg.getValue();
-            final List<JavaField> fields = Reflecto.reflect(dto).fields().asList();
-            for (JavaField field : fields) {
+            final List<TargetField> fields = Reflecto.reflect(dto).fields().list();
+            for (TargetField field : fields) {
                 if (field.getValue() == null) {
                     continue;
                 }
-                if (File.class.isAssignableFrom(field.getType())) {
+                if (field.type().is(File.class)) {
                     files.add(field.getValue());
-                } else if (MultipartFile.class.isAssignableFrom(field.getType())) {
+                } else if (field.type().is(MultipartFile.class)) {
                     final MultipartFile multipartFile = field.getValue();
                     files.add(File.builder()
                             .name(multipartFile.getName())
@@ -266,19 +267,19 @@ public class RecordoApiClientMethodHandler implements MethodHandler {
     @Value
     private static class Argument {
 
-        Parameter parameter;
+        ReflectoParameter parameter;
         Object value;
 
         public <T extends Annotation> boolean hasAnnotation(Class<T> annotationClass) {
             return findAnnotation(annotationClass).isPresent();
         }
 
-        public Class<?> getType() {
-            return parameter.getType();
+        public ReflectoType getType() {
+            return parameter.type();
         }
 
         public <T extends Annotation> Optional<T> findAnnotation(Class<T> annotationClass) {
-            return Optional.ofNullable(parameter.getAnnotation(annotationClass));
+            return parameter.annotations().find(annotationClass);
         }
 
         public ParamType getParamType() {
@@ -286,8 +287,8 @@ public class RecordoApiClientMethodHandler implements MethodHandler {
                 return ParamType.HEADER;
             } else if (hasAnnotation(PathVariable.class)) {
                 return ParamType.PATH_VAR;
-            } else if (hasAnnotation(RequestParam.class) || Pageable.class.isAssignableFrom(getType())) {
-                return File.class.isAssignableFrom(getType()) || MultipartFile.class.isAssignableFrom(getType()) ? ParamType.FILE : ParamType.PARAMETER;
+            } else if (hasAnnotation(RequestParam.class) || getType().is(Pageable.class)) {
+                return getType().is(File.class) || getType().is(MultipartFile.class) ? ParamType.FILE : ParamType.PARAMETER;
             } else if (hasAnnotation(RequestBody.class)) {
                 return ParamType.BODY;
             }

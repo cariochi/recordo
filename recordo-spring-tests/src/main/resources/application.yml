@@ -3,6 +3,6 @@ feign:
     config:
       GitHub:
         requestInterceptors:
-          -  GitHubInterceptor
+          - GitHubInterceptor
 
 github.key: KEY

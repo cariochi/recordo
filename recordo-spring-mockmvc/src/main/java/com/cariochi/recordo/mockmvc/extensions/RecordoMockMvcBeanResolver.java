@@ -2,11 +2,12 @@ package com.cariochi.recordo.mockmvc.extensions;
 
 import com.cariochi.recordo.core.SpringContextExtension;
 import com.cariochi.recordo.mockmvc.RecordoMockMvc;
-import java.lang.reflect.Field;
-import java.util.stream.Stream;
+import com.cariochi.reflecto.fields.ReflectoField;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import static com.cariochi.reflecto.Reflecto.reflect;
 
 public class RecordoMockMvcBeanResolver implements SpringContextExtension, BeforeAllCallback {
 
@@ -14,9 +15,8 @@ public class RecordoMockMvcBeanResolver implements SpringContextExtension, Befor
 
     @Override
     public void beforeAll(ExtensionContext context) {
-
-        final boolean needRecordoMockMvc = Stream.of(context.getRequiredTestClass().getDeclaredFields())
-                .anyMatch(RecordoMockMvcBeanResolver::isRecordoMockMvcField);
+        final boolean needRecordoMockMvc = reflect(context.getRequiredTestClass()).fields().stream()
+                .anyMatch(this::isRecordoMockMvcField);
 
         if (needRecordoMockMvc && isBeanAbsent(RecordoMockMvc.class, context)) {
             registerDefaultRecordoMockMvc(context);
@@ -24,8 +24,8 @@ public class RecordoMockMvcBeanResolver implements SpringContextExtension, Befor
 
     }
 
-    private static boolean isRecordoMockMvcField(Field field) {
-        return field.getType().isAssignableFrom(RecordoMockMvc.class) && field.isAnnotationPresent(Autowired.class);
+    private boolean isRecordoMockMvcField(ReflectoField field) {
+        return field.type().isAssignableFrom(RecordoMockMvc.class) && field.annotations().contains(Autowired.class);
     }
 
     private void registerDefaultRecordoMockMvc(ExtensionContext context) {

@@ -2,7 +2,7 @@ package com.cariochi.recordo.read;
 
 import com.cariochi.objecto.modifiers.ObjectoModifier;
 import com.cariochi.recordo.core.utils.ObjectReader;
-import java.lang.reflect.Type;
+import com.cariochi.reflecto.types.ReflectoType;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ public class ObjectFactory<T> {
 
     private final ObjectReader objectReader;
     private final String fileName;
-    private final Type parameterType;
+    private final ReflectoType parameterType;
 
     private final Map<String, Object[]> fieldValues = new HashMap<>();
 

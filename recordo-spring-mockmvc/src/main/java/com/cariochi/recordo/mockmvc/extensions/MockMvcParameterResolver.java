@@ -4,13 +4,13 @@ import com.cariochi.recordo.core.SpringExtension;
 import com.cariochi.recordo.mockmvc.Request;
 import com.cariochi.recordo.mockmvc.RequestInterceptor;
 import com.cariochi.recordo.mockmvc.utils.MockMvcUtils;
-import java.lang.reflect.Type;
+import com.cariochi.reflecto.types.ReflectoType;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
 public interface MockMvcParameterResolver extends SpringExtension, ParameterResolver {
 
-    default Object processRequest(Request<Object> request, Type responseType, Class<? extends RequestInterceptor>[] interceptors) {
+    default Object processRequest(Request<Object> request, ReflectoType responseType, Class<? extends RequestInterceptor>[] interceptors) {
 
         for (Class<? extends RequestInterceptor> interceptorClass : interceptors) {
             final RequestInterceptor interceptor = createRequestInterceptor(interceptorClass);
