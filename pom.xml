@@ -61,7 +61,7 @@
         <slf4j.version>1.7.36</slf4j.version>
         <lombok.version>1.18.30</lombok.version>
         <reflecto.version>1.2.0</reflecto.version>
-        <objecto.version>1.1.0</objecto.version>
+        <objecto.version>1.0.5</objecto.version>
         <assertj.version>3.24.2</assertj.version>
         <commons-lang3.version>3.14.0</commons-lang3.version>
         <okhttp.version>4.12.0</okhttp.version>
