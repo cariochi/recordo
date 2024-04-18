@@ -6,15 +6,17 @@ import com.cariochi.recordo.core.utils.Files;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.JSONCompareResult;
+import org.skyscreamer.jsonassert.comparator.DefaultComparator;
 
 import static org.skyscreamer.jsonassert.JSONCompare.compareJSON;
 
+@Setter
 @Slf4j
-class RecordoJsonComparator<T> {
+class JsonComparator {
 
-    @Setter
     private JsonConverter jsonConverter = new JsonConverter();
 
     @SneakyThrows
@@ -28,6 +30,8 @@ class RecordoJsonComparator<T> {
         if (Files.exists(expectedFileName)) {
             final String expectedJson = Files.readString(expectedFileName);
             final JSONCompareResult result = compareJSON(expectedJson, actualJson, compareMode);
+// TODO: Improve field excluding logic
+//            final JSONCompareResult result = compareJSON(expectedJson, actualJson, new MyDefaultComparator(compareMode, jsonFilter));
             if (result.failed()) {
                 Files.write(actualJson, actualFileName(expectedFileName))
                         .ifPresent(file -> log.info(result.getMessage() + "\nActual value is saved to file://{}", file));
@@ -52,4 +56,23 @@ class RecordoJsonComparator<T> {
         return jsonCompareResult;
     }
 
+    private static class MyDefaultComparator extends DefaultComparator {
+
+        private final JsonPropertyFilter jsonFilter;
+
+        public MyDefaultComparator(JSONCompareMode mode, JsonPropertyFilter jsonFilter) {
+            super(mode);
+            this.jsonFilter = jsonFilter;
+        }
+
+        @Override
+        public void compareValues(String prefix, Object expectedValue, Object actualValue, JSONCompareResult result) throws JSONException {
+            final String s = prefix.replaceAll("\\[\\d+]", "");
+            if (jsonFilter.shouldInclude(s)) {
+                super.compareValues(prefix, expectedValue, actualValue, result);
+            } else {
+                result.passed();
+            }
+        }
+    }
 }

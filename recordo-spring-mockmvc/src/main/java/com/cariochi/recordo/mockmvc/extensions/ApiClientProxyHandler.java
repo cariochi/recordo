@@ -6,12 +6,13 @@ import com.cariochi.recordo.mockmvc.Request.File;
 import com.cariochi.recordo.mockmvc.RequestInterceptor;
 import com.cariochi.recordo.mockmvc.utils.MockMvcUtils;
 import com.cariochi.reflecto.Reflecto;
+import com.cariochi.reflecto.base.ReflectoAnnotations;
 import com.cariochi.reflecto.fields.TargetField;
 import com.cariochi.reflecto.methods.ReflectoMethod;
 import com.cariochi.reflecto.methods.TargetMethod;
 import com.cariochi.reflecto.parameters.ReflectoParameter;
 import com.cariochi.reflecto.parameters.ReflectoParameters;
-import com.cariochi.reflecto.proxy.ProxyFactory.MethodHandler;
+import com.cariochi.reflecto.proxy.InvocationHandler;
 import com.cariochi.reflecto.types.ReflectoType;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -52,13 +53,13 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.OK;
 
 @RequiredArgsConstructor
-public class RecordoApiClientMethodHandler implements MethodHandler {
+public class ApiClientProxyHandler implements InvocationHandler {
 
     private final RecordoMockMvc recordoMockMvc;
     private final List<RequestInterceptor> requestInterceptors;
 
     @Override
-    public Object invoke(Object proxy, ReflectoMethod method, Object[] args, TargetMethod proceed) throws Throwable {
+    public Object invoke(Object proxy, ReflectoMethod method, Object[] args, TargetMethod proceed) {
 
         if (Object.class.equals(method.declaringType().actualClass())) {
             return proceed.invoke(args);
@@ -270,10 +271,6 @@ public class RecordoApiClientMethodHandler implements MethodHandler {
         ReflectoParameter parameter;
         Object value;
 
-        public <T extends Annotation> boolean hasAnnotation(Class<T> annotationClass) {
-            return findAnnotation(annotationClass).isPresent();
-        }
-
         public ReflectoType getType() {
             return parameter.type();
         }
@@ -283,13 +280,14 @@ public class RecordoApiClientMethodHandler implements MethodHandler {
         }
 
         public ParamType getParamType() {
-            if (hasAnnotation(RequestHeader.class)) {
+            final ReflectoAnnotations annotations = parameter.annotations();
+            if (annotations.contains(RequestHeader.class)) {
                 return ParamType.HEADER;
-            } else if (hasAnnotation(PathVariable.class)) {
+            } else if (annotations.contains(PathVariable.class)) {
                 return ParamType.PATH_VAR;
-            } else if (hasAnnotation(RequestParam.class) || getType().is(Pageable.class)) {
+            } else if (annotations.contains(RequestParam.class) || getType().is(Pageable.class)) {
                 return getType().is(File.class) || getType().is(MultipartFile.class) ? ParamType.FILE : ParamType.PARAMETER;
-            } else if (hasAnnotation(RequestBody.class)) {
+            } else if (annotations.contains(RequestBody.class)) {
                 return ParamType.BODY;
             }
             return ParamType.OTHER;

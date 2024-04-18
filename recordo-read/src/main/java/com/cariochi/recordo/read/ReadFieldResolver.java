@@ -22,7 +22,7 @@ public class ReadFieldResolver implements RegularExtension, BeforeEachCallback {
     }
 
     public void processRead(ExtensionContext context, TargetField field) {
-        final Read annotation = field.annotations().find(Read.class).orElseThrow();
+        final Read annotation = field.annotations().get(Read.class);
         final String file = annotation.value();
         final ReflectoType type = field.type();
         final JsonConverter jsonConverter = getJsonConverter(annotation.objectMapper(), context);

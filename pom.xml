@@ -8,7 +8,7 @@
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.20</version>
+    <version>1.2.21</version>
 
     <name>Recordo Parent</name>
     <description>Parent for Recordo JUnit extension modules.</description>
@@ -56,13 +56,13 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jackson.version>2.15.1</jackson.version>
         <commons-text.version>1.11.0</commons-text.version>
-        <junit-jupiter.version>5.10.1</junit-jupiter.version>
+        <junit-jupiter.version>5.10.2</junit-jupiter.version>
         <jsonassert.version>1.5.1</jsonassert.version>
-        <slf4j.version>1.7.36</slf4j.version>
+        <slf4j.version>2.0.12</slf4j.version>
         <lombok.version>1.18.30</lombok.version>
-        <reflecto.version>1.2.0</reflecto.version>
-        <objecto.version>1.0.5</objecto.version>
-        <assertj.version>3.24.2</assertj.version>
+        <reflecto.version>1.2.1</reflecto.version>
+        <objecto.version>1.0.6</objecto.version>
+        <assertj.version>3.25.3</assertj.version>
         <commons-lang3.version>3.14.0</commons-lang3.version>
         <okhttp.version>4.12.0</okhttp.version>
         <httpclient.version>4.5.14</httpclient.version>
@@ -71,7 +71,7 @@
         <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
         <classgraph.version>4.8.165</classgraph.version>
         <objenesis.version>3.3</objenesis.version>
-        <jetbrains-annotations.version>24.0.1</jetbrains-annotations.version>
+        <jetbrains-annotations.version>24.1.0</jetbrains-annotations.version>
         <kotlin-stdlib.version>1.9.22</kotlin-stdlib.version>
     </properties>
 

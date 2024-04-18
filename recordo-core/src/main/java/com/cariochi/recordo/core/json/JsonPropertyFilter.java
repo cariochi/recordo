@@ -1,10 +1,11 @@
 package com.cariochi.recordo.core.json;
 
+import java.util.List;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
-
 @RequiredArgsConstructor
+@Getter
 public class JsonPropertyFilter {
 
     private final List<String> included;

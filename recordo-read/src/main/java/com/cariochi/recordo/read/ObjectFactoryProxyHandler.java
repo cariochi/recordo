@@ -11,8 +11,7 @@ import com.cariochi.reflecto.methods.ReflectoMethod;
 import com.cariochi.reflecto.methods.TargetMethod;
 import com.cariochi.reflecto.parameters.ReflectoParameter;
 import com.cariochi.reflecto.parameters.ReflectoParameters;
-import com.cariochi.reflecto.proxy.ProxyFactory;
-import com.cariochi.reflecto.proxy.ProxyFactory.MethodHandler;
+import com.cariochi.reflecto.proxy.InvocationHandler;
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -21,17 +20,19 @@ import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-public class RecordoObjectFactoryMethodHandler<T> implements MethodHandler {
+import static com.cariochi.reflecto.Reflecto.proxy;
+
+public class ObjectFactoryProxyHandler<T> implements InvocationHandler {
 
     private final Class<T> targetClass;
     private final ExtensionContext context;
     private final Object objecto;
 
-    public RecordoObjectFactoryMethodHandler(Class<T> targetClass, ExtensionContext context) {
+    public ObjectFactoryProxyHandler(Class<T> targetClass, ExtensionContext context) {
         this(targetClass, context, Objecto.create(targetClass));
     }
 
-    public RecordoObjectFactoryMethodHandler(Class<T> targetClass, ExtensionContext context, Object objecto) {
+    public ObjectFactoryProxyHandler(Class<T> targetClass, ExtensionContext context, Object objecto) {
         this.targetClass = targetClass;
         this.context = context;
         this.objecto = objecto;
@@ -40,32 +41,32 @@ public class RecordoObjectFactoryMethodHandler<T> implements MethodHandler {
     @Override
     public Object invoke(Object proxy, ReflectoMethod thisMethod, Object[] args, TargetMethod proceed) {
 
-        if (Object.class.equals(thisMethod.declaringType().actualClass())) {
-            return proceed.invoke(args);
+        if (proceed != null) {
+            return Object.class.equals(thisMethod.declaringType().actualType())
+                    ? proceed.invoke(args)
+                    : invokeObjecto(thisMethod, args);
         }
 
-        if (proceed == null) {
-
-            if (thisMethod.returnType().equals(thisMethod.declaringType())) {
-                final Object newObjecto = invokeObjecto(thisMethod, args);
-                final RecordoObjectFactoryMethodHandler<T> handler = new RecordoObjectFactoryMethodHandler<>(targetClass, context, newObjecto);
-                return ProxyFactory.createInstance(handler, targetClass);
-            } else {
-                return thisMethod.annotations().find(Read.class)
-                        .map(read -> {
-                            final JsonConverter jsonConverter = JsonConverters.getJsonConverter(read.objectMapper(), context);
-                            final Function<Type, Object> generator = type -> invokeObjecto(thisMethod, args);
-                            final ObjectReader objectReader = new ObjectReader(jsonConverter, generator);
-                            final ObjectFactory<?> objectFactory = new ObjectFactory<>(objectReader, read.value(), thisMethod.returnType());
-                            Object instance = objectFactory.create();
-                            instance = ((ObjectModifier) objecto).modifyObject(instance);
-                            return ObjectoModifier.modifyObject(instance, readMethodParameters(thisMethod.parameters(), args));
-                        })
-                        .orElseGet(() -> invokeObjecto(thisMethod, args));
-            }
+        if (thisMethod.returnType().equals(thisMethod.declaringType())) {
+            final Object newObjecto = invokeObjecto(thisMethod, args);
+            return proxy(targetClass)
+                    .with(() -> new ObjectFactoryProxyHandler<>(targetClass, context, newObjecto))
+                    .getConstructor()
+                    .newInstance();
         } else {
-            return invokeObjecto(thisMethod, args);
+            return thisMethod.annotations().find(Read.class)
+                    .map(read -> {
+                        final JsonConverter jsonConverter = JsonConverters.getJsonConverter(read.objectMapper(), context);
+                        final Function<Type, Object> generator = type -> invokeObjecto(thisMethod, args);
+                        final ObjectReader objectReader = new ObjectReader(jsonConverter, generator);
+                        final ObjectFactory<?> objectFactory = new ObjectFactory<>(objectReader, read.value(), thisMethod.returnType());
+                        Object instance = objectFactory.create();
+                        instance = ((ObjectModifier) objecto).modifyObject(instance);
+                        return ObjectoModifier.modifyObject(instance, readMethodParameters(thisMethod.parameters(), args));
+                    })
+                    .orElseGet(() -> invokeObjecto(thisMethod, args));
         }
+
     }
 
     @SneakyThrows
@@ -92,5 +93,4 @@ public class RecordoObjectFactoryMethodHandler<T> implements MethodHandler {
         }
         return methodParameters;
     }
-
 }

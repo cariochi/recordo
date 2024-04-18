@@ -9,6 +9,8 @@ import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
 import com.cariochi.recordo.mockserver.model.MockInteraction;
 import com.cariochi.recordo.mockserver.model.MockRequest;
 import com.cariochi.recordo.mockserver.model.MockResponse;
+import java.net.URI;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,10 +19,12 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.JSONCompareResult;
 
 import static com.cariochi.recordo.core.json.JsonUtils.compareMode;
+import static com.cariochi.recordo.core.utils.Files.isJson;
 import static com.cariochi.reflecto.types.Types.listOf;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
@@ -34,22 +38,21 @@ import static org.skyscreamer.jsonassert.JSONCompare.compareJSON;
 public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
 
     private final UrlPatternMatcher urlPatternMatcher;
-    private final String fileName;
+    private final String mocksPath;
     private final JSONCompareMode compareMode;
     private final JsonConverter jsonConverter;
     private final List<MockInteraction> actualMocks = new ArrayList<>();
     private List<MockInteraction> expectedMocks;
     private final Map<String, Object> variables = new HashMap<>();
-    private int index = 0;
 
-    public RecordoMockServer(MockServerInterceptor interceptor, String fileName) {
-        this("**", fileName, new JsonConverter(), compareMode(false, true));
+    public RecordoMockServer(MockServerInterceptor interceptor, String mocksPath) {
+        this("**", mocksPath, new JsonConverter(), compareMode(false, true));
         interceptor.init(this);
     }
 
-    public RecordoMockServer(String urlPattern, String fileName, JsonConverter jsonConverter, JSONCompareMode compareMode) {
+    public RecordoMockServer(String urlPattern, String mocksPath, JsonConverter jsonConverter, JSONCompareMode compareMode) {
         this.urlPatternMatcher = new UrlPatternMatcher(urlPattern);
-        this.fileName = fileName;
+        this.mocksPath = mocksPath;
         this.jsonConverter = jsonConverter;
         this.compareMode = compareMode;
     }
@@ -62,7 +65,7 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
         if (expectedMocks().isEmpty()) {
             return true;
         }
-        if (expectedMocks().size() <= index) {
+        if (expectedMocks().size() < actualMocks.size()) {
             return false;
         }
         try {
@@ -81,21 +84,39 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
         }
         log.info("Playback Http Mock: [{}] {}", request.getMethod(), request.getUrl());
         final MockResponse response = response(request);
-        index++;
+        final MockInteraction actualInteraction = new MockInteraction(request, response);
+        actualMocks.add(actualInteraction);
         return Optional.of(prepareForPlayback(response));
     }
 
     @SneakyThrows
     private MockResponse response(MockRequest request) {
-        final MockInteraction mock = expectedMocks().get(index);
+        final MockInteraction expectedMock = expectedMocks().get(actualMocks.size());
         request.setHeaders(filteredHeaders(request.getHeaders()));
-        final String expected = jsonConverter.toJson(mock.getRequest());
-        final String actual = jsonConverter.toJson(prepareForRecord(request));
-        final JSONCompareResult compareResult = compareJSON(expected, actual, compareMode);
+        final MockRequest actualRequest = prepareForRecord(request);
+
+        final String expectedJson = jsonConverter.toJson(expectedMock.getRequest());
+        final String actualJson = jsonConverter.toJson(actualRequest);
+        final JSONCompareResult compareResult = compareJSON(expectedJson, actualJson, compareMode);
         if (compareResult.failed()) {
-            throw new AssertionError(compareResult.getMessage() + "\n" + "Expected Request:\n" + expected + "\n" + "Actual Request:\n" + actual);
+            reportFailureToConsole(actualRequest);
+            throw new AssertionError(compareResult.getMessage() + "\n" + "Expected Request:\n" + expectedJson + "\n" + "Actual Request:\n" + actualJson);
         }
-        return mock.getResponse();
+        return expectedMock.getResponse();
+    }
+
+    private void reportFailureToConsole(MockRequest actualRequest) {
+        final MockInteraction actualInteraction = new MockInteraction(actualRequest, new MockResponse());
+        final List<MockInteraction> mocksToRecord = Stream.concat(actualMocks.stream(), Stream.of(actualInteraction))
+                .map(this::prepareForRecord)
+                .collect(toList());
+
+        final Path path = Path.of(mocksPath);
+        final Path actualPath = isJson(mocksPath)
+                ? Path.of(path.getParent().toString(), "ACTUAL", path.getFileName().toString())
+                : Path.of(path.toString(), "ACTUAL");
+
+        saveActualMocks(mocksToRecord, actualPath.toString());
     }
 
     @Override
@@ -111,32 +132,79 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
 
     @Override
     public void close() {
-        if (!actualMocks.isEmpty()) {
-            final List<MockInteraction> mocksToRecord = actualMocks.stream().map(this::prepareForRecord).collect(toList());
+        if (expectedMocks().isEmpty()) {
 
-            final String json = jsonConverter.toJson(mocksToRecord);
+            final List<MockInteraction> mocksToRecord = actualMocks.stream()
+                    .map(this::prepareForRecord)
+                    .collect(toList());
 
-            Files.write(json, fileName).ifPresent(file -> log.info("Http mocks are recorded to file://{}:\n{}", file, urlsOf(actualMocks)));
-        } else if (expectedMocks().size() > index) {
+            saveActualMocks(mocksToRecord, mocksPath);
+
+        } else if (actualMocks.size() < expectedMocks().size()) {
             throw new AssertionError("Not all mocks requests were called");
+        }
+    }
+
+    private void saveActualMocks(List<MockInteraction> mocks, String path) {
+        if (isJson(path)) {
+            final String json = jsonConverter.toJson(mocks);
+            Files.write(json, path)
+                    .ifPresent(file -> log.info("Actual http mocks are saved to file://{}:\n{}", file, urlsOf(actualMocks)));
+        } else {
+            for (int i = 0; i < mocks.size(); i++) {
+                MockInteraction mock = mocks.get(i);
+                final String json = jsonConverter.toJson(mock);
+                final URI uri = URI.create(mock.getRequest().getUrl());
+                final String url = StringUtils.replace(uri.getHost() + "_" + uri.getPath(), "/", "_");
+                final String filename = format("%03d__%s__%s.json", (i + 1), mock.getRequest().getMethod(), url);
+                Files.write(json, Path.of(path, filename).toString())
+                        .ifPresent(file -> log.info("Actual http mock is saved to file://{}:\n{}", file, urlsOf(actualMocks)));
+            }
         }
     }
 
     private List<MockInteraction> expectedMocks() {
         if (expectedMocks == null) {
-            expectedMocks = Stream.of(fileName).map(this::loadExpectedMocks).flatMap(List::stream).collect(toList());
+            expectedMocks = Stream.of(mocksPath)
+                    .map(this::loadExpectedMocks)
+                    .flatMap(List::stream)
+                    .collect(toList());
         }
         return expectedMocks;
     }
 
-    private List<MockInteraction> loadExpectedMocks(String fileName) {
-        if (Files.exists(fileName)) {
-            final String json = applyVariables(Files.readString(fileName));
-            final List<MockInteraction> mocks = jsonConverter.fromJson(json, listOf(MockInteraction.class));
-            log.info("Read Http Mocks from file://{}\nRequests:\n{}", Files.path(fileName), urlsOf(mocks));
-            return mocks;
+    @SneakyThrows
+    private List<MockInteraction> loadExpectedMocks(String path) {
+        if (Files.exists(path)) {
+            if (isJson(path)) {
+                final String json = applyVariables(Files.readString(path));
+                final List<MockInteraction> mocks = jsonConverter.fromJson(json, listOf(MockInteraction.class));
+                log.info("Read Http Mocks from file://{}\nRequests:\n{}", Files.path(path), urlsOf(mocks));
+                return mocks;
+            } else {
+                final List<Path> fileNames = Files.getFileList(path);
+                return fileNames.stream()
+                        .map(Path::toString)
+                        .filter(Files::isJson)
+                        .map(file -> {
+                            final String json = applyVariables(Files.readString(file));
+                            final MockInteraction mock = jsonConverter.fromJson(json, MockInteraction.class);
+                            log.info("Read Http Mock from file://{}\nRequest:\n{}", Files.path(file), mock.getRequest().getUrl());
+                            return mock;
+                        })
+                        .collect(toList());
+            }
         } else {
-            log.warn("File {} not found", fileName);
+            final String migratedFromPath = isJson(path)
+                    ? StringUtils.removeEnd(path, ".json")
+                    : StringUtils.removeEnd(path, "/") + ".json";
+            if (Files.exists(migratedFromPath)) {
+                final List<MockInteraction> mockInteractions = loadExpectedMocks(migratedFromPath);
+                saveActualMocks(mockInteractions, path);
+                Files.delete(migratedFromPath);
+                return mockInteractions;
+            }
+            log.warn("File {} not found", path);
             return emptyList();
         }
     }
@@ -159,7 +227,7 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
         final MockRequest prepared = Optional.ofNullable(request)
                 .filter(MockRequest::isJson)
                 .map(MockRequest::getBody)
-                .filter(body -> body instanceof String)
+                .filter(String.class::isInstance)
                 .map(String.class::cast)
                 .map(json -> jsonConverter.fromJson(json, Object.class))
                 .map(request::withBody)
@@ -171,7 +239,7 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
         final MockResponse prepared = Optional.ofNullable(request)
                 .filter(MockResponse::isJson)
                 .map(MockResponse::getBody)
-                .filter(body -> body instanceof String)
+                .filter(String.class::isInstance)
                 .map(String.class::cast)
                 .map(json -> jsonConverter.fromJson(json, Object.class))
                 .map(request::withBody)

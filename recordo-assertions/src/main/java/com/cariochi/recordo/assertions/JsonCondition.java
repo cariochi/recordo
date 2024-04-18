@@ -3,15 +3,14 @@ package com.cariochi.recordo.assertions;
 import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.core.json.JsonPropertyFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.assertj.core.api.Condition;
 import org.skyscreamer.jsonassert.JSONCompareMode;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Predicate;
 
 import static com.cariochi.recordo.core.json.JsonUtils.compareMode;
 import static java.util.Arrays.asList;
@@ -59,7 +58,7 @@ public class JsonCondition<T> extends Condition<T> {
     @Accessors(fluent = true)
     private static class RecordoPredicate<T> implements Predicate<T> {
 
-        private final RecordoJsonComparator<T> jsonComparator = new RecordoJsonComparator<>();
+        private final JsonComparator jsonComparator = new JsonComparator();
         private final String fileName;
 
         private List<String> including = new ArrayList<>();
