@@ -20,7 +20,7 @@ import static java.util.Arrays.asList;
 @RequiredArgsConstructor(staticName = "assertAsJson")
 public class JsonAssertion<T> {
 
-    private final RecordoJsonComparator<T> jsonComparator = new RecordoJsonComparator<>();
+    private final JsonComparator jsonComparator = new JsonComparator();
     private final T actual;
 
     private List<String> including = new ArrayList<>();

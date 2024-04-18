@@ -8,7 +8,7 @@
     <parent>
         <artifactId>recordo-parent</artifactId>
         <groupId>com.cariochi.recordo</groupId>
-        <version>1.2.20</version>
+        <version>1.2.21</version>
     </parent>
 
     <artifactId>recordo-spring-tests</artifactId>
@@ -28,6 +28,10 @@
                     <groupId>org.yaml</groupId>
                     <artifactId>snakeyaml</artifactId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -43,11 +47,21 @@
                     <groupId>commons-fileupload</groupId>
                     <artifactId>commons-fileupload</artifactId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-commons</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.github.openfeign</groupId>

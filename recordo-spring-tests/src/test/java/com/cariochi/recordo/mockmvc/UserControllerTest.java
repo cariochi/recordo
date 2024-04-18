@@ -35,7 +35,12 @@ class UserControllerTest {
 
         @Bean
         public RequestInterceptor authInterceptor() {
-            return new AuthInterceptor();
+            return request -> {
+                if (request.headers().get("Authorization") == null) {
+                    request = request.header("Authorization", "Bearer TOKEN");
+                }
+                return request;
+            };
         }
 
     }

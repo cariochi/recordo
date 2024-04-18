@@ -39,7 +39,12 @@ class JsonAssertionTest {
     @Test
     void included() {
         assertAsJson(testDto(1))
-                .including("id", "text", "children.id", "children.text")
+                .including(
+                        "id",
+                        "text",
+                        "children.id",
+                        "children.text"
+                )
                 .isEqualTo("/verify_annotation_test/short_dto.json");
     }
 
