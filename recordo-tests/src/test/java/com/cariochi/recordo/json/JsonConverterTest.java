@@ -1,7 +1,7 @@
 package com.cariochi.recordo.json;
 
 import com.cariochi.recordo.core.json.JsonConverter;
-import com.cariochi.recordo.core.json.JsonPropertyFilter;
+import com.cariochi.recordo.core.json.JsonFilter;
 import com.cariochi.recordo.main.dto.TestDto;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
@@ -31,13 +31,13 @@ class JsonConverterTest {
     @SneakyThrows
     void should_remove_fields_by_include() {
         // given
-        final JsonPropertyFilter jsonPropertyFilter = new JsonPropertyFilter(
-                asList("id", "text", "children.id", "children.text"),
+        final JsonFilter jsonFilter = new JsonFilter(
+                asList("id", "text", "children[*].id", "children[*].text"),
                 asList()
         );
 
         // when
-        final String result = jsonConverter.toJson(GIVEN_OBJECT, jsonPropertyFilter);
+        final String result = jsonConverter.toJson(GIVEN_OBJECT, jsonFilter);
 
         // then
         assertEquals(EXPECTED_JSON, result, JSONCompareMode.STRICT);
@@ -47,13 +47,13 @@ class JsonConverterTest {
     @SneakyThrows
     void should_remove_fields_by_exclude() {
         // given
-        final JsonPropertyFilter jsonPropertyFilter = new JsonPropertyFilter(
+        final JsonFilter jsonFilter = new JsonFilter(
                 asList(),
-                asList("date", "strings", "children.date", "children.strings", "children.children")
+                asList("date", "strings", "children[*].date", "children[*].strings", "children[*].children")
         );
 
         // when
-        final String result = jsonConverter.toJson(GIVEN_OBJECT, jsonPropertyFilter);
+        final String result = jsonConverter.toJson(GIVEN_OBJECT, jsonFilter);
 
         // then
         assertEquals(EXPECTED_JSON, result, JSONCompareMode.STRICT);
@@ -63,13 +63,13 @@ class JsonConverterTest {
     @SneakyThrows
     void should_remove_fields_by_include_and_exclude() {
         // given
-        final JsonPropertyFilter jsonPropertyFilter = new JsonPropertyFilter(
-                asList("id", "text", "date", "children.id", "children.text", "children.date"),
-                asList("date", "strings", "children.date", "children.strings", "children.children")
+        final JsonFilter jsonFilter = new JsonFilter(
+                asList("id", "text", "date", "children[*].id", "children[*].text", "children[*].date"),
+                asList("date", "strings", "children[*].date", "children[*].strings", "children[*].children")
         );
 
         // when
-        final String result = jsonConverter.toJson(GIVEN_OBJECT, jsonPropertyFilter);
+        final String result = jsonConverter.toJson(GIVEN_OBJECT, jsonFilter);
 
         // then
         assertEquals(EXPECTED_JSON, result, JSONCompareMode.STRICT);

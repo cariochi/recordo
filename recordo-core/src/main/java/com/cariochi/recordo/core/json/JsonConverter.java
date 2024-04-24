@@ -1,6 +1,5 @@
 package com.cariochi.recordo.core.json;
 
-import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonStreamContext;
 import com.fasterxml.jackson.databind.BeanDescription;
@@ -63,7 +62,7 @@ public class JsonConverter {
     }
 
     @SneakyThrows
-    public String toJson(Object object, JsonPropertyFilter filter) {
+    public String toJson(Object object, JsonFilter filter) {
         return object == null || object instanceof String
                 ? (String) object
                 : objectMapper(filter).writer(printer).writeValueAsString(object);
@@ -82,9 +81,9 @@ public class JsonConverter {
         return objectMapper.readValue(json, valueType);
     }
 
-    public ObjectMapper objectMapper(JsonPropertyFilter propertyFilter) {
+    public ObjectMapper objectMapper(JsonFilter propertyFilter) {
         return Optional.ofNullable(propertyFilter)
-                .filter(JsonPropertyFilter::hasProperties)
+                .filter(JsonFilter::hasProperties)
                 .map(RecordoFilter::new)
                 .map(filter -> new SimpleFilterProvider().addFilter(RecordoFilter.NAME, filter))
                 .map(provider -> objectMapper.copy().setFilterProvider(provider))
@@ -97,36 +96,42 @@ public class JsonConverter {
 
         public static final String NAME = "recordo-filter";
 
-        private final JsonPropertyFilter filter;
+        private final JsonFilter filter;
 
         @Override
         public void serializeAsField(Object pojo,
                                      JsonGenerator jgen,
                                      SerializerProvider provider,
                                      PropertyWriter writer) throws Exception {
-            String path = path(jgen.getOutputContext().getParent(), writer.getName());
+            Path path = path(jgen.getOutputContext().getParent(), writer.getName());
             if (filter.shouldInclude(path)) {
                 super.serializeAsField(pojo, jgen, provider, writer);
             }
         }
 
-        private String path(JsonStreamContext context, String field) {
+        private Path path(JsonStreamContext context, String field) {
             final List<String> path = new ArrayList<>();
             JsonStreamContext current = context;
             while (current != null) {
-                if (current.getCurrentName() != null) {
-                    path.add(0, current.getCurrentName());
+                if (current.hasPathSegment()) {
+                    if (current.getCurrentName() != null) {
+                        path.add(0, current.getCurrentName());
+                    } else if (current.getCurrentIndex() != -1) {
+                        if (current.getParent().hasPathSegment()) {
+                            path.add(0, "[" + current.getCurrentIndex() + "]");
+                        }
+                    }
                 }
                 current = current.getParent();
             }
             path.add(field);
-            return String.join(".", path);
+            return new Path(path);
         }
 
     }
 
 
-    @JsonFilter(RecordoFilter.NAME)
+    @com.fasterxml.jackson.annotation.JsonFilter(RecordoFilter.NAME)
     static class PropertyFilterMixIn {
     }
 

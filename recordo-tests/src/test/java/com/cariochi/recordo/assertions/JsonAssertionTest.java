@@ -42,8 +42,8 @@ class JsonAssertionTest {
                 .including(
                         "id",
                         "text",
-                        "children.id",
-                        "children.text"
+                        "children[*].id",
+                        "children[*].text"
                 )
                 .isEqualTo("/verify_annotation_test/short_dto.json");
     }
@@ -55,10 +55,10 @@ class JsonAssertionTest {
                         "strings",
                         "date",
                         "parent",
-                        "children.strings",
-                        "children.date",
-                        "children.parent",
-                        "children.children"
+                        "children[*].strings",
+                        "children[*].date",
+                        "children[*].parent",
+                        "children[*].children"
                 )
                 .isEqualTo("/verify_annotation_test/short_dto.json");
     }
@@ -79,7 +79,7 @@ class JsonAssertionTest {
     @Test
     void list_included() {
         assertAsJson(list())
-                .including("id", "text", "children.id", "children.text")
+                .including("id", "text", "children[*].id", "children[*].text")
                 .isEqualTo("/verify_annotation_test/short_list.json");
     }
 
@@ -87,6 +87,14 @@ class JsonAssertionTest {
     void list_included_full_children() {
         assertAsJson(list())
                 .including("id", "text", "children")
+                .isEqualTo("/verify_annotation_test/short_list_with_full_children.json");
+
+        assertAsJson(list())
+                .including("id", "text", "children[*]")
+                .isEqualTo("/verify_annotation_test/short_list_with_full_children.json");
+
+        assertAsJson(list())
+                .including("id", "text", "children[0]", "children[1]")
                 .isEqualTo("/verify_annotation_test/short_list_with_full_children.json");
 
         assertThat(list()).is(
@@ -98,7 +106,7 @@ class JsonAssertionTest {
     @Test
     void list_excluded() {
         assertAsJson(list())
-                .excluding("strings", "date", "children.strings", "children.date", "children.children")
+                .excluding("strings", "date", "children[*].strings", "children[*].date", "children[*].children")
                 .isEqualTo("/verify_annotation_test/short_list.json");
     }
 
