@@ -1,7 +1,8 @@
 package com.cariochi.recordo.assertions;
 
 import com.cariochi.recordo.core.json.JsonConverter;
-import com.cariochi.recordo.core.json.JsonPropertyFilter;
+import com.cariochi.recordo.core.json.JsonFilter;
+import com.cariochi.recordo.core.json.Path;
 import com.cariochi.recordo.core.utils.Files;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -15,7 +16,7 @@ import static org.skyscreamer.jsonassert.JSONCompare.compareJSON;
 
 @Setter
 @Slf4j
-class JsonComparator {
+class AsJsonComparator {
 
     private JsonConverter jsonConverter = new JsonConverter();
 
@@ -23,15 +24,13 @@ class JsonComparator {
     public JSONCompareResult compareAsJson(
             Object actualObject,
             String expectedFileName,
-            JsonPropertyFilter jsonFilter,
+            JsonFilter jsonFilter,
             JSONCompareMode compareMode
     ) {
         final String actualJson = jsonConverter.toJson(actualObject, jsonFilter);
         if (Files.exists(expectedFileName)) {
             final String expectedJson = Files.readString(expectedFileName);
-            final JSONCompareResult result = compareJSON(expectedJson, actualJson, compareMode);
-// TODO: Improve field excluding logic
-//            final JSONCompareResult result = compareJSON(expectedJson, actualJson, new MyDefaultComparator(compareMode, jsonFilter));
+            final JSONCompareResult result = compareJSON(expectedJson, actualJson, new JsonFilterComparator(compareMode, jsonFilter));
             if (result.failed()) {
                 Files.write(actualJson, actualFileName(expectedFileName))
                         .ifPresent(file -> log.info(result.getMessage() + "\nActual value is saved to file://{}", file));
@@ -56,19 +55,19 @@ class JsonComparator {
         return jsonCompareResult;
     }
 
-    private static class MyDefaultComparator extends DefaultComparator {
+    private static class JsonFilterComparator extends DefaultComparator {
 
-        private final JsonPropertyFilter jsonFilter;
+        private final JsonFilter jsonFilter;
 
-        public MyDefaultComparator(JSONCompareMode mode, JsonPropertyFilter jsonFilter) {
+        public JsonFilterComparator(JSONCompareMode mode, JsonFilter jsonFilter) {
             super(mode);
             this.jsonFilter = jsonFilter;
         }
 
         @Override
         public void compareValues(String prefix, Object expectedValue, Object actualValue, JSONCompareResult result) throws JSONException {
-            final String s = prefix.replaceAll("\\[\\d+]", "");
-            if (jsonFilter.shouldInclude(s)) {
+            final Path path = new Path(prefix);
+            if (jsonFilter.shouldInclude(path)) {
                 super.compareValues(prefix, expectedValue, actualValue, result);
             } else {
                 result.passed();

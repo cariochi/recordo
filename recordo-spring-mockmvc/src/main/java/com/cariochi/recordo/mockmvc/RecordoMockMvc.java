@@ -198,9 +198,9 @@ public class RecordoMockMvc {
             return (RESP) response.getContentAsString();
         } else if (responseType.isParametrized()) {
             final String contentAsString = response.getContentAsString();
-            if (responseType.is(Page.class)) {
+            if (responseType.actualClass().equals(Page.class)) {
                 return pageFromJson(contentAsString, responseType);
-            } else if (responseType.is(Slice.class)) {
+            } else if (responseType.actualClass().equals(Slice.class)) {
                 return sliceFromJson(contentAsString, responseType);
             }
         }
