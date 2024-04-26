@@ -5,7 +5,6 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 
 import static org.springframework.http.HttpStatus.OK;

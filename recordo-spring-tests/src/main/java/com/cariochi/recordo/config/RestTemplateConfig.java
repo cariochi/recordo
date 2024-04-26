@@ -3,7 +3,7 @@ package com.cariochi.recordo.config;
 import com.cariochi.recordo.mockserver.GitHub;
 import com.cariochi.recordo.mockserver.resttemplate.GitHubRestTemplate;
 import okhttp3.OkHttpClient;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;

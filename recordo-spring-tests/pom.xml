@@ -8,15 +8,15 @@
     <parent>
         <artifactId>recordo-parent</artifactId>
         <groupId>com.cariochi.recordo</groupId>
-        <version>1.2.21</version>
+        <version>1.3.0</version>
     </parent>
 
     <artifactId>recordo-spring-tests</artifactId>
     <name>Recordo Spring Tests</name>
 
     <properties>
-        <spring.boot.version>2.7.17</spring.boot.version>
-        <spring-cloud.version>2021.0.8</spring-cloud.version>
+        <spring.boot.version>3.2.5</spring.boot.version>
+        <spring-cloud.version>2023.0.1</spring-cloud.version>
     </properties>
 
     <dependencies>
@@ -74,7 +74,7 @@
         </dependency>
         <dependency>
             <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-httpclient</artifactId>
+            <artifactId>feign-hc5</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -3,22 +3,20 @@ package com.cariochi.recordo.mockserver.interceptors.apache;
 import com.cariochi.recordo.mockserver.model.MockRequest;
 import com.cariochi.recordo.mockserver.model.MockResponse;
 import lombok.RequiredArgsConstructor;
-import org.apache.http.HttpException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpExecutionAware;
-import org.apache.http.client.methods.HttpRequestWrapper;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.impl.execchain.ClientExecChain;
+import org.apache.hc.client5.http.classic.ExecChain;
+import org.apache.hc.client5.http.classic.ExecChainHandler;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpException;
 
 import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Function;
 
 @RequiredArgsConstructor
-public class OnRequestExecChain implements ClientExecChain {
+public class OnRequestExecChain implements ExecChainHandler {
 
-    private final ClientExecChain requestExecutor;
+    private final ExecChainHandler execChainHandler;
     private final ApacheMapper mapper = new ApacheMapper();
 
     private Function<MockRequest, Optional<MockResponse>> onRequest;
@@ -28,13 +26,13 @@ public class OnRequestExecChain implements ClientExecChain {
     }
 
     @Override
-    public CloseableHttpResponse execute(HttpRoute route,
-                                         HttpRequestWrapper request,
-                                         HttpClientContext context,
-                                         HttpExecutionAware executionAware) throws IOException, HttpException {
+    public ClassicHttpResponse execute(ClassicHttpRequest request,
+                                       ExecChain.Scope scope,
+                                       ExecChain chain) throws IOException, HttpException {
         final Optional<MockResponse> recordoResponse = onRequest.apply(mapper.toRecordoRequest(request));
         return recordoResponse.isPresent()
                 ? mapper.toHttpResponse(recordoResponse.get())
-                : requestExecutor.execute(route, request, context, executionAware);
+                : execChainHandler.execute(request, scope, chain);
     }
+
 }

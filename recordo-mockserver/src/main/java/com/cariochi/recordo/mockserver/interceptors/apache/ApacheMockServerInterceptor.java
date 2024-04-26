@@ -3,8 +3,9 @@ package com.cariochi.recordo.mockserver.interceptors.apache;
 import com.cariochi.recordo.mockserver.interceptors.MockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
 import com.cariochi.recordo.mockserver.model.MockResponse;
+import org.apache.hc.client5.http.classic.HttpClient;
+
 import java.util.Optional;
-import org.apache.http.client.HttpClient;
 
 public class ApacheMockServerInterceptor implements MockServerInterceptor {
 
