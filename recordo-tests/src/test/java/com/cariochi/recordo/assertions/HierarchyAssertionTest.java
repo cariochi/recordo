@@ -13,23 +13,34 @@ class HierarchyAssertionTest {
     @Test
     void should_assert_hierarchy() {
         assertAsJson(hierarchy())
-                .excluding("subcategories.category", "subcategories.attributes.subcategory")
+                .excluding("subcategories[*].category", "subcategories[*].attributes[*].subcategory")
+                .isEqualTo("/hierarchy_test/hierarchy.json");
+
+        assertAsJson(hierarchy())
+                .excluding(
+                        "subcategories[0].category",
+                        "subcategories[0].attributes[0].subcategory",
+                        "subcategories[0].attributes[1].subcategory",
+                        "subcategories[1].category",
+                        "subcategories[1].attributes[0].subcategory",
+                        "subcategories[1].attributes[1].subcategory"
+                )
                 .isEqualTo("/hierarchy_test/hierarchy.json");
     }
 
     @Test
     void should_include_full_attributes() {
         assertAsJson(hierarchy())
-                .including("name", "subcategories.name", "subcategories.attributes")
-                .excluding("subcategories.attributes.subcategory")
+                .including("name", "subcategories[*].name", "subcategories[*].attributes")
+                .excluding("subcategories[*].attributes[*].subcategory")
                 .isEqualTo("/hierarchy_test/hierarchy_include_full_attributes.json");
     }
 
     @Test
     void should_include_categories_without_attributes() {
         assertAsJson(hierarchy())
-                .including("name", "subcategories")
-                .excluding("subcategories.category", "subcategories.attributes")
+                .including("name", "subcategories[*]")
+                .excluding("subcategories[*].category", "subcategories[*].attributes")
                 .isEqualTo("/hierarchy_test/hierarchy_without_attributes.json");
     }
 

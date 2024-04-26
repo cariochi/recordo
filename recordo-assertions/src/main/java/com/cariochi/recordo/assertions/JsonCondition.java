@@ -1,7 +1,7 @@
 package com.cariochi.recordo.assertions;
 
 import com.cariochi.recordo.core.json.JsonConverter;
-import com.cariochi.recordo.core.json.JsonPropertyFilter;
+import com.cariochi.recordo.core.json.JsonFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +58,7 @@ public class JsonCondition<T> extends Condition<T> {
     @Accessors(fluent = true)
     private static class RecordoPredicate<T> implements Predicate<T> {
 
-        private final JsonComparator jsonComparator = new JsonComparator();
+        private final AsJsonComparator comparator = new AsJsonComparator();
         private final String fileName;
 
         private List<String> including = new ArrayList<>();
@@ -68,13 +68,13 @@ public class JsonCondition<T> extends Condition<T> {
 
         @Override
         public boolean test(T actual) {
-            final JsonPropertyFilter jsonFilter = new JsonPropertyFilter(including, excluding);
+            final JsonFilter jsonFilter = new JsonFilter(including, excluding);
             final JSONCompareMode compareMode = compareMode(extensible, strictOrder);
-            return jsonComparator.compareAsJson(actual, fileName, jsonFilter, compareMode).passed();
+            return comparator.compareAsJson(actual, fileName, jsonFilter, compareMode).passed();
         }
 
         public void using(ObjectMapper objectMapper) {
-            jsonComparator.setJsonConverter(new JsonConverter(objectMapper));
+            comparator.setJsonConverter(new JsonConverter(objectMapper));
         }
 
     }

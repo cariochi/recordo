@@ -42,12 +42,12 @@ class BookServiceTest {
         final Page<Book> books = bookService.findAllByAuthor(author);
 
         assertAsJson(books)
-                .including("content.id", "content.title", "content.author.id")
+                .including("content[*].id", "content[*].title", "content[*].author.id")
                 .isEqualTo("/books/short_books.json");
 
         assertThat(books)
                 .is(equalAsJsonTo("/books/short_books.json")
-                        .including("content.id", "content.title", "content.author.id"));
+                        .including("content[*].id", "content[*].title", "content[*].author.id"));
     }
 
     @Test
