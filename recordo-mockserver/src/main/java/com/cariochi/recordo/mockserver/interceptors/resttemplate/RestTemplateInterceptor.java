@@ -18,9 +18,8 @@ import org.springframework.web.client.RestTemplate;
 import static java.util.Collections.emptyList;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toList;
-import static lombok.AccessLevel.PRIVATE;
 
-@NoArgsConstructor(access = PRIVATE)
+@NoArgsConstructor
 public class RestTemplateInterceptor implements MockServerInterceptor, ClientHttpRequestInterceptor {
 
     private final RestTemplateMapper mapper = new RestTemplateMapper();

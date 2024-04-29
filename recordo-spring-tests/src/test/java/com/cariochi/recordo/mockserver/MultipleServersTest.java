@@ -15,12 +15,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
 
 import static com.cariochi.recordo.config.Profiles.REST_TEMPLATE;
-import static com.cariochi.recordo.config.Profiles.SIMPLE;
 import static com.cariochi.reflecto.types.Types.listOf;
 import static org.springframework.core.ParameterizedTypeReference.forType;
 
 @SpringBootTest
-@ActiveProfiles({REST_TEMPLATE, SIMPLE})
+@ActiveProfiles(REST_TEMPLATE)
 @ExtendWith(RecordoExtension.class)
 class MultipleServersTest {
 

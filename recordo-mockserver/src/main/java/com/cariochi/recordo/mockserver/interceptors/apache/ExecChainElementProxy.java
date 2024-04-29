@@ -3,18 +3,17 @@ package com.cariochi.recordo.mockserver.interceptors.apache;
 import com.cariochi.reflecto.Reflecto;
 import com.cariochi.reflecto.fields.TargetField;
 import com.cariochi.reflecto.invocations.model.Reflection;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.hc.client5.http.classic.ExecChainHandler;
 
-import java.util.Optional;
-
 import static com.cariochi.reflecto.Reflecto.reflect;
 
+@Getter
 @RequiredArgsConstructor
 public class ExecChainElementProxy {
 
-    @Getter
     private final Object execChainElement;
 
     public static ExecChainElementProxy create(Object target) {

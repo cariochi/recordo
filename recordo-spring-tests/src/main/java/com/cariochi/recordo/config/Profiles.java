@@ -13,5 +13,4 @@ public class Profiles {
 
     public static final String REST_TEMPLATE = "restTemplate";
 
-    public static final String SIMPLE = "simple";
 }

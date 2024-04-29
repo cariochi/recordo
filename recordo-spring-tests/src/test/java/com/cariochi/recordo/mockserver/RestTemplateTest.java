@@ -16,10 +16,9 @@ import org.springframework.web.client.RestTemplate;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 import static com.cariochi.recordo.config.Profiles.REST_TEMPLATE;
-import static com.cariochi.recordo.config.Profiles.SIMPLE;
 
 @SpringBootTest
-@ActiveProfiles({REST_TEMPLATE, SIMPLE})
+@ActiveProfiles(REST_TEMPLATE)
 @ExtendWith(RecordoExtension.class)
 class RestTemplateTest {
 

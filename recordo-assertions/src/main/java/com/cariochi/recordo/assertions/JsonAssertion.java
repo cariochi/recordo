@@ -5,7 +5,6 @@ import com.cariochi.recordo.core.json.JsonFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.JSONCompareResult;
@@ -18,7 +17,6 @@ import static java.util.Arrays.asList;
  * It utilizes the `org.skyscreamer.jsonassert` library for JSON comparison.
  */
 @Slf4j
-@RequiredArgsConstructor(staticName = "assertAsJson")
 public class JsonAssertion<T> {
 
     private final AsJsonComparator comparator = new AsJsonComparator();
@@ -28,6 +26,14 @@ public class JsonAssertion<T> {
     private List<String> excluding = new ArrayList<>();
     private boolean extensible = false;
     private boolean strictOrder = true;
+
+    private JsonAssertion(T actual) {
+        this.actual = actual;
+    }
+
+    public static <T> JsonAssertion<T> assertAsJson(T actual) {
+        return new JsonAssertion<T>(actual);
+    }
 
     /**
      * Sets the ObjectMapper to be used for JSON conversion.

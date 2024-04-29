@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
@@ -53,7 +54,7 @@ public class UserController {
                          @RequestParam("file2") MultipartFile file2,
                          @RequestParam(value = "prefix", required = false) String prefix) {
         try (final InputStream inputStream = (id == 1 ? file1 : file2).getInputStream()) {
-            final String fileContent = IOUtils.toString(inputStream);
+            final String fileContent = IOUtils.toString(inputStream, UTF_8);
             return Stream.of(prefix, fileContent)
                     .filter(Objects::nonNull)
                     .collect(joining(": "));
@@ -67,7 +68,7 @@ public class UserController {
                             @RequestParam("file2") MultipartFile file2,
                             @RequestParam(value = "prefix", required = false) String prefix) {
         try (final InputStream inputStream = (id == 1 ? file1 : file2).getInputStream()) {
-            final String fileContent = IOUtils.toString(inputStream);
+            final String fileContent = IOUtils.toString(inputStream, UTF_8);
             return Stream.of(prefix, fileContent)
                     .filter(Objects::nonNull)
                     .collect(joining(": "));

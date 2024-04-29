@@ -4,14 +4,13 @@ import com.cariochi.recordo.core.utils.Beans;
 import com.cariochi.recordo.mockserver.interceptors.apache.ApacheMockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.okhttp.OkMockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.resttemplate.RestTemplateInterceptor;
+import java.util.Optional;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Optional;
 
 @Slf4j
 @UtilityClass
@@ -60,7 +59,6 @@ public class HttpClientInterceptors {
                     .map(ApacheMockServerInterceptor::attachTo)
                     .map(MockServerInterceptor.class::cast);
         } catch (Exception | NoClassDefFoundError e) {
-            log.error("Failed to attach interceptor for apache http client", e);
             return Optional.empty();
         }
     }
