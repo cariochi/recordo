@@ -2,7 +2,6 @@ package com.cariochi.recordo.read;
 
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.main.dto.TestDto;
-import java.time.Instant;
 import java.util.List;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
@@ -13,8 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(RecordoExtension.class)
 class ReadFieldResolverTest {
-
-    private static final Instant DATE = Instant.parse("2020-01-02T00:00:00Z");
 
     @Read("/read/dto.json")
     private ObjectFactory<TestDto> factory;
