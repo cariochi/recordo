@@ -2,24 +2,23 @@ package com.cariochi.recordo.mockserver.interceptors.apache;
 
 import com.cariochi.recordo.mockserver.model.MockRequest;
 import com.cariochi.recordo.mockserver.model.MockResponse;
+import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.ProtocolVersion;
+import org.apache.hc.core5.http.io.entity.BasicHttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.message.BasicClassicHttpResponse;
+import org.apache.hc.core5.http.message.BasicHeader;
+
 import java.io.ByteArrayInputStream;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
-import lombok.SneakyThrows;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpRequestWrapper;
-import org.apache.http.entity.BasicHttpEntity;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.message.BasicHttpResponse;
-import org.apache.http.util.EntityUtils;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.groupingBy;
@@ -30,30 +29,28 @@ import static org.apache.commons.lang3.StringUtils.substringBefore;
 
 public class ApacheMapper {
 
-    public MockRequest toRecordoRequest(HttpRequestWrapper wrapper) {
-        final HttpRequest request = wrapper.getOriginal();
-        final String body = request instanceof HttpEntityEnclosingRequest
-                ? bodyOf(((HttpEntityEnclosingRequest) request).getEntity())
-                : null;
+    @SneakyThrows
+    public MockRequest toRecordoRequest(ClassicHttpRequest request) {
+        final String body = bodyOf(request.getEntity());
         return MockRequest.builder()
-                .method(request.getRequestLine().getMethod())
-                .url(request.getRequestLine().getUri())
-                .headers(headersOf(request.getAllHeaders()))
+                .method(request.getMethod())
+                .url(request.getUri().toString())
+                .headers(headersOf(request.getHeaders()))
                 .body(body)
                 .build();
     }
 
-    public MockResponse toRecordoResponse(HttpResponse response) {
+    public MockResponse toRecordoResponse(ClassicHttpResponse response) {
         return MockResponse.builder()
-                .protocol(response.getProtocolVersion().toString())
-                .statusCode(response.getStatusLine().getStatusCode())
-                .statusText(response.getStatusLine().getReasonPhrase())
-                .headers(headersOf(response.getAllHeaders()))
+                .protocol(response.getVersion().toString())
+                .statusCode(response.getCode())
+                .statusText(response.getReasonPhrase())
+                .headers(headersOf(response.getHeaders()))
                 .body(bodyOf(response.getEntity()))
                 .build();
     }
 
-    public CloseableHttpResponse toHttpResponse(MockResponse response) {
+    public ClassicHttpResponse toHttpResponse(MockResponse response) {
         final String protocol = substringBefore(response.getProtocol(), "/");
         final String[] version = substringAfter(response.getProtocol(), "/").split("\\.");
         final ResponseWrapper newResponse = new ResponseWrapper(
@@ -65,8 +62,8 @@ public class ApacheMapper {
                 .map(e -> new BasicHeader(e.getKey(), e.getValue()))
                 .toArray(BasicHeader[]::new)
         );
-        BasicHttpEntity entity = new BasicHttpEntity();
-        entity.setContent(new ByteArrayInputStream(bytes(response.getBody())));
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes(response.getBody()));
+        BasicHttpEntity entity = new BasicHttpEntity(inputStream, ContentType.parse(response.contentType()));
         newResponse.setEntity(entity);
         return newResponse;
     }
@@ -79,7 +76,7 @@ public class ApacheMapper {
     }
 
     @SneakyThrows
-    private static String entityToString(HttpEntity entity)  {
+    private static String entityToString(HttpEntity entity) {
         return EntityUtils.toString(entity);
     }
 
@@ -98,15 +95,12 @@ public class ApacheMapper {
                 .orElse(new byte[0]);
     }
 
-    public static class ResponseWrapper extends BasicHttpResponse implements CloseableHttpResponse {
+    public static class ResponseWrapper extends BasicClassicHttpResponse {
 
         public ResponseWrapper(ProtocolVersion ver, int code, String reason) {
-            super(ver, code, reason);
+            super(code, reason);
+            setVersion(ver);
         }
 
-        @Override
-        public void close() {
-
-        }
     }
 }

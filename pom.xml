@@ -8,7 +8,7 @@
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.22</version>
+    <version>2.0.0</version>
 
     <name>Recordo Parent</name>
     <description>Parent for Recordo JUnit extension modules.</description>
@@ -49,7 +49,7 @@
     </developers>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -58,17 +58,18 @@
         <commons-text.version>1.11.0</commons-text.version>
         <junit-jupiter.version>5.10.2</junit-jupiter.version>
         <jsonassert.version>1.5.1</jsonassert.version>
-        <slf4j.version>2.0.12</slf4j.version>
-        <lombok.version>1.18.30</lombok.version>
+        <slf4j.version>2.0.13</slf4j.version>
+        <lombok.version>1.18.32</lombok.version>
         <reflecto.version>1.2.1</reflecto.version>
         <objecto.version>1.0.6</objecto.version>
-        <assertj.version>3.25.3</assertj.version>
+        <assertj.version>3.24.2</assertj.version>
         <commons-lang3.version>3.14.0</commons-lang3.version>
+        <commons-io.version>2.16.1</commons-io.version>
+        <httpclient5.version>5.3.1</httpclient5.version>
         <okhttp.version>4.12.0</okhttp.version>
-        <httpclient.version>4.5.14</httpclient.version>
-        <spring.version>5.3.31</spring.version>
-        <spring-data.version>2.7.18</spring-data.version>
-        <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
+        <spring.version>6.1.6</spring.version>
+        <spring-data.version>3.2.5</spring-data.version>
+        <jakarta.servlet-api.version>6.0.0</jakarta.servlet-api.version>
         <classgraph.version>4.8.165</classgraph.version>
         <objenesis.version>3.3</objenesis.version>
         <jetbrains-annotations.version>24.1.0</jetbrains-annotations.version>
@@ -94,7 +95,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
         </dependency>
 
         <dependency>
@@ -107,6 +107,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.cariochi.objecto</groupId>
@@ -157,6 +162,13 @@
             </dependency>
 
             <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
+            </dependency>
+
+
+            <dependency>
                 <groupId>io.github.classgraph</groupId>
                 <artifactId>classgraph</artifactId>
                 <version>${classgraph.version}</version>
@@ -185,13 +197,11 @@
                 <artifactId>annotations</artifactId>
                 <version>${jetbrains-annotations.version}</version>
             </dependency>
-
             <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>${httpclient.version}</version>
+                <groupId>org.apache.httpcomponents.client5</groupId>
+                <artifactId>httpclient5</artifactId>
+                <version>${httpclient5.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-web</artifactId>
@@ -223,9 +233,9 @@
             </dependency>
 
             <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
-                <version>${javax.servlet-api.version}</version>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>${jakarta.servlet-api.version}</version>
                 <scope>provided</scope>
             </dependency>
 

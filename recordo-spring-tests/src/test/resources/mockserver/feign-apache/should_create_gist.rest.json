@@ -112,7 +112,7 @@
   {
     "request": {
       "method": "GET",
-      "url": "https://api.github.com/gists/d0d76e0faed9e17b29d3f9ec80742a36?rand=hello+world",
+      "url": "https://api.github.com/gists/d0d76e0faed9e17b29d3f9ec80742a36?rand=hello%20world",
       "headers": {
         "authorization": "********",
         "accept": "*/*"

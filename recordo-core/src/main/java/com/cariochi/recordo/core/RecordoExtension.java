@@ -121,9 +121,13 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
                 .orElse(null);
     }
 
-    private boolean isSpringContextAvailable() {
+    public static boolean isSpringContextAvailable() {
+        return isClassAvailable("org.springframework.context.ApplicationContext");
+    }
+
+    public static boolean isClassAvailable(String className) {
         try {
-            Class.forName("org.springframework.context.ApplicationContext");
+            Class.forName(className);
             return true;
         } catch (ClassNotFoundException e) {
             return false;
