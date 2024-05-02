@@ -1,10 +1,15 @@
 package com.cariochi.recordo.core.json;
 
+import com.cariochi.recordo.core.RecordoExtension;
+import com.cariochi.reflecto.Reflecto;
+import com.cariochi.reflecto.constructors.ReflectoConstructor;
+import com.cariochi.reflecto.types.Types;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonStreamContext;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -31,11 +36,18 @@ public class JsonConverter {
     private final JacksonPrinter printer = new JacksonPrinter();
 
     public JsonConverter() {
-        this.objectMapper = new ObjectMapper()
+        objectMapper = new ObjectMapper()
                 .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
                 .registerModule(getJsonModule())
                 .registerModule(new JavaTimeModule())
                 .setDateFormat(new StdDateFormat());
+
+        if (RecordoExtension.isClassAvailable("org.springframework.data.web.config.SpringDataJacksonConfiguration$PageModule")) {
+            Reflecto.reflect(Types.type("org.springframework.data.web.config.SpringDataJacksonConfiguration$PageModule")).constructors().find()
+                    .map(ReflectoConstructor::newInstance)
+                    .map(Module.class::cast)
+                    .ifPresent(objectMapper::registerModule);
+        }
     }
 
     public JsonConverter(ObjectMapper objectMapper) {

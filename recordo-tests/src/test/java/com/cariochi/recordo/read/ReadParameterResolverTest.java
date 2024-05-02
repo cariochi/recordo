@@ -6,11 +6,10 @@ import com.cariochi.recordo.main.dto.TestDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.util.List;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.List;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 import static java.util.Arrays.asList;
@@ -20,11 +19,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ReadParameterResolverTest {
 
     private static final TestDto EXPECTED_DTO = TestDto.dto(1).withChild(TestDto.dto(2)).withChild(TestDto.dto(3));
+
     private static final List<TestDto> EXPECTED_LIST = asList(
             TestDto.dto(1).withChild(TestDto.dto(2)).withChild(TestDto.dto(3)),
             TestDto.dto(4).withChild(TestDto.dto(5)).withChild(TestDto.dto(6))
     );
-
 
     @EnableRecordo
     private final ObjectMapper objectMapper = new ObjectMapper()

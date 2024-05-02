@@ -30,8 +30,9 @@ class GitHubServiceTest {
 
     @Test
     void test_mock_http_with_variables() {
-        try (RecordoMockServer mockServer =
-                     new RecordoMockServer(OkMockServerInterceptor.attachTo(client), "/mockserver/gists_with_variables.mock.json")) {
+        final OkMockServerInterceptor interceptor = OkMockServerInterceptor.attachTo(client);
+        
+        try (RecordoMockServer mockServer = new RecordoMockServer(interceptor, "/mockserver/gists_with_variables.mock.json")) {
 
             mockServer.set("id1", "36387e79b940de553ad0b381afc29bf4");
             mockServer.set("id2", "cc7e0f8678d69196387b623bd45f0f33");

@@ -8,7 +8,7 @@
     <parent>
         <artifactId>recordo-parent</artifactId>
         <groupId>com.cariochi.recordo</groupId>
-        <version>1.2.22</version>
+        <version>2.0.0</version>
     </parent>
 
     <artifactId>recordo-spring-mockmvc</artifactId>
@@ -38,8 +38,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>

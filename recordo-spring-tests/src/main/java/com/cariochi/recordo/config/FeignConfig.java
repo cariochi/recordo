@@ -2,7 +2,7 @@ package com.cariochi.recordo.config;
 
 import feign.Client;
 import okhttp3.OkHttpClient;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +21,7 @@ public class FeignConfig {
     @Bean
     @ConditionalOnBean(CloseableHttpClient.class)
     public Client apacheFeignClient(CloseableHttpClient client) {
-        return new feign.httpclient.ApacheHttpClient(client);
+        return new feign.hc5.ApacheHttp5Client(client);
     }
 
     @Bean

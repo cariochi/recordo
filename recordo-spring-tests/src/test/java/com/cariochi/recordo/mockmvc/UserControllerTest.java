@@ -16,10 +16,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
+import static com.cariochi.recordo.mockmvc.HttpMethod.GET;
 import static com.cariochi.reflecto.types.Types.type;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.OK;
 
 @Slf4j

@@ -6,7 +6,6 @@ import com.cariochi.recordo.mockserver.dto.GistResponse;
 import com.cariochi.recordo.mockserver.interceptors.resttemplate.RestTemplateInterceptor;
 import com.cariochi.recordo.read.Read;
 import java.util.List;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +15,10 @@ import org.springframework.web.client.RestTemplate;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 import static com.cariochi.recordo.config.Profiles.REST_TEMPLATE;
-import static com.cariochi.recordo.config.Profiles.SIMPLE;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
-@ActiveProfiles({REST_TEMPLATE, SIMPLE})
+@ActiveProfiles(REST_TEMPLATE)
 @ExtendWith(RecordoExtension.class)
 class RestTemplateTest {
 
@@ -53,8 +52,7 @@ class RestTemplateTest {
 
     @Test
     void should_get_exception() {
-        Assertions
-                .assertThatThrownBy(() -> {
+        assertThatThrownBy(() -> {
                     try (RecordoMockServer mockServer = new RecordoMockServer(RestTemplateInterceptor.attachTo(restTemplate), "/mockserver/resttemplate/several_requests.rest.json")) {
                         gitHub.getGists();
                     }

@@ -16,9 +16,8 @@ import okhttp3.Response;
 import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toList;
-import static lombok.AccessLevel.PRIVATE;
 
-@NoArgsConstructor(access = PRIVATE)
+@NoArgsConstructor
 public class OkMockServerInterceptor implements Interceptor, MockServerInterceptor {
 
     private final OkHttpMapper mapper = new OkHttpMapper();

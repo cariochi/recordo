@@ -37,7 +37,7 @@ public class RestTemplateMapper {
     public MockResponse toRecordoResponse(ClientHttpResponse response) {
         return MockResponse.builder()
                 .statusCode(response.getStatusCode().value())
-                .statusText(response.getStatusCode().getReasonPhrase())
+                .statusText(response.getStatusText())
                 .headers(headersOf(response.getHeaders()))
                 .body(bodyOf(response))
                 .build();
@@ -87,11 +87,6 @@ public class RestTemplateMapper {
         HttpHeaders headers;
         InputStream body;
         HttpStatus statusCode;
-
-        @Override
-        public int getRawStatusCode() {
-            return statusCode.value();
-        }
 
         @Override
         public String getStatusText() {
