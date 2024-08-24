@@ -7,28 +7,33 @@ import org.apache.hc.client5.http.classic.HttpClient;
 
 import java.util.Optional;
 
+import static com.cariochi.recordo.mockserver.interceptors.apache.ApacheClientAttachUtils.*;
+
 public class ApacheMockServerInterceptor implements MockServerInterceptor {
 
+    private final HttpClient httpClient;
     private final OnRequestExecChain onRequestExecChain;
     private final OnResponseExecChain onResponseExecChain;
 
-    public static ApacheMockServerInterceptor attachTo(HttpClient httpClient) {
-        return new ApacheMockServerInterceptor(httpClient);
-    }
-
-    private ApacheMockServerInterceptor(HttpClient httpClient) {
-        onRequestExecChain = ApacheClientAttachUtils.attachOnRequestExecChain(httpClient);
-        onResponseExecChain = ApacheClientAttachUtils.attachOnResponseExecChain(httpClient);
+    public ApacheMockServerInterceptor(HttpClient httpClient) {
+        this.httpClient = httpClient;
+        onRequestExecChain = attachOnRequestExecChain(httpClient);
+        onResponseExecChain = attachOnResponseExecChain(httpClient);
     }
 
     @Override
     public void init(RecordoRequestHandler handler) {
-        onRequestExecChain.onRequest(request -> {
+        onRequestExecChain.setOnRequest(request -> {
             final Optional<MockResponse> response = handler.onRequest(request);
             onResponseExecChain.setActive(response.isEmpty());
             return response;
         });
-        onResponseExecChain.onResponse(handler::onResponse);
+        onResponseExecChain.setOnResponse(handler::onResponse);
     }
 
+    @Override
+    public void close() {
+        detachExecChain(httpClient, onRequestExecChain);
+        detachExecChain(httpClient, onResponseExecChain);
+    }
 }

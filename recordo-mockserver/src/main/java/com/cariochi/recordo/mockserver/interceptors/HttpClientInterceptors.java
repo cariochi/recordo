@@ -4,13 +4,14 @@ import com.cariochi.recordo.core.utils.Beans;
 import com.cariochi.recordo.mockserver.interceptors.apache.ApacheMockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.okhttp.OkMockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.resttemplate.RestTemplateInterceptor;
-import java.util.Optional;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Optional;
 
 @Slf4j
 @UtilityClass
@@ -36,7 +37,7 @@ public class HttpClientInterceptors {
     private static Optional<MockServerInterceptor> restTemplate(String beanName, Beans beans) {
         try {
             return beans.find(beanName, RestTemplate.class)
-                    .map(RestTemplateInterceptor::attachTo)
+                    .map(RestTemplateInterceptor::new)
                     .map(MockServerInterceptor.class::cast);
         } catch (Exception | NoClassDefFoundError e) {
             return Optional.empty();
@@ -46,7 +47,7 @@ public class HttpClientInterceptors {
     private static Optional<MockServerInterceptor> okHttpClient(String beanName, Beans beans) {
         try {
             return beans.find(beanName, OkHttpClient.class)
-                    .map(OkMockServerInterceptor::attachTo)
+                    .map(OkMockServerInterceptor::new)
                     .map(MockServerInterceptor.class::cast);
         } catch (Exception | NoClassDefFoundError e) {
             return Optional.empty();
@@ -56,7 +57,7 @@ public class HttpClientInterceptors {
     private static Optional<MockServerInterceptor> apacheHttpClient(String beanName, Beans beans) {
         try {
             return beans.find(beanName, HttpClient.class)
-                    .map(ApacheMockServerInterceptor::attachTo)
+                    .map(ApacheMockServerInterceptor::new)
                     .map(MockServerInterceptor.class::cast);
         } catch (Exception | NoClassDefFoundError e) {
             return Optional.empty();
