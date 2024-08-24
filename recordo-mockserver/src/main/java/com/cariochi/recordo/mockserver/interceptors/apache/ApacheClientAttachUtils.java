@@ -13,8 +13,11 @@ public class ApacheClientAttachUtils {
         }
 
         ExecChainElementProxy execChainElementProxy = ExecChainElementProxy.create(target);
-        ExecChainHandler handler = execChainElementProxy.getHandler().orElse(null);
-        if (isAssignableFrom(handler, OnRequestExecChain.class)) {
+        ExecChainHandler handler = execChainElementProxy.getHandler();
+
+        if (handler == null) {
+            return null;
+        } else if (isAssignableFrom(handler, OnRequestExecChain.class)) {
             return (OnRequestExecChain) handler;
         } else if (isAssignableFrom(handler, MainClientExec.class)) {
             final OnRequestExecChain onRequestExecChain = new OnRequestExecChain(handler);
@@ -26,8 +29,13 @@ public class ApacheClientAttachUtils {
     }
 
     public static OnResponseExecChain attachOnResponseExecChain(Object target) {
+
+        if (target == null) {
+            return null;
+        }
+
         ExecChainElementProxy execChainElementProxy = ExecChainElementProxy.create(target);
-        ExecChainHandler handler = execChainElementProxy.getHandler().orElse(null);
+        ExecChainHandler handler = execChainElementProxy.getHandler();
 
         if (handler == null) {
             return null;
@@ -38,6 +46,26 @@ public class ApacheClientAttachUtils {
             execChainElementProxy.setHandler(onResponseExecChain);
             return onResponseExecChain;
         }
+    }
+
+    public static void detachExecChain(Object target, AbstractExecChainHandler chainHandler) {
+
+        if (target == null) {
+            return;
+        }
+
+        ExecChainElementProxy execChainElementProxy = ExecChainElementProxy.create(target);
+        ExecChainHandler handler = execChainElementProxy.getHandler();
+
+        if (handler == null) {
+            return;
+        } else if (handler == chainHandler) {
+            final ExecChainHandler originalHandler = chainHandler.getExecChainHandler();
+            execChainElementProxy.setHandler(originalHandler);
+        }
+
+        detachExecChain(execChainElementProxy.getExecChainElement(), chainHandler);
+
     }
 
     private boolean isAssignableFrom(Object target, Class<?> clazz) {

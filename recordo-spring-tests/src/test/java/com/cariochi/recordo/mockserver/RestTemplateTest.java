@@ -5,13 +5,14 @@ import com.cariochi.recordo.mockserver.dto.Gist;
 import com.cariochi.recordo.mockserver.dto.GistResponse;
 import com.cariochi.recordo.mockserver.interceptors.resttemplate.RestTemplateInterceptor;
 import com.cariochi.recordo.read.Read;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 import static com.cariochi.recordo.config.Profiles.REST_TEMPLATE;
@@ -53,10 +54,12 @@ class RestTemplateTest {
     @Test
     void should_get_exception() {
         assertThatThrownBy(() -> {
-                    try (RecordoMockServer mockServer = new RecordoMockServer(RestTemplateInterceptor.attachTo(restTemplate), "/mockserver/resttemplate/several_requests.rest.json")) {
-                        gitHub.getGists();
-                    }
-                })
+            try (RestTemplateInterceptor interceptor = new RestTemplateInterceptor(restTemplate);
+                 RecordoMockServer mockServer = new RecordoMockServer(interceptor, "/mockserver/resttemplate/several_requests.rest.json")
+            ) {
+                gitHub.getGists();
+            }
+        })
                 .isInstanceOf(AssertionError.class)
                 .hasMessage("Not all mocks requests were called");
     }

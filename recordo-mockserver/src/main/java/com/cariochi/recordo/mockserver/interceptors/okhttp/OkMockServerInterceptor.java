@@ -4,36 +4,35 @@ import com.cariochi.recordo.mockserver.interceptors.MockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
 import com.cariochi.recordo.mockserver.model.MockRequest;
 import com.cariochi.recordo.mockserver.model.MockResponse;
-import java.io.IOException;
-import java.util.List;
-import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import java.io.IOException;
+import java.util.List;
+
 import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toList;
 
-@NoArgsConstructor
 public class OkMockServerInterceptor implements Interceptor, MockServerInterceptor {
 
     private final OkHttpMapper mapper = new OkHttpMapper();
+    private final OkHttpClient httpclient;
 
     private RecordoRequestHandler handler;
 
-    public static OkMockServerInterceptor attachTo(OkHttpClient httpClient) {
+    public OkMockServerInterceptor(OkHttpClient httpClient) {
+        this.httpclient = httpClient;
         final List<Interceptor> interceptors = httpClient.interceptors().stream()
                 .filter(not(OkMockServerInterceptor.class::isInstance))
                 .collect(toList());
 
-        final OkMockServerInterceptor okMockServerInterceptor = new OkMockServerInterceptor();
-        interceptors.add(okMockServerInterceptor);
+        interceptors.add(this);
         reflect(httpClient).fields().find("interceptors")
                 .ifPresent(field -> field.setValue(interceptors));
-        return okMockServerInterceptor;
     }
 
     @Override
@@ -56,4 +55,8 @@ public class OkMockServerInterceptor implements Interceptor, MockServerIntercept
         return mapper.toRecordoResponse(response);
     }
 
+    @Override
+    public void close() {
+        httpclient.interceptors().remove(this);
+    }
 }
