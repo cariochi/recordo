@@ -1,7 +1,10 @@
 package com.cariochi.recordo.mockserver.interceptors;
 
-public interface MockServerInterceptor {
+import java.io.Closeable;
+
+public interface MockServerInterceptor extends Closeable {
 
     void init(RecordoRequestHandler handler);
 
+    void close();
 }

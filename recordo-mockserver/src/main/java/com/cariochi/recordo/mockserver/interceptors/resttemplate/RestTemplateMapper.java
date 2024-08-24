@@ -57,12 +57,11 @@ public class RestTemplateMapper {
         return bytes.length == 0 ? null : new String(bytes);
     }
 
-    private ByteArrayInputStream bodyOf(MockResponse recordoResponse) {
-        final byte[] bytes = Optional.ofNullable(recordoResponse.getBody())
+    private byte[] bodyOf(MockResponse recordoResponse) {
+        return Optional.ofNullable(recordoResponse.getBody())
                 .map(String.class::cast)
                 .map(s -> s.getBytes(UTF_8))
                 .orElse(new byte[0]);
-        return new ByteArrayInputStream(bytes);
     }
 
     private Map<String, String> headersOf(HttpHeaders headers) {
@@ -85,7 +84,7 @@ public class RestTemplateMapper {
     public static class MockRestTemplateResponse implements ClientHttpResponse {
 
         HttpHeaders headers;
-        InputStream body;
+        byte[] body;
         HttpStatus statusCode;
 
         @Override
@@ -93,10 +92,13 @@ public class RestTemplateMapper {
             return statusCode.getReasonPhrase();
         }
 
+        public InputStream getBody() {
+            return new ByteArrayInputStream(body);
+        }
+
         @SneakyThrows
         @Override
         public void close() {
-            body.close();
         }
 
     }

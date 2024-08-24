@@ -1,20 +1,16 @@
 package com.cariochi.recordo.mockserver;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
- * Records and replays REST requests.
+ * Annotation to record and replay REST requests.
+ * <p>
+ * This annotation allows you to capture REST interactions during a test and either replay them or record new interactions
+ * depending on whether a corresponding file exists. If the specified file is absent, real requests and responses will be
+ * recorded. If the file is present, the recorded interactions will be replayed, making your tests faster and more predictable.
+ * </p>
  *
- * <ul>
- * <li>If the file is absent, real requests and responses will be recorded to the file.</li>
- * <li>If the file is present, requests and responses will be replayed.</li>
- * </ul>
- *
+ * <p><b>Usage Example:</b></p>
  * <pre class="code"><code class="java">
  *
  *  &#064;Test
@@ -24,7 +20,6 @@ import java.lang.annotation.Target;
  *      List&lt;GistResponse&gt; gists = gitHubClient.getGists();
  *      ...
  *  }
- *
  * </code></pre>
  */
 @Target(ElementType.METHOD)
@@ -33,14 +28,23 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface MockServer {
 
+    /**
+     * Path to JSON file or folder with recorded requests and responses.
+     */
     String value();
 
+    /**
+     * Name of the RestTemplate, OkHttp, or Apache HTTP Client bean or test class field to use.
+     */
     String httpClient() default "";
 
+    /**
+     * Name of the ObjectMapper bean or test class field to use for serialization/deserialization.
+     */
     String objectMapper() default "";
 
     /**
-     * The mapping matches URLs using the following rules:
+     * URL pattern used for matching requests. Supports the following wildcards:
      * <ul>
      * <li>? matches one character</li>
      * <li>* matches zero or more characters</li>
@@ -49,13 +53,25 @@ public @interface MockServer {
      */
     String urlPattern() default "**";
 
+    /**
+     * JSON comparison mode used to compare JSON responses.
+     */
     JsonCompareMode jsonCompareMode() default @JsonCompareMode;
 
+    /**
+     * Defines the mode for comparing JSON responses, including extensibility and strict order.
+     */
     @Retention(RetentionPolicy.RUNTIME)
     @interface JsonCompareMode {
 
+        /**
+         * Whether the comparison is extensible, allowing extra fields in the response.
+         */
         boolean extensible() default false;
 
+        /**
+         * Whether the comparison requires strict order of JSON elements.
+         */
         boolean strictOrder() default true;
 
     }
