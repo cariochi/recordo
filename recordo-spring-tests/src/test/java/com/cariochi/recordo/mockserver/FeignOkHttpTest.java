@@ -41,10 +41,9 @@ class FeignOkHttpTest {
     void should_create_gist(
             @Read("/mockserver/gist.json") Gist gist
     ) {
-        try (RecordoMockServer mockServer = new RecordoMockServer(
-                OkMockServerInterceptor.attachTo(client),
-                "/mockserver/feign-okhttp/should_create_gist.rest.json"
-        )) {
+        try (OkMockServerInterceptor interceptor = new OkMockServerInterceptor(client);
+             RecordoMockServer mockServer = new RecordoMockServer(interceptor, "/mockserver/feign-okhttp/should_create_gist.rest.json")
+        ) {
 
             mockServer.set("gistId", "16d0b491b237960fd5bf3ba503a3d18b");
 

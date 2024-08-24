@@ -3,10 +3,11 @@ package com.cariochi.recordo.mockserver.interceptors.apache;
 import com.cariochi.reflecto.Reflecto;
 import com.cariochi.reflecto.fields.TargetField;
 import com.cariochi.reflecto.invocations.model.Reflection;
-import java.util.Optional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.hc.client5.http.classic.ExecChainHandler;
+
+import java.util.Optional;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
 
@@ -26,8 +27,8 @@ public class ExecChainElementProxy {
         return new ExecChainElementProxy(original);
     }
 
-    public Optional<ExecChainHandler> getHandler() {
-        return findHandlerField().map(TargetField::getValue);
+    public ExecChainHandler getHandler() {
+        return findHandlerField().map(TargetField::getValue).map(ExecChainHandler.class::cast).orElse(null);
     }
 
     public void setHandler(ExecChainHandler handler) {

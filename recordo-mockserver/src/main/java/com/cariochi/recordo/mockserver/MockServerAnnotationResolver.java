@@ -6,19 +6,16 @@ import com.cariochi.recordo.mockserver.interceptors.MockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
 import com.cariochi.recordo.mockserver.model.MockRequest;
 import com.cariochi.recordo.mockserver.model.MockResponse;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+
+import java.util.*;
+import java.util.stream.Stream;
 
 import static com.cariochi.recordo.core.json.JsonConverters.getJsonConverter;
 import static com.cariochi.recordo.core.json.JsonUtils.compareMode;
@@ -30,6 +27,7 @@ import static org.junit.platform.commons.util.AnnotationUtils.findAnnotation;
 public class MockServerAnnotationResolver implements RegularExtension, BeforeEachCallback, AfterEachCallback {
 
     private final Map<String, List<RecordoMockServer>> mockServers = new HashMap<>();
+    private final Set<MockServerInterceptor> interceptors = new HashSet<>();
 
     @Override
     public void beforeEach(ExtensionContext context) {
@@ -63,11 +61,15 @@ public class MockServerAnnotationResolver implements RegularExtension, BeforeEac
                 .orElseThrow(() -> new IllegalArgumentException(format("No http client bean named '%s' available.", annotation.httpClient())));
 
         interceptor.init(new RoutingRequestHandler(annotation.httpClient()));
+        interceptors.add(interceptor);
     }
 
+    @SneakyThrows
     private void clear() {
         mockServers.values().stream().flatMap(Collection::stream).forEach(RecordoMockServer::close);
         mockServers.clear();
+        interceptors.forEach(MockServerInterceptor::close);
+        interceptors.clear();
     }
 
     @RequiredArgsConstructor
