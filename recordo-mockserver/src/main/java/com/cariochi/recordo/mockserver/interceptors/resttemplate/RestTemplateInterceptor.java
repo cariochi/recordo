@@ -6,12 +6,12 @@ import com.cariochi.recordo.mockserver.model.MockRequest;
 import com.cariochi.recordo.mockserver.model.MockResponse;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpRequest;
-import org.springframework.http.client.*;
+import org.springframework.http.client.BufferingClientHttpRequestFactory;
+import org.springframework.http.client.ClientHttpRequestExecution;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.List;
-
-import static java.util.Collections.emptyList;
 
 public class RestTemplateInterceptor implements MockServerInterceptor, ClientHttpRequestInterceptor {
 
@@ -23,13 +23,10 @@ public class RestTemplateInterceptor implements MockServerInterceptor, ClientHtt
     public RestTemplateInterceptor(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
 
-        final List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
-        restTemplate.setInterceptors(emptyList());
         final ClientHttpRequestFactory requestFactory = restTemplate.getRequestFactory();
         if (!(requestFactory instanceof BufferingClientHttpRequestFactory)) {
             restTemplate.setRequestFactory(new BufferingClientHttpRequestFactory(requestFactory));
         }
-        restTemplate.setInterceptors(interceptors);
 
         restTemplate.getInterceptors().add(this);
     }

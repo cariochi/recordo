@@ -4,18 +4,16 @@ import com.cariochi.recordo.mockserver.interceptors.MockServerInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
 import com.cariochi.recordo.mockserver.model.MockRequest;
 import com.cariochi.recordo.mockserver.model.MockResponse;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.SneakyThrows;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import java.io.IOException;
-import java.util.List;
-
 import static com.cariochi.reflecto.Reflecto.reflect;
-import static java.util.function.Predicate.not;
-import static java.util.stream.Collectors.toList;
 
 public class OkMockServerInterceptor implements Interceptor, MockServerInterceptor {
 
@@ -26,13 +24,9 @@ public class OkMockServerInterceptor implements Interceptor, MockServerIntercept
 
     public OkMockServerInterceptor(OkHttpClient httpClient) {
         this.httpclient = httpClient;
-        final List<Interceptor> interceptors = httpClient.interceptors().stream()
-                .filter(not(OkMockServerInterceptor.class::isInstance))
-                .collect(toList());
-
+        final List<Interceptor> interceptors = new ArrayList<>(httpClient.interceptors());
         interceptors.add(this);
-        reflect(httpClient).fields().find("interceptors")
-                .ifPresent(field -> field.setValue(interceptors));
+        reflect(httpClient).fields().get("interceptors").setValue(interceptors);
     }
 
     @Override
