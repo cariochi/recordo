@@ -1,16 +1,14 @@
 package com.cariochi.recordo.core.utils;
 
+import java.io.InputStream;
+import java.util.List;
+import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.InputStream;
-import java.util.List;
-import java.util.stream.Stream;
-
 import static java.lang.Thread.currentThread;
-import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @UtilityClass
@@ -28,7 +26,7 @@ public class Properties {
                 .map(StringUtils::trim)
                 .map(StringUtils::lowerCase)
                 .filter(StringUtils::isNotBlank)
-                .collect(toList());
+                .toList();
     }
 
     public List<String> httpMocksSensitiveHeaders() {
@@ -36,7 +34,7 @@ public class Properties {
                 .map(StringUtils::trim)
                 .map(StringUtils::lowerCase)
                 .filter(StringUtils::isNotBlank)
-                .collect(toList());
+                .toList();
     }
 
     private String property(String name) {
