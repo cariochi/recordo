@@ -33,7 +33,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @Slf4j
@@ -107,7 +106,7 @@ public class UserController {
     public Page<UserDto> findAll(@RequestParam(required = false, defaultValue = "2") int count, Pageable pageable) {
         final List<UserDto> users = IntStream.range(1, count + 1)
                 .mapToObj(i -> UserDto.builder().id(i).name("user_" + i).build())
-                .collect(toList());
+                .toList();
         return count == 0 ? Page.empty() : new PageImpl<>(users, pageable, users.size());
     }
 
@@ -115,7 +114,7 @@ public class UserController {
     public Slice<UserDto> getSlice(@RequestParam(required = false, defaultValue = "2") int count, Pageable pageable) {
         final List<UserDto> users = IntStream.range(1, count + 1)
                 .mapToObj(i -> UserDto.builder().id(i).name("user_" + i).build())
-                .collect(toList());
+                .toList();
         return count == 0 ? Page.empty() : new SliceImpl<>(users, pageable, true);
     }
 

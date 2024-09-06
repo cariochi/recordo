@@ -168,7 +168,7 @@ public class ApiClientProxyHandler implements InvocationHandler {
                 params.put("size", List.of(String.valueOf(pageable.getPageSize())));
                 final Sort sort = pageable.getSort();
                 if (sort.isSorted()) {
-                    final List<String> orders = sort.stream().map(order -> order.getProperty() + "," + order.getDirection()).collect(toList());
+                    final List<String> orders = sort.stream().map(order -> order.getProperty() + "," + order.getDirection()).toList();
                     params.put("sort", orders);
                 }
             } else {
@@ -182,7 +182,7 @@ public class ApiClientProxyHandler implements InvocationHandler {
                     List<String> value;
                     if (argument.getType().is(Collection.class)) {
                         Collection<?> collection = (Collection<?>) argument.getValue();
-                        value = collection.stream().map(Object::toString).collect(toList());
+                        value = collection.stream().map(Object::toString).toList();
                     } else {
                         value = List.of(argument.getValue().toString());
                     }
@@ -209,7 +209,7 @@ public class ApiClientProxyHandler implements InvocationHandler {
                 List<String> value;
                 if (field.type().is(Collection.class)) {
                     Collection<?> collection = field.getValue();
-                    value = collection.stream().map(Object::toString).collect(toList());
+                    value = collection.stream().map(Object::toString).toList();
                 } else {
                     value = List.of(field.getValue().toString());
                 }

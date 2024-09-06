@@ -8,7 +8,6 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(RecordoExtension.class)
@@ -35,7 +34,7 @@ class ObjectFactoryTest {
     void should_create_objects_from_factory() {
         final List<TestDto> dtos = IntStream.rangeClosed(100, 102)
                 .mapToObj(i -> factory.createWith(Map.of("id", new Object[]{i})))
-                .collect(toList());
+                .toList();
         assertThat(dtos)
                 .extracting(TestDto::getId)
                 .containsExactly(100, 101, 102);
@@ -47,7 +46,7 @@ class ObjectFactoryTest {
     ) {
         final List<TestDto> dtos = IntStream.rangeClosed(100, 102)
                 .mapToObj(i -> factory.with("id", i).create())
-                .collect(toList());
+                .toList();
         assertThat(dtos)
                 .extracting(TestDto::getId)
                 .containsExactly(100, 101, 102);

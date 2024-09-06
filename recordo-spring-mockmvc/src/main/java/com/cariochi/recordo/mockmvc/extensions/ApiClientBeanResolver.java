@@ -9,7 +9,6 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
-import static java.util.stream.Collectors.toList;
 
 public class ApiClientBeanResolver implements SpringContextExtension, BeforeAllCallback {
 
@@ -18,9 +17,9 @@ public class ApiClientBeanResolver implements SpringContextExtension, BeforeAllC
     @Override
     public void beforeAll(ExtensionContext context) {
 
-        final List<ReflectoField> recordoClientFields = reflect(context.getRequiredTestClass()).includeEnclosing().fields().stream()
+        final List<ReflectoField> recordoClientFields = reflect(context.getRequiredTestClass()).fields().stream()
                 .filter(this::isRecordoClientField)
-                .collect(toList());
+                .toList();
 
         recordoClientFields.stream()
                 .map(ReflectoField::type)

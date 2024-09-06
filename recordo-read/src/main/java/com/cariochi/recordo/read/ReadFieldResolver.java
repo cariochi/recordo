@@ -16,7 +16,8 @@ public class ReadFieldResolver implements RegularExtension, BeforeEachCallback {
 
     @Override
     public void beforeEach(ExtensionContext context) {
-        reflect(context.getRequiredTestInstance()).includeEnclosing().fields().stream()
+        context.getRequiredTestInstances().getAllInstances().stream()
+                .flatMap(instance -> reflect(instance).fields().stream())
                 .filter(field -> field.annotations().contains(Read.class))
                 .forEach(field -> processRead(context, field));
     }

@@ -29,7 +29,6 @@ import static com.cariochi.reflecto.types.Types.listOf;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.text.StringSubstitutor.replace;
 import static org.skyscreamer.jsonassert.JSONCompare.compareJSON;
@@ -109,7 +108,7 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
         final MockInteraction actualInteraction = new MockInteraction(actualRequest, new MockResponse());
         final List<MockInteraction> mocksToRecord = Stream.concat(actualMocks.stream(), Stream.of(actualInteraction))
                 .map(this::prepareForRecord)
-                .collect(toList());
+                .toList();
 
         final Path path = Path.of(mocksPath);
         final Path actualPath = isJson(mocksPath)
@@ -136,7 +135,7 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
 
             final List<MockInteraction> mocksToRecord = actualMocks.stream()
                     .map(this::prepareForRecord)
-                    .collect(toList());
+                    .toList();
 
             saveActualMocks(mocksToRecord, mocksPath);
 
@@ -168,7 +167,7 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
             expectedMocks = Stream.of(mocksPath)
                     .map(this::loadExpectedMocks)
                     .flatMap(List::stream)
-                    .collect(toList());
+                    .toList();
         }
         return expectedMocks;
     }
@@ -192,7 +191,7 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
                             log.info("Read Http Mock from file://{}\nRequest:\n{}", Files.path(file), mock.getRequest().getUrl());
                             return mock;
                         })
-                        .collect(toList());
+                        .toList();
             }
         } else {
             final String migratedFromPath = isJson(path)

@@ -7,14 +7,13 @@ import lombok.experimental.UtilityClass;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.ServiceLoader.load;
-import static java.util.stream.Collectors.toList;
 
 @UtilityClass
 public class Recordo {
 
     private static final List<ObjectCreator> creators = load(ObjectCreator.class).stream()
             .map(Provider::get)
-            .collect(toList());
+            .toList();
 
     public static <T> T create(Class<T> type) {
         final ReflectoType reflectoType = reflect(type);

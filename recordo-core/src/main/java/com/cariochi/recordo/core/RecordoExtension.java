@@ -19,7 +19,6 @@ import org.junit.jupiter.api.extension.ParameterResolver;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.ServiceLoader.load;
-import static java.util.stream.Collectors.toList;
 
 @Slf4j
 public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback, ParameterResolver {
@@ -52,7 +51,7 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
                 .filter(extension -> reflect(extension).type().is(BeforeAllCallback.class))
                 .sorted(orderAnnotationComparator())
                 .map(BeforeAllCallback.class::cast)
-                .collect(toList());
+                .toList();
 
         for (BeforeAllCallback callback : callbacks) {
             callback.beforeAll(context);
@@ -66,7 +65,7 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
                 .filter(extension -> reflect(extension).type().is(BeforeEachCallback.class))
                 .sorted(orderAnnotationComparator())
                 .map(BeforeEachCallback.class::cast)
-                .collect(toList());
+                .toList();
 
         for (BeforeEachCallback callback : callbacks) {
             callback.beforeEach(context);
@@ -80,7 +79,7 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
                 .filter(extension -> reflect(extension).type().is(AfterEachCallback.class))
                 .sorted(orderAnnotationComparator())
                 .map(AfterEachCallback.class::cast)
-                .collect(toList());
+                .toList();
 
         for (AfterEachCallback callback : callbacks) {
             callback.afterEach(context);
@@ -95,7 +94,7 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
                 .filter(extension -> reflect(extension).type().is(AfterAllCallback.class))
                 .sorted(orderAnnotationComparator())
                 .map(AfterAllCallback.class::cast)
-                .collect(toList());
+                .toList();
 
         for (AfterAllCallback callback : callbacks) {
             callback.afterAll(context);

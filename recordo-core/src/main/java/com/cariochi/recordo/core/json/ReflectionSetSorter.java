@@ -16,7 +16,6 @@ import static java.lang.String.CASE_INSENSITIVE_ORDER;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsLast;
-import static java.util.stream.Collectors.toList;
 
 public class ReflectionSetSorter implements Serializable {
 
@@ -64,7 +63,7 @@ public class ReflectionSetSorter implements Serializable {
         final List<TargetField> uniqueFields = fields.stream()
                 .filter(field -> field.type().isPrimitive() || field.type().is(Comparable.class))
                 .filter(field -> hasUniqueValues(field.name(), set))
-                .collect(toList());
+                .toList();
         for (TargetField field : uniqueFields) {
             for (Predicate<TargetField> predicate : FIELD_NAMES_PREDICATES) {
                 if (predicate.test(field)) {
