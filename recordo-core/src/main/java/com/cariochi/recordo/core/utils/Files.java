@@ -10,7 +10,6 @@ import lombok.experimental.UtilityClass;
 
 import static java.lang.System.getProperty;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.stream.Collectors.toList;
 
 @UtilityClass
 public class Files {
@@ -58,7 +57,7 @@ public class Files {
         return getFileList(path(folder)).stream()
                 .map(Path::getFileName)
                 .map(filename -> Path.of(folder, filename.toString()))
-                .collect(toList());
+                .toList();
     }
 
     public void delete(String path) {
@@ -70,9 +69,7 @@ public class Files {
     @SneakyThrows
     private List<Path> getFileList(Path path) {
         try (final Stream<Path> stream = java.nio.file.Files.list(path)) {
-            return stream
-                    .sorted()
-                    .collect(toList());
+            return stream.sorted().toList();
         }
     }
 

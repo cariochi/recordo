@@ -14,7 +14,6 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 import static com.cariochi.reflecto.Reflecto.proxy;
-import static java.util.stream.Collectors.toList;
 
 public class ApiClientCreator implements ObjectCreator {
 
@@ -33,7 +32,8 @@ public class ApiClientCreator implements ObjectCreator {
 
         final List<RequestInterceptor> requestInterceptors = Stream.of(annotation.interceptors())
                 .flatMap(interceptorClass -> createRequestInterceptor(interceptorClass, context).stream())
-                .collect(toList());
+                .map(RequestInterceptor.class::cast)
+                .toList();
 
         return proxy(type.actualClass())
                 .with(() -> new ApiClientProxyHandler(recordoMockMvc, requestInterceptors))

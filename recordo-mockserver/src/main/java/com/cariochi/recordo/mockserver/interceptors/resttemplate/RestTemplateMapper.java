@@ -2,6 +2,11 @@ package com.cariochi.recordo.mockserver.interceptors.resttemplate;
 
 import com.cariochi.recordo.mockserver.model.MockRequest;
 import com.cariochi.recordo.mockserver.model.MockResponse;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.SneakyThrows;
 import lombok.Value;
@@ -11,15 +16,8 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
-
 import static java.lang.String.join;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 public class RestTemplateMapper {
@@ -73,7 +71,7 @@ public class RestTemplateMapper {
         return headers.entrySet().stream()
                 .collect(toMap(
                         Map.Entry::getKey,
-                        e -> Stream.of(e.getValue().split(",")).collect(toList()),
+                        e -> Stream.of(e.getValue().split(",")).toList(),
                         (u, v) -> u,
                         HttpHeaders::new
                 ));

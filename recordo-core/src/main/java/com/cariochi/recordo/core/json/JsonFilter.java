@@ -3,8 +3,6 @@ package com.cariochi.recordo.core.json;
 import java.util.List;
 import lombok.Getter;
 
-import static java.util.stream.Collectors.toList;
-
 @Getter
 public class JsonFilter {
 
@@ -12,8 +10,8 @@ public class JsonFilter {
     private final List<Path> excluded;
 
     public JsonFilter(List<String> included, List<String> excluded) {
-        this.included = included.stream().map(Path::new).collect(toList());
-        this.excluded = excluded.stream().map(Path::new).collect(toList());
+        this.included = included.stream().map(Path::new).toList();
+        this.excluded = excluded.stream().map(Path::new).toList();
     }
 
     public boolean hasProperties() {
