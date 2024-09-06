@@ -66,18 +66,17 @@ public class Beans {
     }
 
     private <T> Map<String, T> annotatedFields(Class<T> beanClass) {
-        return context.getTestInstance()
-                .map(instance -> reflect(instance).includeEnclosing().fields().stream()
+        return context.getTestInstances().stream()
+                .flatMap(instances -> instances.getAllInstances().stream())
+                .flatMap(instance -> reflect(instance).fields().stream()
                         .filter(field -> field.type().is(beanClass))
-                        .filter(field -> field.annotations().contains(EnableRecordo.class))
-                        .collect(toMap(
-                                TargetField::name,
-                                f -> (T) f.getValue(),
-                                (a, b) -> a,
-                                LinkedHashMap::new
-                        ))
-                )
-                .orElseGet(LinkedHashMap::new);
+                        .filter(field -> field.annotations().contains(EnableRecordo.class)))
+                .collect(toMap(
+                        TargetField::name,
+                        TargetField::getValue,
+                        (a, b) -> a,
+                        LinkedHashMap::new
+                ));
     }
 
     private <T> Map<String, T> springBeans(Class<T> beanClass) {
