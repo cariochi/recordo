@@ -30,9 +30,9 @@ public interface TestDtoFactory {
     TestDto testDto(@Modifier("id") Integer id);
 
     @Modifier("text")
-    TestDtoFactory text(String text);
+    TestDtoFactory withText(String text);
 
     @Modifier("children[*].strings[*]")
-    TestDtoFactory allChildrenStrings(String value);
+    TestDtoFactory withAllChildrenStrings(String value);
 
 }

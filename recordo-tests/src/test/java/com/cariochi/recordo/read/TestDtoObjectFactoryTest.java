@@ -17,8 +17,8 @@ class TestDtoObjectFactoryTest {
     @Test
     void should_get_object() {
         final TestDto dto = objectFactory
-                .text("Hello, world!")
-                .allChildrenStrings("FAKE")
+                .withText("Hello, world!")
+                .withAllChildrenStrings("FAKE")
                 .testDto(33);
 
         assertThat(dto)
@@ -33,8 +33,8 @@ class TestDtoObjectFactoryTest {
     @Test
     void should_get_dtos() {
         final List<TestDto> dtos = objectFactory
-                .text("Hello, world!")
-                .allChildrenStrings("FAKE")
+                .withText("Hello, world!")
+                .withAllChildrenStrings("FAKE")
                 .testDtoList();
 
         assertThat(dtos)
@@ -50,12 +50,12 @@ class TestDtoObjectFactoryTest {
 
     @Test
     void should_work_with_default_methods() {
-        final TestDto dto = objectFactory.text("Hello, world!").defaultTestDto();
+        final TestDto dto = objectFactory.withText("Hello, world!").defaultTestDto();
         assertThat(dto)
                 .extracting(TestDto::getId, TestDto::getText)
                 .contains(101, "Hello, world!");
 
-        final List<TestDto> dtoList = objectFactory.text("Hello, world!").defaultTestDtoList();
+        final List<TestDto> dtoList = objectFactory.withText("Hello, world!").defaultTestDtoList();
         assertThat(dtoList)
                 .extracting(TestDto::getId, TestDto::getText)
                 .contains(tuple(101, "Hello, world!"));

@@ -182,14 +182,14 @@ class UserControllerClientTest {
 
     @Test
     void should_update_user() {
-        final UserDto user = userFactory.id(1).user();
+        final UserDto user = userFactory.withId(1).user();
         final UserDto updated = apiClient.update(user);
         assertAsJson(updated).isEqualTo("/mockmvc/updated_user.json");
     }
 
     @Test
     void should_patch_user() {
-        final UserDto user = userFactory.id(1).user();
+        final UserDto user = userFactory.withId(1).user();
         final UserDto patched = apiClient.patch(1, user);
         assertAsJson(patched).isEqualTo("/mockmvc/updated_user.json");
     }

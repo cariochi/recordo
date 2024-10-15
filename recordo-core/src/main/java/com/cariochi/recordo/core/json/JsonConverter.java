@@ -42,11 +42,15 @@ public class JsonConverter {
                 .registerModule(new JavaTimeModule())
                 .setDateFormat(new StdDateFormat());
 
-        if (RecordoExtension.isClassAvailable("org.springframework.data.web.config.SpringDataJacksonConfiguration$PageModule")) {
-            Reflecto.reflect(Types.type("org.springframework.data.web.config.SpringDataJacksonConfiguration$PageModule")).constructors().find()
-                    .map(ReflectoConstructor::newInstance)
-                    .map(Module.class::cast)
-                    .ifPresent(objectMapper::registerModule);
+        try {
+            if (RecordoExtension.isClassAvailable("org.springframework.data.web.config.SpringDataJacksonConfiguration$PageModule")) {
+                Reflecto.reflect(Types.type("org.springframework.data.web.config.SpringDataJacksonConfiguration$PageModule")).constructors().find()
+                        .map(ReflectoConstructor::newInstance)
+                        .map(Module.class::cast)
+                        .ifPresent(objectMapper::registerModule);
+            }
+        } catch (Exception e) {
+            // ignore
         }
     }
 

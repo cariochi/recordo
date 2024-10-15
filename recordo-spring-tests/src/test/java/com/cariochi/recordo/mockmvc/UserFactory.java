@@ -16,6 +16,6 @@ public interface UserFactory {
     List<UserDto> users();
 
     @Modifier("id")
-    UserFactory id(Integer id);
+    UserFactory withId(Integer id);
 
 }
