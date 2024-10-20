@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
-import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(RecordoExtension.class)
@@ -20,7 +19,7 @@ class ReadParameterResolverTest {
 
     private static final TestDto EXPECTED_DTO = TestDto.dto(1).withChild(TestDto.dto(2)).withChild(TestDto.dto(3));
 
-    private static final List<TestDto> EXPECTED_LIST = asList(
+    private static final List<TestDto> EXPECTED_LIST = List.of(
             TestDto.dto(1).withChild(TestDto.dto(2)).withChild(TestDto.dto(3)),
             TestDto.dto(4).withChild(TestDto.dto(5)).withChild(TestDto.dto(6))
     );

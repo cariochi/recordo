@@ -18,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import static java.util.Arrays.asList;
 import static lombok.AccessLevel.NONE;
 import static org.apache.commons.lang3.ArrayUtils.addFirst;
 
@@ -80,7 +79,7 @@ public class Request<RESP> {
     }
 
     public Request<RESP> param(String name, String... values) {
-        addToParams(name, asList(values));
+        addToParams(name, List.of(values));
         return this;
     }
 

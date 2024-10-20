@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
-import static java.util.Arrays.asList;
 import static java.util.Comparator.comparing;
 import static org.apache.commons.lang3.RandomUtils.nextLong;
 
@@ -27,7 +26,7 @@ public class BookService {
     }
 
     public Page<Book> books() {
-        return new PageImpl<>(asList(
+        return new PageImpl<>(List.of(
                 book(1L, "Othello"),
                 book(2L, "Macbeth"),
                 book(3L, "Richard II")
