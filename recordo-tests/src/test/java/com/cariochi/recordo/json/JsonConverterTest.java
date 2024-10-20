@@ -3,11 +3,11 @@ package com.cariochi.recordo.json;
 import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.core.json.JsonFilter;
 import com.cariochi.recordo.main.dto.TestDto;
+import java.util.List;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-import static java.util.Arrays.asList;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 
 class JsonConverterTest {
@@ -32,8 +32,8 @@ class JsonConverterTest {
     void should_remove_fields_by_include() {
         // given
         final JsonFilter jsonFilter = new JsonFilter(
-                asList("id", "text", "children[*].id", "children[*].text"),
-                asList()
+                List.of("id", "text", "children[*].id", "children[*].text"),
+                List.of()
         );
 
         // when
@@ -48,8 +48,8 @@ class JsonConverterTest {
     void should_remove_fields_by_exclude() {
         // given
         final JsonFilter jsonFilter = new JsonFilter(
-                asList(),
-                asList("date", "strings", "children[*].date", "children[*].strings", "children[*].children")
+                List.of(),
+                List.of("date", "strings", "children[*].date", "children[*].strings", "children[*].children")
         );
 
         // when
@@ -64,8 +64,8 @@ class JsonConverterTest {
     void should_remove_fields_by_include_and_exclude() {
         // given
         final JsonFilter jsonFilter = new JsonFilter(
-                asList("id", "text", "date", "children[*].id", "children[*].text", "children[*].date"),
-                asList("date", "strings", "children[*].date", "children[*].strings", "children[*].children")
+                List.of("id", "text", "date", "children[*].id", "children[*].text", "children[*].date"),
+                List.of("date", "strings", "children[*].date", "children[*].strings", "children[*].children")
         );
 
         // when

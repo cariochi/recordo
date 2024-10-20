@@ -13,7 +13,6 @@ import org.assertj.core.api.Condition;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import static com.cariochi.recordo.core.json.JsonUtils.compareMode;
-import static java.util.Arrays.asList;
 
 public class JsonCondition<T> extends Condition<T> {
 
@@ -34,12 +33,12 @@ public class JsonCondition<T> extends Condition<T> {
     }
 
     public JsonCondition<T> including(String... fields) {
-        predicate.including(asList(fields));
+        predicate.including(List.of(fields));
         return this;
     }
 
     public JsonCondition<T> excluding(String... fields) {
-        predicate.excluding(asList(fields));
+        predicate.excluding(List.of(fields));
         return this;
     }
 

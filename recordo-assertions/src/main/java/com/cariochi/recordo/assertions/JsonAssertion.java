@@ -10,7 +10,6 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.JSONCompareResult;
 
 import static com.cariochi.recordo.core.json.JsonUtils.compareMode;
-import static java.util.Arrays.asList;
 
 /**
  * This class provides assertion methods for comparing objects to JSON files.
@@ -56,7 +55,7 @@ public class JsonAssertion<T> {
      * @return This JsonAssertion instance for method chaining.
      */
     public JsonAssertion<T> including(String... fields) {
-        this.including = asList(fields);
+        this.including = List.of(fields);
         return this;
     }
 
@@ -71,7 +70,7 @@ public class JsonAssertion<T> {
      * @return This JsonAssertion instance for method chaining.
      */
     public JsonAssertion<T> excluding(String... fields) {
-        this.excluding = asList(fields);
+        this.excluding = List.of(fields);
         return this;
     }
 
