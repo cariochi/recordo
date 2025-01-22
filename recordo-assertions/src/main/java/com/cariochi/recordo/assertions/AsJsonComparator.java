@@ -1,6 +1,8 @@
 package com.cariochi.recordo.assertions;
 
+import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.core.json.JsonConverter;
+import com.cariochi.recordo.core.json.JsonConverters;
 import com.cariochi.recordo.core.json.JsonFilter;
 import com.cariochi.recordo.core.json.Path;
 import com.cariochi.recordo.core.utils.Files;
@@ -18,7 +20,7 @@ import static org.skyscreamer.jsonassert.JSONCompare.compareJSON;
 @Slf4j
 class AsJsonComparator {
 
-    private JsonConverter jsonConverter = new JsonConverter();
+    private JsonConverter jsonConverter = JsonConverters.getJsonConverter("", RecordoExtension.getContext());
 
     @SneakyThrows
     public JSONCompareResult compareAsJson(
