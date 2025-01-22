@@ -3,6 +3,7 @@ package com.cariochi.recordo.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,7 @@ public class ObjectMapperConfig {
                 .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
                 .registerModule(new JavaTimeModule())
                 .registerModule(new SpringDataJacksonConfiguration.PageModule())
+                .registerModule(new Jdk8Module())
                 .setDateFormat(new StdDateFormat());
     }
 
