@@ -99,6 +99,7 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
         for (AfterAllCallback callback : callbacks) {
             callback.afterAll(context);
         }
+        RecordoExtension.context = null;
     }
 
     @Override
