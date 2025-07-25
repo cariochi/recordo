@@ -5,6 +5,7 @@
       "url": "https://api.github.com/gists",
       "headers": {
         "authorization": "********",
+        "content-type": "application/json",
         "accept": "*/*"
       },
       "body": {
@@ -113,6 +114,7 @@
       "url": "https://api.github.com/gists/67a23fde7dccea21840cde116f9718ce",
       "headers": {
         "authorization": "********",
+        "content-type": "application/json",
         "accept": "*/*"
       },
       "body": {

@@ -5,4 +5,4 @@ feign:
         requestInterceptors:
           - GitHubInterceptor
 
-github.key: KEY
+github.key: GITHUB_KEY

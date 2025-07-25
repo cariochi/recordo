@@ -6,9 +6,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>recordo-parent</artifactId>
+        <artifactId>recordo</artifactId>
         <groupId>com.cariochi.recordo</groupId>
-        <version>2.0.8</version>
+        <version>2.0.9</version>
     </parent>
 
     <artifactId>recordo-mockserver</artifactId>
@@ -26,17 +26,6 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>kotlin-stdlib-jdk8</artifactId>
-                    <groupId>org.jetbrains.kotlin</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib</artifactId>
             <scope>provided</scope>
         </dependency>
 

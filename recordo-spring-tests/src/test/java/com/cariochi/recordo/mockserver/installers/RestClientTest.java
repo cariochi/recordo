@@ -1,30 +1,29 @@
-package com.cariochi.recordo.mockserver;
+package com.cariochi.recordo.mockserver.installers;
 
 import com.cariochi.recordo.core.RecordoExtension;
+import com.cariochi.recordo.mockserver.MockServer;
+import com.cariochi.recordo.mockserver.installers.configs.RestClientConfig;
 import com.cariochi.recordo.mockserver.dto.Gist;
 import com.cariochi.recordo.mockserver.dto.GistResponse;
+import com.cariochi.recordo.mockserver.restclient.GitHubRestClient;
 import com.cariochi.recordo.read.Read;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
-import static com.cariochi.recordo.config.Profiles.APACHE_HTTP;
-import static com.cariochi.recordo.config.Profiles.FEIGN;
 
-@SpringBootTest
-@ActiveProfiles({FEIGN, APACHE_HTTP})
+@SpringBootTest(classes = RestClientConfig.class)
 @ExtendWith(RecordoExtension.class)
-class FeignApacheTest {
+class RestClientTest {
 
     @Autowired
-    protected GitHub gitHub;
+    private GitHubRestClient gitHub;
 
     @Test
-    @MockServer("/mockserver/feign-apache/should_retrieve_gists.rest.json")
+    @MockServer("/mockserver/restclient/should_retrieve_gists.rest.json")
     void should_retrieve_gists() {
         final List<GistResponse> gists = gitHub.getGists();
         assertAsJson(gists)
@@ -32,14 +31,16 @@ class FeignApacheTest {
     }
 
     @Test
-    @MockServer("/mockserver/feign-apache/should_create_gist.rest.json")
+    @MockServer("/mockserver/restclient/should_create_gist.rest.json")
     void should_create_gist(
             @Read("/mockserver/gist.json") Gist gist
     ) {
         final GistResponse response = gitHub.createGist(gist);
-        final Gist created = gitHub.getGist(response.getId(), "hello world");
+        final GistResponse updateResponse = gitHub.updateGist(response.getId(), gist);
+        final Gist createdGist = gitHub.getGist(response.getId(), "hello world");
         gitHub.deleteGist(response.getId());
-        assertAsJson(created)
+
+        assertAsJson(createdGist)
                 .isEqualTo("/mockserver/gist.json");
     }
 

@@ -4,7 +4,7 @@ package com.cariochi.recordo.mockserver;
 import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.core.utils.Files;
 import com.cariochi.recordo.core.utils.Properties;
-import com.cariochi.recordo.mockserver.interceptors.MockServerInterceptor;
+import com.cariochi.recordo.mockserver.interceptors.RecordoInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
 import com.cariochi.recordo.mockserver.model.MockInteraction;
 import com.cariochi.recordo.mockserver.model.MockRequest;
@@ -44,7 +44,7 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
     private List<MockInteraction> expectedMocks;
     private final Map<String, Object> variables = new HashMap<>();
 
-    public RecordoMockServer(MockServerInterceptor interceptor, String mocksPath) {
+    public RecordoMockServer(RecordoInterceptor interceptor, String mocksPath) {
         this("**", mocksPath, new JsonConverter(), compareMode(false, true));
         interceptor.init(this);
     }
@@ -140,6 +140,7 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
             saveActualMocks(mocksToRecord, mocksPath);
 
         } else if (actualMocks.size() < expectedMocks().size()) {
+            expectedMocks = null;
             throw new AssertionError("Not all mocks requests were called");
         }
     }

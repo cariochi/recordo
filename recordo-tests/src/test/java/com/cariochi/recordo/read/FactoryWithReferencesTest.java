@@ -1,6 +1,6 @@
 package com.cariochi.recordo.read;
 
-import com.cariochi.objecto.References;
+import com.cariochi.objecto.Reference;
 import com.cariochi.recordo.core.Recordo;
 import java.util.List;
 import lombok.Data;
@@ -39,7 +39,7 @@ class FactoryWithReferencesTest {
     public interface TestFactory {
 
         @Read("/factoryWithReferencesTest/dto.json")
-        @References("children[*].parent")
+        @Reference("children[*].parent")
         Dto createDto();
 
     }

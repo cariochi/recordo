@@ -2,10 +2,20 @@ package com.cariochi.recordo.mockserver;
 
 import com.cariochi.recordo.core.RegularExtension;
 import com.cariochi.recordo.core.json.JsonConverter;
-import com.cariochi.recordo.mockserver.interceptors.MockServerInterceptor;
+import com.cariochi.recordo.mockserver.interceptors.InterceptorInstaller;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
 import com.cariochi.recordo.mockserver.model.MockRequest;
 import com.cariochi.recordo.mockserver.model.MockResponse;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -14,12 +24,9 @@ import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-import java.util.*;
-import java.util.stream.Stream;
-
 import static com.cariochi.recordo.core.json.JsonConverters.getJsonConverter;
 import static com.cariochi.recordo.core.json.JsonUtils.compareMode;
-import static com.cariochi.recordo.mockserver.interceptors.HttpClientInterceptors.findInterceptor;
+import static com.cariochi.recordo.mockserver.interceptors.InterceptorInstallers.findInterceptor;
 import static java.lang.String.format;
 import static org.junit.platform.commons.util.AnnotationUtils.findAnnotation;
 
@@ -27,7 +34,7 @@ import static org.junit.platform.commons.util.AnnotationUtils.findAnnotation;
 public class MockServerAnnotationResolver implements RegularExtension, BeforeEachCallback, AfterEachCallback {
 
     private final Map<String, List<RecordoMockServer>> mockServers = new HashMap<>();
-    private final Set<MockServerInterceptor> interceptors = new HashSet<>();
+    private final Set<InterceptorInstaller> installers = new HashSet<>();
 
     @Override
     public void beforeEach(ExtensionContext context) {
@@ -56,20 +63,35 @@ public class MockServerAnnotationResolver implements RegularExtension, BeforeEac
         final JsonConverter jsonConverter = getJsonConverter(annotation.objectMapper(), context);
         final JSONCompareMode compareMode = compareMode(annotation.jsonCompareMode().extensible(), annotation.jsonCompareMode().strictOrder());
         final RecordoMockServer mockServer = new RecordoMockServer(annotation.urlPattern(), annotation.value(), jsonConverter, compareMode);
-        mockServers.computeIfAbsent(annotation.httpClient(), key -> new ArrayList<>()).add(mockServer);
-        final MockServerInterceptor interceptor = findInterceptor(annotation.httpClient(), context)
-                .orElseThrow(() -> new IllegalArgumentException(format("No http client bean named '%s' available.", annotation.httpClient())));
+        mockServers.computeIfAbsent(annotation.beanName(), key -> new ArrayList<>()).add(mockServer);
 
-        interceptor.init(new RoutingRequestHandler(annotation.httpClient()));
-        interceptors.add(interceptor);
+        final InterceptorInstaller installer = findInterceptor(annotation.beanName(), context)
+                .orElseThrow(() -> new IllegalArgumentException(format("No http client bean named '%s' available.", annotation.beanName())));
+
+        installer.init(new RoutingRequestHandler(annotation.beanName()));
+        installers.add(installer);
     }
 
     @SneakyThrows
     private void clear() {
-        mockServers.values().stream().flatMap(Collection::stream).forEach(RecordoMockServer::close);
+        final List<AssertionError> errors = mockServers.values().stream()
+                .flatMap(Collection::stream)
+                .map(server -> {
+                    try {
+                        server.close();
+                        return null;
+                    } catch (AssertionError e) {
+                        return e;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList();
         mockServers.clear();
-        interceptors.forEach(MockServerInterceptor::close);
-        interceptors.clear();
+        installers.forEach(InterceptorInstaller::close);
+        installers.clear();
+        if (!errors.isEmpty()) {
+            throw errors.get(0);
+        }
     }
 
     @RequiredArgsConstructor

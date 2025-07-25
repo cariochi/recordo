@@ -4,6 +4,7 @@
     "url": "https://api.github.com/gists",
     "headers": {
       "authorization": "********",
+      "content-type": "application/json",
       "accept": "*/*"
     },
     "body": {

@@ -1,6 +1,11 @@
 package com.cariochi.recordo.mockserver;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Repeatable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Annotation to record and replay REST requests.
@@ -36,7 +41,7 @@ public @interface MockServer {
     /**
      * Name of the RestTemplate, OkHttp, or Apache HTTP Client bean or test class field to use.
      */
-    String httpClient() default "";
+    String beanName() default "";
 
     /**
      * Name of the ObjectMapper bean or test class field to use for serialization/deserialization.
