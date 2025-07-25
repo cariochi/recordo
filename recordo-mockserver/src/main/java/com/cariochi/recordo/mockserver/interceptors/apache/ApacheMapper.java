@@ -2,11 +2,17 @@ package com.cariochi.recordo.mockserver.interceptors.apache;
 
 import com.cariochi.recordo.mockserver.model.MockRequest;
 import com.cariochi.recordo.mockserver.model.MockResponse;
+import java.io.ByteArrayInputStream;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.EntityDetails;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.ProtocolVersion;
@@ -14,11 +20,6 @@ import org.apache.hc.core5.http.io.entity.BasicHttpEntity;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.message.BasicClassicHttpResponse;
 import org.apache.hc.core5.http.message.BasicHeader;
-
-import java.io.ByteArrayInputStream;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.groupingBy;
@@ -32,20 +33,22 @@ public class ApacheMapper {
     @SneakyThrows
     public MockRequest toRecordoRequest(ClassicHttpRequest request) {
         final String body = bodyOf(request.getEntity());
+        final String contentType = Optional.ofNullable(request.getEntity()).map(EntityDetails::getContentType).orElse(null);
         return MockRequest.builder()
                 .method(request.getMethod())
                 .url(request.getUri().toString())
-                .headers(headersOf(request.getHeaders()))
+                .headers(headersOf(request.getHeaders(), contentType))
                 .body(body)
                 .build();
     }
 
     public MockResponse toRecordoResponse(ClassicHttpResponse response) {
+        final String contentType = Optional.ofNullable(response.getEntity()).map(EntityDetails::getContentType).orElse(null);
         return MockResponse.builder()
                 .protocol(response.getVersion().toString())
                 .statusCode(response.getCode())
                 .statusText(response.getReasonPhrase())
-                .headers(headersOf(response.getHeaders()))
+                .headers(headersOf(response.getHeaders(), contentType))
                 .body(bodyOf(response.getEntity()))
                 .build();
     }
@@ -80,12 +83,23 @@ public class ApacheMapper {
         return EntityUtils.toString(entity);
     }
 
-    public Map<String, String> headersOf(Header[] headers) {
-        return Stream.of(headers)
+    public Map<String, String> headersOf(Header[] headers, String contentType) {
+
+        Map<String, String> headerMap = Stream.of(headers)
                 .collect(groupingBy(
                         Header::getName,
+                        LinkedHashMap::new,
                         mapping(Header::getValue, joining(", "))
                 ));
+
+        boolean hasContentType = headerMap.keySet().stream()
+                .anyMatch(k -> k.equalsIgnoreCase("Content-Type"));
+
+        if (!hasContentType && contentType != null) {
+            headerMap.put("Content-Type", contentType);
+        }
+
+        return headerMap;
     }
 
     private byte[] bytes(Object body) {

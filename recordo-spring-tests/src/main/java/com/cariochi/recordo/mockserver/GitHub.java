@@ -4,6 +4,7 @@ import com.cariochi.recordo.mockserver.dto.Gist;
 import com.cariochi.recordo.mockserver.dto.GistResponse;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 public interface GitHub {
 

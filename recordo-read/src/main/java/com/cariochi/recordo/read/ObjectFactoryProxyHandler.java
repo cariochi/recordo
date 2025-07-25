@@ -1,6 +1,6 @@
 package com.cariochi.recordo.read;
 
-import com.cariochi.objecto.Modifier;
+import com.cariochi.objecto.Modify;
 import com.cariochi.objecto.Objecto;
 import com.cariochi.objecto.modifiers.ObjectoModifier;
 import com.cariochi.objecto.proxy.ObjectModifier;
@@ -78,7 +78,7 @@ public class ObjectFactoryProxyHandler<T> implements InvocationHandler {
         final Map<String, Object[]> methodParameters = new LinkedHashMap<>();
         for (int i = 0; i < parameters.size(); i++) {
             final ReflectoParameter param = parameters.get(i);
-            final Modifier modifierParameter = param.annotations().find(Modifier.class).orElse(null);
+            final Modify modifierParameter = param.annotations().find(Modify.class).orElse(null);
             if (modifierParameter == null) {
                 if (param.isNamePresent()) {
                     methodParameters.put(param.name(), Stream.of(args[i]).toArray());

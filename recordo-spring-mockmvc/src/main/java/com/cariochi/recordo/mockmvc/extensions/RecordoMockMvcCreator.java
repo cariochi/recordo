@@ -30,7 +30,6 @@ public class RecordoMockMvcCreator implements ObjectCreator {
         final JsonConverter jsonConverter = JsonConverters.getJsonConverter(objectMapper, context);
         final Collection<RequestInterceptor> requestInterceptors = Beans.of(context).findAll(RequestInterceptor.class).values();
         final MockMvc mockMvc = Beans.of(context).findByType(MockMvc.class)
-                .map(MockMvc.class::cast)
                 .orElseThrow(() -> new IllegalArgumentException("Can't find single instance of MockMvc"));
         return new RecordoMockMvc(mockMvc, jsonConverter, requestInterceptors);
     }

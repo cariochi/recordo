@@ -1,6 +1,9 @@
-package com.cariochi.recordo.mockserver;
+package com.cariochi.recordo.mockserver.installers;
 
 import com.cariochi.recordo.core.RecordoExtension;
+import com.cariochi.recordo.mockserver.GitHub;
+import com.cariochi.recordo.mockserver.MockServer;
+import com.cariochi.recordo.mockserver.installers.configs.FeignOkConfig;
 import com.cariochi.recordo.mockserver.dto.Gist;
 import com.cariochi.recordo.mockserver.dto.GistResponse;
 import com.cariochi.recordo.read.Read;
@@ -9,13 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
-import static com.cariochi.recordo.config.Profiles.FEIGN;
-import static com.cariochi.recordo.config.Profiles.OK_HTTP;
-
-@SpringBootTest
-@ActiveProfiles({FEIGN, OK_HTTP})
+@SpringBootTest(classes = FeignOkConfig.class)
 @ExtendWith(RecordoExtension.class)
 class ReadFromFolderTest {
 
@@ -46,4 +44,5 @@ class ReadFromFolderTest {
         final Gist createdGist = gitHub.getGist(response.getId(), "hello world");
         gitHub.deleteGist(response.getId());
     }
+
 }
