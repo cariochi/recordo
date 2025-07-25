@@ -7,7 +7,10 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.web.config.SpringDataJacksonConfiguration;
+import org.springframework.data.web.config.SpringDataJacksonConfiguration.PageModule;
+import org.springframework.data.web.config.SpringDataWebSettings;
+
+import static org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode.DIRECT;
 
 @Configuration
 public class ObjectMapperConfig {
@@ -17,7 +20,7 @@ public class ObjectMapperConfig {
         return new ObjectMapper()
                 .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
                 .registerModule(new JavaTimeModule())
-                .registerModule(new SpringDataJacksonConfiguration.PageModule())
+                .registerModule(new PageModule(new SpringDataWebSettings(DIRECT)))
                 .registerModule(new Jdk8Module())
                 .setDateFormat(new StdDateFormat());
     }

@@ -1,6 +1,6 @@
 package com.cariochi.recordo.read.factories;
 
-import com.cariochi.objecto.Modifier;
+import com.cariochi.objecto.Modify;
 import com.cariochi.recordo.main.dto.TestDto;
 import com.cariochi.recordo.read.Read;
 import com.cariochi.recordo.read.RecordoObjectFactory;
@@ -27,12 +27,12 @@ public interface TestDtoFactory {
     List<TestDto> testDtoList();
 
     @Read("/read/dto.json")
-    TestDto testDto(@Modifier("id") Integer id);
+    TestDto testDto(@Modify("id") Integer id);
 
-    @Modifier("text")
+    @Modify("text")
     TestDtoFactory withText(String text);
 
-    @Modifier("children[*].strings[*]")
+    @Modify("children[*].strings[*]")
     TestDtoFactory withAllChildrenStrings(String value);
 
 }

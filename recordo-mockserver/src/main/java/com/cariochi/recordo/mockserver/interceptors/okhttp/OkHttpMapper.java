@@ -3,12 +3,15 @@ package com.cariochi.recordo.mockserver.interceptors.okhttp;
 import com.cariochi.recordo.mockserver.model.MockRequest;
 import com.cariochi.recordo.mockserver.model.MockResponse;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import lombok.SneakyThrows;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
@@ -21,24 +24,26 @@ import static java.util.stream.Collectors.toMap;
 import static okio.Okio.buffer;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-public class OkHttpMapper {
+public class OkhttpMapper {
 
     public static final String CONTENT_TYPE = "Content-Type";
     private static final String DEFAULT_CONTENT_TYPE = "application/json; charset=utf-8";
 
     public MockRequest toRecordoRequest(okhttp3.Request request) {
+        final MediaType mediaType = Optional.ofNullable(request.body()).map(RequestBody::contentType).orElse(null);
         return MockRequest.builder()
                 .method(request.method())
                 .url(request.url().url().toString())
-                .headers(headersOf(request.headers()))
+                .headers(headersOf(request.headers(), mediaType))
                 .body(bodyOf(request))
                 .build();
     }
 
     public MockResponse toRecordoResponse(Response response) {
+        final MediaType mediaType = Optional.ofNullable(response.body()).map(ResponseBody::contentType).orElse(null);
         return MockResponse.builder()
                 .protocol(response.protocol().toString())
-                .headers(headersOf(response.headers()))
+                .headers(headersOf(response.headers(), mediaType))
                 .statusCode(response.code())
                 .statusText(response.message())
                 .body(bodyOf(response))
@@ -86,9 +91,20 @@ public class OkHttpMapper {
         return isEmpty(responseContent) ? null : responseContent;
     }
 
-    private Map<String, String> headersOf(Headers headers) {
-        return headers.toMultimap().entrySet().stream()
-                .collect(toMap(Map.Entry::getKey, e -> join(", ", e.getValue())));
+    private Map<String, String> headersOf(Headers headers, MediaType mediaType) {
+        final LinkedHashMap<String, String> headerMap = headers.toMultimap().entrySet().stream()
+                .collect(toMap(
+                        Entry::getKey,
+                        e -> join(", ", e.getValue()),
+                        (a, b) -> b,
+                        LinkedHashMap::new
+                ));
+        boolean hasContentType = headerMap.keySet().stream()
+                .anyMatch(k -> k.equalsIgnoreCase("Content-Type"));
+        if (!hasContentType && mediaType != null) {
+            headerMap.put("Content-Type", mediaType.toString());
+        }
+        return headerMap;
     }
 
     private String contentTypeOf(Map<String, String> headers) {

@@ -1,8 +1,11 @@
-package com.cariochi.recordo.mockserver;
+package com.cariochi.recordo.mockserver.installers;
 
 import com.cariochi.recordo.books.dto.Author;
 import com.cariochi.recordo.books.dto.Book;
 import com.cariochi.recordo.core.RecordoExtension;
+import com.cariochi.recordo.mockserver.MockServer;
+import com.cariochi.recordo.mockserver.installers.configs.FeignOkConfig;
+import com.cariochi.recordo.mockserver.installers.configs.MultipleRestTemplatesConfig;
 import java.net.URI;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -11,15 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.RequestEntity;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
 
-import static com.cariochi.recordo.config.Profiles.REST_TEMPLATE;
 import static com.cariochi.reflecto.types.Types.listOf;
 import static org.springframework.core.ParameterizedTypeReference.forType;
 
-@SpringBootTest
-@ActiveProfiles(REST_TEMPLATE)
+@SpringBootTest(classes = {MultipleRestTemplatesConfig.class, FeignOkConfig.class})
 @ExtendWith(RecordoExtension.class)
 class MultipleServersTest {
 
