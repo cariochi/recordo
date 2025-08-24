@@ -1,7 +1,3 @@
----
-title: RECORDO
----
-
 # Introduction
 
 **Recordo** is a JUnit 5 extension that takes the pain out of dealing with test data and mock interactions. Instead of hard-coding DTOs, JSON strings or HTTP stubs in your tests, Recordo moves these resources into files and generates or records them when they don’t yet exist. On the first run, if the required files don’t exist, Recordo generates them (for objects or captured HTTP interactions). You review or adjust these files, and on subsequent runs Recordo loads or replays them as fixtures, making tests deterministic.
