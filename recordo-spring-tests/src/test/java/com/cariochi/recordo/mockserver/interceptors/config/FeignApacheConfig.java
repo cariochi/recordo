@@ -4,7 +4,7 @@ import com.cariochi.recordo.mockserver.feign.GitHubFeign;
 import com.cariochi.recordo.mockserver.interceptors.apache.ApacheRecordoInterceptor;
 import feign.Client;
 import feign.hc5.ApacheHttp5Client;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -21,7 +21,7 @@ public class FeignApacheConfig {
 
     @Bean
     public Client apacheFeignClient(ApacheRecordoInterceptor recordoInterceptor) {
-        final CloseableHttpClient client = HttpClients.custom()
+        final HttpClient client = HttpClients.custom()
                 .addExecInterceptorFirst("recordoInterceptor", recordoInterceptor)
                 .build();
         return new ApacheHttp5Client(client);
