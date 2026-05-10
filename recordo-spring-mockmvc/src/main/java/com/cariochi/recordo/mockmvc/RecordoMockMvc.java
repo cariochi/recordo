@@ -4,13 +4,6 @@ import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.recordo.mockmvc.dto.PageBuilder;
 import com.cariochi.recordo.mockmvc.dto.SliceBuilder;
 import com.cariochi.reflecto.types.ReflectoType;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.data.domain.Page;
@@ -20,9 +13,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.AbstractMockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.type.TypeFactory;
+
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.lang.String.format;
@@ -32,13 +33,15 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.HttpMethod.DELETE;
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.PATCH;
-import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.HttpMethod.PUT;
+import static org.springframework.http.HttpMethod.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+/**
+ * Fluent MockMvc wrapper used by Recordo's lower-level request API and typed API clients.
+ * <p>
+ * Use this class directly when a test needs to build requests programmatically. For most new tests, prefer
+ * {@link RecordoApiClient} interfaces.
+ */
 @RequiredArgsConstructor
 public class RecordoMockMvc {
 
@@ -60,10 +63,16 @@ public class RecordoMockMvc {
 
     // Request
 
+    /**
+     * Creates a request with an arbitrary HTTP method.
+     */
     public <RESP> Request<RESP> request(HttpMethod method, String path, Type responseType) {
         return new Request<>(this, method, path, responseType);
     }
 
+    /**
+     * Creates a request with an arbitrary HTTP method.
+     */
     public <RESP> Request<RESP> request(HttpMethod method, String path, Class<RESP> responseType) {
         return request(method, path, (Type) responseType);
     }
@@ -123,6 +132,9 @@ public class RecordoMockMvc {
     }
 
 
+    /**
+     * Performs the prepared request and deserializes the response body.
+     */
     @SneakyThrows
     public <RESP> Response<RESP> perform(Request<RESP> request) {
 
@@ -130,26 +142,9 @@ public class RecordoMockMvc {
             request = (Request<RESP>) interceptor.apply(request);
         }
 
-        MockHttpServletRequestBuilder requestBuilder;
-
-        if (request.files().isEmpty()) {
-            requestBuilder = MockMvcRequestBuilders.request(request.method(), request.path(), request.uriVars());
-        } else {
-            MockMultipartHttpServletRequestBuilder multipart = MockMvcRequestBuilders.multipart(request.path(), request.uriVars());
-            request.files().stream()
-                    .map(file -> new MockMultipartFile(file.name(), file.originalFilename(), file.contentType(), file.content()))
-                    .forEach(multipart::file);
-
-            final HttpMethod method = request.method();
-            if (!POST.equals(method)) {
-                multipart.with(r -> {
-                    r.setMethod(method.name());
-                    return r;
-                });
-            }
-
-            requestBuilder = multipart;
-        }
+        AbstractMockHttpServletRequestBuilder<?> requestBuilder = request.files().isEmpty()
+                ? requestBuilder(request)
+                : multipartRequestBuilder(request);
 
         requestBuilder.params(request.params());
 
@@ -187,6 +182,26 @@ public class RecordoMockMvc {
 
     }
 
+    private AbstractMockHttpServletRequestBuilder<?> requestBuilder(Request<?> request) {
+        return MockMvcRequestBuilders.request(request.method(), request.path(), request.uriVars());
+    }
+
+    private AbstractMockHttpServletRequestBuilder<?> multipartRequestBuilder(Request<?> request) {
+        final MockMultipartHttpServletRequestBuilder multipart = MockMvcRequestBuilders.multipart(request.path(), request.uriVars());
+        request.files().stream()
+                .map(file -> new MockMultipartFile(file.name(), file.originalFilename(), file.contentType(), file.content()))
+                .forEach(multipart::file);
+
+        final HttpMethod method = request.method();
+        if (!POST.equals(method)) {
+            multipart.with(r -> {
+                r.setMethod(method.name());
+                return r;
+            });
+        }
+        return multipart;
+    }
+
     @SneakyThrows
     private <RESP> RESP getBody(Request<RESP> request, MockHttpServletResponse response) {
         final ReflectoType responseType = reflect(request.responseType());
@@ -216,7 +231,7 @@ public class RecordoMockMvc {
     }
 
     private <RESP> RESP pageFromJson(String json, ReflectoType type) {
-        final TypeFactory typeFactory = TypeFactory.defaultInstance();
+        final TypeFactory typeFactory = TypeFactory.createDefaultInstance();
         final JavaType pageItemType = typeFactory.constructType(type.arguments().get(0).actualType());
         final JavaType pageType = typeFactory.constructParametricType(PageBuilder.class, pageItemType);
         final PageBuilder<?> pageBuilder = jsonConverter.fromJson(json, pageType);
@@ -224,7 +239,7 @@ public class RecordoMockMvc {
     }
 
     private <RESP> RESP sliceFromJson(String json, ReflectoType type) {
-        final TypeFactory typeFactory = TypeFactory.defaultInstance();
+        final TypeFactory typeFactory = TypeFactory.createDefaultInstance();
         final JavaType sliceItemType = typeFactory.constructType(type.arguments().get(0).actualType());
         final JavaType pageType = typeFactory.constructParametricType(SliceBuilder.class, sliceItemType);
         final SliceBuilder<?> sliceBuilder = jsonConverter.fromJson(json, pageType);

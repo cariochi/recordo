@@ -9,6 +9,11 @@ import org.springframework.http.HttpStatus;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * MockMvc response returned by Recordo.
+ *
+ * @param <T> response body type
+ */
 @Data
 @Builder
 @NoArgsConstructor

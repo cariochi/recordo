@@ -7,13 +7,14 @@ import com.cariochi.recordo.mockserver.RecordoMockServer;
 import com.cariochi.recordo.mockserver.dto.Gist;
 import com.cariochi.recordo.mockserver.dto.GistResponse;
 import com.cariochi.recordo.mockserver.interceptors.config.FeignOkConfig;
-import com.cariochi.recordo.mockserver.interceptors.okhttp.OkhttpRecordoInterceptor;
+import com.cariochi.recordo.mockserver.interceptors.okhttp.OkhttpInterceptor;
 import com.cariochi.recordo.read.Read;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.List;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 
@@ -22,13 +23,13 @@ import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 class FeignOkHttpTest {
 
     @Autowired
-    private OkhttpRecordoInterceptor interceptor;
+    private OkhttpInterceptor interceptor;
 
     @Autowired
     protected GitHub gitHub;
 
     @Test
-    @MockServer(value = "/mockserver/feign-okhttp/should_retrieve_gists.rest.json", beanName = "MY-BEAN")
+    @MockServer(value = "/mockserver/feign-okhttp/should_retrieve_gists.rest.json", client = "MY-BEAN")
     void should_retrieve_gists() {
         final List<GistResponse> gists = gitHub.getGists();
         assertAsJson(gists)

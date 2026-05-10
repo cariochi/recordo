@@ -1,21 +1,15 @@
 package com.cariochi.recordo.mockserver;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
- * Annotation to record and replay REST requests.
+ * Enables HTTP recording and replay for one test method.
  * <p>
- * This annotation allows you to capture REST interactions during a test and either replay them or record new interactions
- * depending on whether a corresponding file exists. If the specified file is absent, real requests and responses will be
- * recorded. If the file is present, the recorded interactions will be replayed, making your tests faster and more predictable.
- * </p>
+ * If the configured recording file or folder is missing, Recordo lets real HTTP calls execute and stores the
+ * captured requests and responses. If the recording already exists, matching requests are replayed from the
+ * recorded interactions.
  *
- * <p><b>Usage Example:</b></p>
+ * <p><b>Usage example:</b></p>
  * <pre class="code"><code class="java">
  *
  *  &#064;Test
@@ -34,22 +28,25 @@ import java.lang.annotation.Target;
 public @interface MockServer {
 
     /**
-     * Path to JSON file or folder with recorded requests and responses.
+     * Path to a JSON file or folder with recorded requests and responses, relative to the configured Recordo
+     * resource root.
      */
     String value();
 
     /**
-     * Name of the RestTemplate, OkHttp, or Apache HTTP Client bean or test class field to use.
+     * Name of the HTTP client Spring bean or {@code @RecordoBean} field to use.
+     * <p>
+     * Leave empty when there is only one supported client, or one supported client marked as {@code @Primary}.
      */
-    String beanName() default "";
+    String client() default "";
 
     /**
-     * Name of the ObjectMapper bean or test class field to use for serialization/deserialization.
+     * Name of an {@code ObjectMapper} or {@code JsonMapper} Spring bean or {@code @RecordoBean} field.
      */
     String objectMapper() default "";
 
     /**
-     * URL pattern used for matching requests. Supports the following wildcards:
+     * URL pattern used for routing requests to this recording. Supports the following wildcards:
      * <ul>
      * <li>? matches one character</li>
      * <li>* matches zero or more characters</li>
@@ -59,26 +56,13 @@ public @interface MockServer {
     String urlPattern() default "**";
 
     /**
-     * JSON comparison mode used to compare JSON responses.
+     * Whether request body comparison allows extra JSON fields in actual requests.
      */
-    JsonCompareMode jsonCompareMode() default @JsonCompareMode;
+    boolean allowExtraFields() default false;
 
     /**
-     * Defines the mode for comparing JSON responses, including extensibility and strict order.
+     * Whether request body comparison requires strict array order.
      */
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface JsonCompareMode {
-
-        /**
-         * Whether the comparison is extensible, allowing extra fields in the response.
-         */
-        boolean extensible() default false;
-
-        /**
-         * Whether the comparison requires strict order of JSON elements.
-         */
-        boolean strictOrder() default true;
-
-    }
+    boolean strictOrder() default true;
 
 }

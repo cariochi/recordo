@@ -6,12 +6,13 @@ import com.cariochi.recordo.mockmvc.RecordoApiClient;
 import com.cariochi.recordo.mockmvc.RecordoMockMvc;
 import com.cariochi.recordo.mockmvc.RequestInterceptor;
 import com.cariochi.reflecto.types.ReflectoType;
+import lombok.SneakyThrows;
+import org.junit.jupiter.api.extension.ExtensionContext;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
-import lombok.SneakyThrows;
-import org.junit.jupiter.api.extension.ExtensionContext;
 
 import static com.cariochi.reflecto.Reflecto.proxy;
 
@@ -42,7 +43,7 @@ public class ApiClientCreator implements ObjectCreator {
     }
 
     private <T extends RequestInterceptor> Collection<T> createRequestInterceptor(Class<T> interceptorClass, ExtensionContext context) {
-        final Collection<T> beans = Beans.of(context).findAll(interceptorClass).values();
+        final Collection<T> beans = Beans.of(context).findAll(interceptorClass).stream().map(Beans.Bean::instance).toList();
         return beans.isEmpty()
                 ? Set.of(createRequestInterceptor(interceptorClass))
                 : beans;

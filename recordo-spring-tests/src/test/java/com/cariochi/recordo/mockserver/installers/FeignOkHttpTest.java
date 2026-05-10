@@ -7,15 +7,17 @@ import com.cariochi.recordo.mockserver.RecordoMockServer;
 import com.cariochi.recordo.mockserver.dto.Gist;
 import com.cariochi.recordo.mockserver.dto.GistResponse;
 import com.cariochi.recordo.mockserver.installers.configs.FeignOkConfig;
+import com.cariochi.recordo.mockserver.interceptors.InterceptorInstaller;
 import com.cariochi.recordo.mockserver.interceptors.okhttp.OkhttpInstaller;
-import com.cariochi.recordo.mockserver.interceptors.okhttp.OkhttpRecordoInterceptor;
+import com.cariochi.recordo.mockserver.interceptors.okhttp.OkhttpInterceptor;
 import com.cariochi.recordo.read.Read;
-import java.util.List;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.List;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 
@@ -41,8 +43,8 @@ class FeignOkHttpTest {
     void should_create_gist(
             @Read("/mockserver/gist.json") Gist gist
     ) {
-        final OkhttpRecordoInterceptor interceptor = new OkhttpRecordoInterceptor();
-        try (OkhttpInstaller installer = new OkhttpInstaller(client).install(interceptor);
+        final OkhttpInterceptor interceptor = new OkhttpInterceptor();
+        try (InterceptorInstaller installer = new OkhttpInstaller(client).install(interceptor);
              RecordoMockServer mockServer = new RecordoMockServer(interceptor, "/mockserver/feign-okhttp/should_create_gist.rest.json")
         ) {
 

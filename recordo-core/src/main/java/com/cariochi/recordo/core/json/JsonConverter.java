@@ -1,30 +1,25 @@
 package com.cariochi.recordo.core.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonStreamContext;
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.BeanSerializer;
-import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
-import com.fasterxml.jackson.databind.ser.PropertyWriter;
-import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
-import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-import com.fasterxml.jackson.databind.util.StdDateFormat;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.TokenStreamContext;
+import tools.jackson.databind.*;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.BeanSerializer;
+import tools.jackson.databind.ser.PropertyWriter;
+import tools.jackson.databind.ser.ValueSerializerModifier;
+import tools.jackson.databind.ser.std.SimpleBeanPropertyFilter;
+import tools.jackson.databind.ser.std.SimpleFilterProvider;
+import tools.jackson.databind.util.StdDateFormat;
+
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 
 public class JsonConverter {
 
@@ -32,30 +27,34 @@ public class JsonConverter {
     private final JacksonPrinter printer = new JacksonPrinter();
 
     public JsonConverter() {
-        objectMapper = new ObjectMapper()
+        final JsonMapper.Builder builder = JsonMapper.builder()
                 .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-                .registerModule(getJsonModule())
-                .registerModule(new JavaTimeModule())
-                .setDateFormat(new StdDateFormat());
+                .addModule(getJsonModule())
+                .defaultDateFormat(new StdDateFormat());
 
         try {
             Class<?> pageImpl = Class.forName("org.springframework.data.domain.PageImpl");
-            objectMapper.addMixIn(pageImpl, IgnoringPageable.class);
+            builder.addMixIn(pageImpl, IgnoringPageable.class);
         } catch (ClassNotFoundException ignored) {
         }
+
+        objectMapper = builder.build();
     }
 
     public JsonConverter(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper.copy()
-                .registerModule(getJsonModule());
+        this.objectMapper = objectMapper.rebuild()
+                .addModule(getJsonModule())
+                .build();
     }
 
     private SimpleModule getJsonModule() {
         final SimpleModule module = new SimpleModule();
         module.addSerializer(Set.class, new SortedSetJsonSerializer());
-        module.setSerializerModifier(new BeanSerializerModifier() {
+        module.setSerializerModifier(new ValueSerializerModifier() {
             @Override
-            public JsonSerializer<?> modifySerializer(SerializationConfig config, BeanDescription beanDesc, JsonSerializer<?> serializer) {
+            public ValueSerializer<?> modifySerializer(SerializationConfig config,
+                                                       BeanDescription.Supplier beanDesc,
+                                                       ValueSerializer<?> serializer) {
                 return serializer instanceof BeanSerializer
                         ? new MaxDepthCyclicObjectSerializer((BeanSerializer) serializer)
                         : serializer;
@@ -72,7 +71,7 @@ public class JsonConverter {
     public String toJson(Object object, JsonFilter filter) {
         return object == null || object instanceof String
                 ? (String) object
-                : objectMapper(filter).writer(printer).writeValueAsString(object);
+                : objectMapper(filter).writer().with(printer).writeValueAsString(object);
     }
 
     @SneakyThrows
@@ -93,8 +92,10 @@ public class JsonConverter {
                 .filter(JsonFilter::hasProperties)
                 .map(RecordoFilter::new)
                 .map(filter -> new SimpleFilterProvider().addFilter(RecordoFilter.NAME, filter))
-                .map(provider -> objectMapper.copy().setFilterProvider(provider))
-                .map(mapper -> mapper.addMixIn(Object.class, PropertyFilterMixIn.class))
+                .map(provider -> objectMapper.rebuild()
+                        .filterProvider(provider)
+                        .addMixIn(Object.class, PropertyFilterMixIn.class)
+                        .build())
                 .orElse(objectMapper);
     }
 
@@ -106,23 +107,23 @@ public class JsonConverter {
         private final JsonFilter filter;
 
         @Override
-        public void serializeAsField(Object pojo,
-                                     JsonGenerator jgen,
-                                     SerializerProvider provider,
-                                     PropertyWriter writer) throws Exception {
-            Path path = path(jgen.getOutputContext().getParent(), writer.getName());
+        public void serializeAsProperty(Object pojo,
+                                        JsonGenerator jgen,
+                                        SerializationContext ctxt,
+                                        PropertyWriter writer) throws Exception {
+            Path path = path(jgen.streamWriteContext().getParent(), writer.getName());
             if (filter.shouldInclude(path)) {
-                super.serializeAsField(pojo, jgen, provider, writer);
+                super.serializeAsProperty(pojo, jgen, ctxt, writer);
             }
         }
 
-        private Path path(JsonStreamContext context, String field) {
+        private Path path(TokenStreamContext context, String field) {
             final List<String> path = new ArrayList<>();
-            JsonStreamContext current = context;
+            TokenStreamContext current = context;
             while (current != null) {
                 if (current.hasPathSegment()) {
-                    if (current.getCurrentName() != null) {
-                        path.add(0, current.getCurrentName());
+                    if (current.currentName() != null) {
+                        path.add(0, current.currentName());
                     } else if (current.getCurrentIndex() != -1) {
                         if (current.getParent().hasPathSegment()) {
                             path.add(0, "[" + current.getCurrentIndex() + "]");
@@ -147,4 +148,3 @@ public class JsonConverter {
         abstract Object getPageable();
     }
 }
-

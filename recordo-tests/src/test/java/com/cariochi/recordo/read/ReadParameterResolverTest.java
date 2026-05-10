@@ -1,15 +1,15 @@
 package com.cariochi.recordo.read;
 
-import com.cariochi.recordo.core.EnableRecordo;
+import com.cariochi.recordo.core.RecordoBean;
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.main.dto.TestDto;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.StdDateFormat;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import java.util.List;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.util.StdDateFormat;
+
+import java.util.List;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,10 +24,10 @@ class ReadParameterResolverTest {
             TestDto.dto(4).withChild(TestDto.dto(5)).withChild(TestDto.dto(6))
     );
 
-    @EnableRecordo
-    private final ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .setDateFormat(new StdDateFormat());
+    @RecordoBean
+    private final JsonMapper jsonMapper = JsonMapper.builder()
+            .defaultDateFormat(new StdDateFormat())
+            .build();
 
     @Test
     void given(
@@ -56,7 +56,7 @@ class ReadParameterResolverTest {
     void given_string(
             @Read("/read/string.json") String string
     ) {
-        final TestDto value = objectMapper.readValue(string, TestDto.class);
+        final TestDto value = jsonMapper.readValue(string, TestDto.class);
         assertAsJson(value).isEqualTo("/read/dto.json");
     }
 

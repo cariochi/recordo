@@ -7,13 +7,14 @@ import com.cariochi.recordo.mockserver.RecordoMockServer;
 import com.cariochi.recordo.mockserver.dto.Gist;
 import com.cariochi.recordo.mockserver.dto.GistResponse;
 import com.cariochi.recordo.mockserver.interceptors.config.RestTemplatesConfig;
-import com.cariochi.recordo.mockserver.interceptors.resttemplate.RestTemplateRecordoInterceptor;
+import com.cariochi.recordo.mockserver.interceptors.resttemplate.RestTemplateInterceptor;
 import com.cariochi.recordo.read.Read;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.List;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -26,7 +27,7 @@ class RestTemplateTest {
     protected GitHub gitHub;
 
     @Autowired
-    private RestTemplateRecordoInterceptor recordoInterceptor;
+    private RestTemplateInterceptor recordoInterceptor;
 
     @Test
     @MockServer("/mockserver/resttemplate/should_retrieve_gists.rest.json")

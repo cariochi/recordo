@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.cariochi.recordo</groupId>
         <artifactId>recordo</artifactId>
-        <version>2.0.9</version>
+        <version>2.1.0</version>
     </parent>
 
     <artifactId>recordo-core</artifactId>
@@ -37,11 +37,11 @@
             <artifactId>objecto</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <groupId>tools.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-csv</artifactId>
         </dependency>
         <dependency>

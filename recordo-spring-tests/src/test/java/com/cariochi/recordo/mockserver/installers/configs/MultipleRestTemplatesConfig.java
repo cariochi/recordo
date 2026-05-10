@@ -4,10 +4,12 @@ import com.cariochi.recordo.mockserver.GitHub;
 import com.cariochi.recordo.mockserver.resttemplate.GitHubRestTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.web.client.RestTemplate;
 
 public class MultipleRestTemplatesConfig {
 
+    @Primary
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();

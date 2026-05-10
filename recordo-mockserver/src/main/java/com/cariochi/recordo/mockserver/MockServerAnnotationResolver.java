@@ -6,16 +6,6 @@ import com.cariochi.recordo.mockserver.interceptors.InterceptorInstaller;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
 import com.cariochi.recordo.mockserver.model.MockRequest;
 import com.cariochi.recordo.mockserver.model.MockResponse;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +13,9 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+
+import java.util.*;
+import java.util.stream.Stream;
 
 import static com.cariochi.recordo.core.json.JsonConverters.getJsonConverter;
 import static com.cariochi.recordo.core.json.JsonUtils.compareMode;
@@ -61,14 +54,14 @@ public class MockServerAnnotationResolver implements RegularExtension, BeforeEac
 
     private void createMockServer(MockServer annotation, ExtensionContext context) {
         final JsonConverter jsonConverter = getJsonConverter(annotation.objectMapper(), context);
-        final JSONCompareMode compareMode = compareMode(annotation.jsonCompareMode().extensible(), annotation.jsonCompareMode().strictOrder());
+        final JSONCompareMode compareMode = compareMode(annotation.allowExtraFields(), annotation.strictOrder());
         final RecordoMockServer mockServer = new RecordoMockServer(annotation.urlPattern(), annotation.value(), jsonConverter, compareMode);
-        mockServers.computeIfAbsent(annotation.beanName(), key -> new ArrayList<>()).add(mockServer);
+        mockServers.computeIfAbsent(annotation.client(), key -> new ArrayList<>()).add(mockServer);
 
-        final InterceptorInstaller installer = findInterceptor(annotation.beanName(), context)
-                .orElseThrow(() -> new IllegalArgumentException(format("No http client bean named '%s' available.", annotation.beanName())));
+        final InterceptorInstaller<?> installer = findInterceptor(annotation.client(), context)
+                .orElseThrow(() -> new IllegalArgumentException(format("No http client bean named '%s' available.", annotation.client())));
 
-        installer.init(new RoutingRequestHandler(annotation.beanName()));
+        installer.setHandler(new RoutingRequestHandler(annotation.client()));
         installers.add(installer);
     }
 

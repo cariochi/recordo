@@ -1,25 +1,29 @@
 package com.cariochi.recordo.assertions;
 
 import com.cariochi.recordo.core.utils.Files;
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.databind.MappingIterator;
+import tools.jackson.databind.ObjectReader;
+import tools.jackson.dataformat.csv.CsvMapper;
+import tools.jackson.dataformat.csv.CsvSchema;
 
-import static com.fasterxml.jackson.dataformat.csv.CsvParser.Feature.WRAP_AS_ARRAY;
-import static com.fasterxml.jackson.dataformat.csv.CsvSchema.emptySchema;
+import java.util.List;
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static tools.jackson.dataformat.csv.CsvReadFeature.WRAP_AS_ARRAY;
+import static tools.jackson.dataformat.csv.CsvSchema.emptySchema;
 
 /**
- * The CsvAssertion class provides methods for asserting the equality of CSV files.
- * It can compare the contents of a given CSV file with the actual CSV string provided.
+ * Fluent assertion for comparing an actual CSV string with an expected CSV resource file.
+ * <p>
+ * If the expected file is missing, Recordo writes the actual CSV to that path and fails the assertion so the
+ * file can be reviewed and committed. On comparison failure, the actual value is written under an
+ * {@code ACTUAL/} folder next to the expected file.
  */
 @Slf4j
 @Accessors(fluent = true)
@@ -28,18 +32,35 @@ public class CsvAssertion {
 
     private final String actualCsv;
 
+    /**
+     * Compares rows as objects keyed by the header row.
+     */
     @Setter
     private boolean withHeaders;
 
+    /**
+     * Requires rows to appear in the same order as the expected file.
+     */
     @Setter
     private boolean withStrictOrder;
 
+    /**
+     * Configures the CSV column separator. Defaults to comma.
+     */
     @Setter
     private char withColumnSeparator = ',';
 
+    /**
+     * Configures the CSV line separator. Defaults to {@code \n}.
+     */
     @Setter
     private String withLineSeparator = "\n";
 
+    /**
+     * Asserts that the actual CSV equals the expected CSV file.
+     *
+     * @param fileName expected CSV file under the configured Recordo resource root
+     */
     public void isEqualsTo(String fileName) {
         if (Files.exists(fileName)) {
             try {
@@ -80,8 +101,9 @@ public class CsvAssertion {
 
     @SneakyThrows
     private List<Object> readWithoutHeaders(String csv) {
-        final ObjectReader objectReader = new CsvMapper()
+        final ObjectReader objectReader = CsvMapper.builder()
                 .enable(WRAP_AS_ARRAY)
+                .build()
                 .readerFor(List.class)
                 .with(schema().withoutHeader());
         try (final MappingIterator<Object> iterator = objectReader.readValues(csv)) {

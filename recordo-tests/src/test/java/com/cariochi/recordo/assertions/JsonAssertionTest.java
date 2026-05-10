@@ -2,10 +2,11 @@ package com.cariochi.recordo.assertions;
 
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.main.dto.TestDto;
-import java.util.List;
-import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.List;
+import java.util.Set;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 import static com.cariochi.recordo.assertions.JsonCondition.equalAsJsonTo;
@@ -19,19 +20,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 class JsonAssertionTest {
 
     @Test
-    void extensible() {
+    void allow_extra_fields() {
 
         assertAsJson(testDto(1))
-                .extensible(true)
+                .allowExtraFields(true)
                 .isEqualTo("/verify_annotation_test/dto.json");
 
         assertThat(testDto(1))
-                .is(equalAsJsonTo("/verify_annotation_test/dto.json").extensible(true));
+                .is(equalAsJsonTo("/verify_annotation_test/dto.json").allowExtraFields(true));
 
     }
 
     @Test
-    void not_extensible() {
+    void does_not_allow_extra_fields() {
         assertAsJson(testDto(1))
                 .isEqualTo("/verify_annotation_test/dto.json");
     }
@@ -64,14 +65,14 @@ class JsonAssertionTest {
     }
 
     @Test
-    void list_extensible() {
+    void list_allows_extra_fields() {
         assertAsJson(list())
-                .extensible(true)
+                .allowExtraFields(true)
                 .isEqualTo("/verify_annotation_test/list.json");
     }
 
     @Test
-    void list_not_extensible() {
+    void list_does_not_allow_extra_fields() {
         assertAsJson(list())
                 .isEqualTo("/verify_annotation_test/list.json");
     }

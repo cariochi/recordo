@@ -1,25 +1,29 @@
 package com.cariochi.recordo.mockserver.interceptors.restclient;
 
 import com.cariochi.recordo.mockserver.interceptors.InterceptorInstaller;
+import com.cariochi.recordo.mockserver.interceptors.RecordoInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
 import com.cariochi.reflecto.invocations.model.Reflection;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.client.BufferingClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.web.client.RestClient;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import static com.cariochi.reflecto.Reflecto.reflect;
 
 @RequiredArgsConstructor
-public class RestClientInstaller implements InterceptorInstaller {
+public class RestClientInstaller implements InterceptorInstaller<RestClientInterceptor> {
 
     private final RestClient restClient;
-    private RestClientRecordoInterceptor interceptor;
+    private RestClientInterceptor interceptor;
 
-    public RestClientInstaller install(RestClientRecordoInterceptor interceptor) {
+    @Override
+    public RestClientInstaller install(RestClientInterceptor interceptor) {
         this.interceptor = interceptor;
         final Reflection reflect = reflect(this.restClient);
         final ClientHttpRequestFactory requestFactory = reflect.perform("clientRequestFactory");
@@ -36,8 +40,19 @@ public class RestClientInstaller implements InterceptorInstaller {
     }
 
     @Override
-    public void init(RecordoRequestHandler handler) {
-        interceptor.init(handler);
+    public Optional<RecordoInterceptor> findInterceptor() {
+        final Reflection reflect = reflect(restClient);
+        List<ClientHttpRequestInterceptor> interceptors = reflect.perform("interceptors");
+        return Optional.ofNullable(interceptors).stream()
+                .flatMap(List::stream)
+                .filter(RestClientInterceptor.class::isInstance)
+                .map(RecordoInterceptor.class::cast)
+                .findFirst();
+    }
+
+    @Override
+    public void setHandler(RecordoRequestHandler handler) {
+        interceptor.setHandler(handler);
     }
 
     @Override
