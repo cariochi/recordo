@@ -7,9 +7,10 @@ import com.cariochi.recordo.core.utils.Beans;
 import com.cariochi.recordo.mockmvc.RecordoMockMvc;
 import com.cariochi.recordo.mockmvc.RequestInterceptor;
 import com.cariochi.reflecto.types.ReflectoType;
-import java.util.Collection;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Collection;
 
 public class RecordoMockMvcCreator implements ObjectCreator {
 
@@ -28,9 +29,10 @@ public class RecordoMockMvcCreator implements ObjectCreator {
 
     public RecordoMockMvc create(String objectMapper, ExtensionContext context) {
         final JsonConverter jsonConverter = JsonConverters.getJsonConverter(objectMapper, context);
-        final Collection<RequestInterceptor> requestInterceptors = Beans.of(context).findAll(RequestInterceptor.class).values();
-        final MockMvc mockMvc = Beans.of(context).findByType(MockMvc.class)
+        final Beans beans = Beans.of(context);
+        final MockMvc mockMvc = beans.findByType(MockMvc.class).map(Beans.Bean::instance)
                 .orElseThrow(() -> new IllegalArgumentException("Can't find single instance of MockMvc"));
+        final Collection<RequestInterceptor> requestInterceptors = beans.findAll(RequestInterceptor.class).stream().map(Beans.Bean::instance).toList();
         return new RecordoMockMvc(mockMvc, jsonConverter, requestInterceptors);
     }
 

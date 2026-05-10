@@ -1,29 +1,31 @@
 package com.cariochi.recordo.mockserver.interceptors.apache;
 
 import com.cariochi.recordo.mockserver.interceptors.InterceptorInstaller;
+import com.cariochi.recordo.mockserver.interceptors.RecordoInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
+import lombok.RequiredArgsConstructor;
 import org.apache.hc.client5.http.classic.ExecChainHandler;
 import org.apache.hc.client5.http.classic.HttpClient;
 
-public class ApacheInstaller implements InterceptorInstaller {
+import java.util.Optional;
+
+@RequiredArgsConstructor
+public class ApacheInstaller implements InterceptorInstaller<ApacheInterceptor> {
 
     private final HttpClient httpClient;
-    private ApacheRecordoInterceptor interceptor;
+    private ApacheInterceptor interceptor;
     private ExecChainHandler originalHandler;
 
-    public ApacheInstaller(HttpClient httpClient) {
-        this.httpClient = httpClient;
-    }
-
-    public ApacheInstaller install(ApacheRecordoInterceptor interceptor) {
+    @Override
+    public ApacheInstaller install(ApacheInterceptor interceptor) {
         this.interceptor = interceptor;
         this.originalHandler = attach(httpClient, interceptor);
         return this;
     }
 
     @Override
-    public void init(RecordoRequestHandler handler) {
-        interceptor.init(handler);
+    public void setHandler(RecordoRequestHandler handler) {
+        interceptor.setHandler(handler);
     }
 
     @Override
@@ -31,7 +33,12 @@ public class ApacheInstaller implements InterceptorInstaller {
         detach(httpClient, interceptor, originalHandler);
     }
 
-    private ExecChainHandler attach(Object target, ApacheRecordoInterceptor interceptor) {
+    @Override
+    public Optional<RecordoInterceptor> findInterceptor() {
+        return Optional.ofNullable(find(httpClient));
+    }
+
+    private ExecChainHandler attach(Object target, ApacheInterceptor interceptor) {
         if (target == null) {
             return null;
         }
@@ -47,7 +54,7 @@ public class ApacheInstaller implements InterceptorInstaller {
         }
     }
 
-    private void detach(Object target, ApacheRecordoInterceptor interceptor, ExecChainHandler originalHandler) {
+    private void detach(Object target, ApacheInterceptor interceptor, ExecChainHandler originalHandler) {
         if (target == null) {
             return;
         }
@@ -62,6 +69,24 @@ public class ApacheInstaller implements InterceptorInstaller {
         }
 
         detach(execChainElementProxy.getExecChainElement(), interceptor, originalHandler);
+
+    }
+
+    private ApacheInterceptor find(Object target) {
+        if (target == null) {
+            return null;
+        }
+
+        ExecChainElementProxy execChainElementProxy = ExecChainElementProxy.create(target);
+        ExecChainHandler handler = execChainElementProxy.getHandler();
+
+        if (handler == null) {
+            return null;
+        } else if (handler instanceof ApacheInterceptor) {
+            return (ApacheInterceptor) handler;
+        }
+
+        return find(execChainElementProxy.getExecChainElement());
 
     }
 }

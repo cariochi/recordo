@@ -1,22 +1,19 @@
 package com.cariochi.recordo.core.json;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.util.DefaultIndenter;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.core.util.Separators;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.util.DefaultIndenter;
+import tools.jackson.core.util.DefaultPrettyPrinter;
+import tools.jackson.core.util.Separators;
 
-import java.io.IOException;
+import static tools.jackson.core.util.Separators.Spacing.BOTH;
 
 public class JacksonPrinter extends DefaultPrettyPrinter {
 
     public JacksonPrinter() {
-        super(
-                new DefaultPrettyPrinter()
-                        .withArrayIndenter(new DefaultIndenter())
-                        .withObjectIndenter(new DefaultIndenter())
-                        .withSpacesInObjectEntries()
-        );
-        withSeparators(_separators);
+        super(Separators.createDefaultInstance().withObjectNameValueSpacing(BOTH));
+        indentArraysWith(new DefaultIndenter());
+        indentObjectsWith(new DefaultIndenter());
     }
 
     @Override
@@ -25,14 +22,7 @@ public class JacksonPrinter extends DefaultPrettyPrinter {
     }
 
     @Override
-    public DefaultPrettyPrinter withSeparators(Separators separators) {
-        _separators = separators;
-        _objectFieldValueSeparatorWithSpaces = separators.getObjectFieldValueSeparator() + " ";
-        return this;
-    }
-
-    @Override
-    public void writeEndArray(JsonGenerator g, int nrOfValues) throws IOException {
+    public void writeEndArray(JsonGenerator g, int nrOfValues) throws JacksonException {
         if (!_arrayIndenter.isInline()) {
             --_nesting;
         }
@@ -43,7 +33,7 @@ public class JacksonPrinter extends DefaultPrettyPrinter {
     }
 
     @Override
-    public void writeEndObject(JsonGenerator g, int nrOfEntries) throws IOException {
+    public void writeEndObject(JsonGenerator g, int nrOfEntries) throws JacksonException {
         if (!_objectIndenter.isInline()) {
             --_nesting;
         }

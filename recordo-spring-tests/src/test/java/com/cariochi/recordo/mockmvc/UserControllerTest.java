@@ -9,8 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
@@ -103,7 +103,7 @@ class UserControllerTest {
 
     @Test
     void should_get_all_users(
-            @Get(value = "/users", objectMapper = "objectMapper") Request<Page<UserDto>> request
+            @Get(value = "/users", objectMapper = "jsonMapper") Request<Page<UserDto>> request
     ) {
         final Response<Page<UserDto>> response = request.perform();
         assertAsJson(response.getBody()).isEqualTo("/mockmvc/users_page.json");
@@ -155,7 +155,7 @@ class UserControllerTest {
 
     @Test
     void should_create_user_3(
-            @Post(value = "/users", body = @Content(file = "/mockmvc/new_user.json"), objectMapper = "objectMapper") Response<UserDto> response
+            @Post(value = "/users", body = @Content(file = "/mockmvc/new_user.json"), objectMapper = "jsonMapper") Response<UserDto> response
     ) {
         assertAsJson(response.getBody()).isEqualTo("/mockmvc/created_user.json");
     }

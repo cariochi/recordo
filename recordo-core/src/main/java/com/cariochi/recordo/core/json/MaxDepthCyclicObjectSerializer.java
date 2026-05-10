@@ -1,19 +1,17 @@
 package com.cariochi.recordo.core.json;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
-import com.fasterxml.jackson.databind.ser.BeanSerializer;
-import com.fasterxml.jackson.databind.ser.ContextualSerializer;
-import com.fasterxml.jackson.databind.ser.ResolvableSerializer;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.BeanProperty;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
+import tools.jackson.databind.ser.BeanSerializer;
+import tools.jackson.databind.ser.std.StdSerializer;
+
 import java.util.IdentityHashMap;
 
-public class MaxDepthCyclicObjectSerializer extends StdSerializer<Object> implements ContextualSerializer, ResolvableSerializer, JsonFormatVisitable {
+public class MaxDepthCyclicObjectSerializer extends StdSerializer<Object> implements JsonFormatVisitable {
 
     private static final int MAX_DEPTH = 2;
     private final BeanSerializer defaultSerializer;
@@ -25,25 +23,25 @@ public class MaxDepthCyclicObjectSerializer extends StdSerializer<Object> implem
     }
 
     @Override
-    public void serialize(Object value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+    public void serialize(Object value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
         int depth = seenObjects.getOrDefault(value, 0);
         if (depth >= MAX_DEPTH) {
             gen.writeNull();
             return;
         }
         seenObjects.put(value, depth + 1);
-        defaultSerializer.serialize(value, gen, provider);
+        defaultSerializer.serialize(value, gen, ctxt);
         seenObjects.put(value, depth);
     }
 
     @Override
-    public void resolve(SerializerProvider provider) throws JsonMappingException {
-        defaultSerializer.resolve(provider);
+    public void resolve(SerializationContext ctxt) {
+        defaultSerializer.resolve(ctxt);
     }
 
     @Override
-    public JsonSerializer<?> createContextual(SerializerProvider prov, BeanProperty property) throws JsonMappingException {
-        return defaultSerializer.createContextual(prov, property);
+    public ValueSerializer<?> createContextual(SerializationContext ctxt, BeanProperty property) {
+        return defaultSerializer.createContextual(ctxt, property);
     }
 
 }

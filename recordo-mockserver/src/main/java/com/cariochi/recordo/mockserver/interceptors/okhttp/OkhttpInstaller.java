@@ -1,24 +1,26 @@
 package com.cariochi.recordo.mockserver.interceptors.okhttp;
 
 import com.cariochi.recordo.mockserver.interceptors.InterceptorInstaller;
+import com.cariochi.recordo.mockserver.interceptors.RecordoInterceptor;
 import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
-import java.util.ArrayList;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import static com.cariochi.reflecto.Reflecto.reflect;
 
-public class OkhttpInstaller implements InterceptorInstaller {
+@RequiredArgsConstructor
+public class OkhttpInstaller implements InterceptorInstaller<OkhttpInterceptor> {
 
     private final OkHttpClient httpclient;
-    private OkhttpRecordoInterceptor interceptor;
+    private OkhttpInterceptor interceptor;
 
-    public OkhttpInstaller(OkHttpClient httpClient) {
-        this.httpclient = httpClient;
-    }
-
-    public OkhttpInstaller install(OkhttpRecordoInterceptor interceptor) {
+    @Override
+    public OkhttpInstaller install(OkhttpInterceptor interceptor) {
         this.interceptor = interceptor;
         final List<Interceptor> interceptors = new ArrayList<>(httpclient.interceptors());
         interceptors.add(interceptor);
@@ -27,8 +29,16 @@ public class OkhttpInstaller implements InterceptorInstaller {
     }
 
     @Override
-    public void init(RecordoRequestHandler handler) {
-        this.interceptor.init(handler);
+    public Optional<RecordoInterceptor> findInterceptor() {
+        return httpclient.interceptors().stream()
+                .filter(OkhttpInterceptor.class::isInstance)
+                .map(RecordoInterceptor.class::cast)
+                .findFirst();
+    }
+
+    @Override
+    public void setHandler(RecordoRequestHandler handler) {
+        this.interceptor.setHandler(handler);
     }
 
     @Override

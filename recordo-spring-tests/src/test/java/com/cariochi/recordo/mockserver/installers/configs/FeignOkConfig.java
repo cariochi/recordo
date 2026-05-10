@@ -6,11 +6,13 @@ import okhttp3.OkHttpClient;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 
 @EnableAutoConfiguration
 @EnableFeignClients(clients = GitHubFeign.class)
 public class FeignOkConfig {
 
+    @Primary
     @Bean
     public OkHttpClient httpClient() {
         return new OkHttpClient();

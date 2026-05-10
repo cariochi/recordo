@@ -1,701 +1,1077 @@
-# Introduction
+# Recordo
 
-**Recordo** is a JUnit 5 extension that takes the pain out of dealing with test data and mock interactions. Instead of hard-coding DTOs, JSON strings or HTTP stubs in your tests, Recordo moves these resources into files and generates or records them when they don’t yet exist. On the first run, if the required files don’t exist, Recordo generates them (for objects or captured HTTP interactions). You review or adjust these files, and on subsequent runs Recordo loads or replays them as fixtures, making tests deterministic.
+Recordo is a JUnit 5 testing toolkit for Java projects. It moves test fixtures, expected JSON/CSV documents, MockMvc
+calls, and recorded HTTP interactions out
+of test code and into versioned resource files.
 
-Key benefits at a glance:
+The typical workflow is:
 
-* **Read Module** – annotate test parameters or fields with `@Read` to automatically load JSON, CSV, or ZIP resources into objects. Missing files are generated automatically, ensuring fast deterministic tests.
-* **Assertions Module** – assert JSON or CSV responses with expressive fluent APIs. Compare against expected files, filter fields, or ignore order with clear options.
-* **MockMvc Module** – build declarative HTTP clients for your controllers in tests. Use familiar Spring MVC annotations (`@GetMapping`, `@PostMapping`, etc.) and Recordo will generate typed clients, handle requests, and record responses.
-* **MockServer Module** – capture and replay HTTP traffic from real clients like `OkHttp` or `RestTemplate`. Save interactions to JSON files and replay them in tests for stable, reproducible scenarios.
+1. Write a test that references a resource file.
+2. Run the test once.
+3. If the file does not exist, Recordo creates it from the actual object, generated object, CSV content, or captured
+   HTTP traffic.
+4. Review and adjust the generated file.
+5. Commit the fixture and keep future test runs deterministic.
 
-Recordo combines these modules into a single coherent testing toolkit. It is especially useful when working with complex DTOs, deeply nested JSON structures, or external HTTP APIs, reducing boilerplate and making tests both **readable** and **maintainable**.
+Recordo is useful when tests work with large DTOs, nested JSON, Spring MVC controllers, or external HTTP APIs that
+should be recorded once and replayed later.
 
-👉 Source code is available on [GitHub](https://github.com/cariochi/recordo).
+# When To Use Recordo
 
-# Getting Started
+Recordo fits Java projects where tests are easier to understand and maintain when fixtures, expected outputs, and
+recorded interactions live in files instead
+of test code.
 
-## Maven Dependencies
+It is especially useful for:
 
-Recordo is modular. You can either pull in **all modules** for convenience, or declare **only the ones you need**. This gives you flexibility to keep your build lean.
+- Spring Boot services with MockMvc controller tests.
+- REST clients that call external HTTP APIs.
+- Tests with large DTOs, nested JSON, or long expected responses.
+- Approval-style workflows where generated `ACTUAL/` files are reviewed before becoming expected fixtures.
+- Teams that want stable tests without manually writing every JSON fixture or HTTP stub.
 
-### All Modules
+# Modules
 
-Use the `recordo-all` artifact to include everything:
+Recordo has four user-facing modules:
+
+| Module         | Artifact                 | Purpose                                                             |
+|----------------|--------------------------|---------------------------------------------------------------------|
+| Read           | `recordo-read`           | Load objects, collections, strings, bytes, or factories from files. |
+| Assertions     | `recordo-assertions`     | Compare actual values with expected JSON or CSV files.              |
+| Spring MockMvc | `recordo-spring-mockmvc` | Build typed API clients and requests on top of Spring `MockMvc`.    |
+| MockServer     | `recordo-mockserver`     | Record and replay HTTP traffic for supported clients.               |
+
+# Requirements
+
+Recordo `2.1.x` is built for:
+
+- Java 17 or newer.
+- JUnit Jupiter.
+- Jackson 3 for JSON serialization, deserialization, assertions, and recorded HTTP fixtures.
+- Spring Boot 4 / Spring Framework 7 and the Jakarta stack for Spring-specific modules.
+
+The `recordo-read`, `recordo-assertions`, and `recordo-mockserver` modules can be used without Spring. The
+`recordo-spring-mockmvc` module requires Spring MVC
+and Spring Test.
+
+For Spring Boot 3 / Spring Framework 6 projects, use Recordo `2.0.x`: [Recordo v2.0.x]({{ '/archive/recordo-v2.0.x' | relative_url }}).
+
+# Installation
+
+Use `recordo-all` if you want all four modules in one dependency:
 
 ```xml
+
 <dependency>
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-all</artifactId>
-    <version>2.0.9</version>
+    <version>2.1.0</version>
     <type>pom</type>
     <scope>test</scope>
 </dependency>
 ```
 
-### Individual Modules
-
-If you want to be explicit and import only what you actually use:
+Or add only the modules you need:
 
 ```xml
-<!-- Read Module -->
+
 <dependency>
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-read</artifactId>
-    <version>2.0.9</version>
+    <version>2.1.0</version>
     <scope>test</scope>
 </dependency>
 
-<!-- Assertions Module -->
 <dependency>
-    <groupId>com.cariochi.recordo</groupId>
-    <artifactId>recordo-assertions</artifactId>
-    <version>2.0.9</version>
-    <scope>test</scope>
+   <groupId>com.cariochi.recordo</groupId>
+   <artifactId>recordo-assertions</artifactId>
+   <version>2.1.0</version>
+   <scope>test</scope>
 </dependency>
 
-<!-- MockMvc Module -->
 <dependency>
-    <groupId>com.cariochi.recordo</groupId>
-    <artifactId>recordo-spring-mockmvc</artifactId>
-    <version>2.0.9</version>
-    <scope>test</scope>
+   <groupId>com.cariochi.recordo</groupId>
+   <artifactId>recordo-spring-mockmvc</artifactId>
+   <version>2.1.0</version>
+   <scope>test</scope>
 </dependency>
 
-<!-- MockServer Module -->
 <dependency>
-    <groupId>com.cariochi.recordo</groupId>
-    <artifactId>recordo-mockserver</artifactId>
-    <version>2.0.9</version>
-    <scope>test</scope>
+   <groupId>com.cariochi.recordo</groupId>
+   <artifactId>recordo-mockserver</artifactId>
+   <version>2.1.0</version>
+   <scope>test</scope>
 </dependency>
 ```
 
-## Compatibility
+# JUnit Setup
 
-* **1.x.x** — Java 11+ and Spring 5.x (Spring Boot 2.x)
-* **2.x.x** — Java 17+ and Spring 6.x (Spring Boot 3.x)
-
-Note: the modules `recordo-read`, `recordo-assertions`, and `recordo-mockserver` work perfectly in projects **without Spring**. Only `recordo-spring-mockmvc` requires a Spring context.
-
-## Initialize Extension
-
-Register the JUnit 5 extension in tests:
+Register `RecordoExtension` on every test class that uses Recordo parameter resolution, fixture generation, MockMvc
+helpers, or HTTP recording:
 
 ```java
+import com.cariochi.recordo.core.RecordoExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 @ExtendWith(RecordoExtension.class)
 class MyTest {
-    // ...
 }
 ```
 
-## ObjectMapper
-
-Recordo uses Jackson `ObjectMapper` for JSON serialization and deserialization. The resolution order is:
-
-1. If a test class has a field annotated with `@EnableRecordo`, that `ObjectMapper` instance will be used.
-2. If no such field is present and you run under Spring, Recordo will look for a single `ObjectMapper` bean in the application context.
-3. If neither is found, a built‑in default mapper is used.
-
-You can register multiple mappers and reference them by name in annotations (e.g., `@Read(objectMapper = "customMapper")`).
-
-## Additional Properties
-
-You can fine-tune behavior in `recordo.properties` on the test classpath:
-
-**`recordo.resources.root`**
-Overrides the base directory where Recordo **reads** expected files and **writes** generated/recorded ones.
-*Default:* `src/test/resources/`
-
-Examples:
-
-```properties
-recordo.resources.root=src/it/resources
-```
-**`recordo.http.headers.included`**
-Comma‑separated list of header names that must be included into recordings and used for matching during replay.
-
-**`recordo.http.headers.sensitive`**
-Comma‑separated list of **sensitive** headers that should be masked in stored recordings (e.g., `Authorization`).
-
-Examples:
-
-```properties
-recordo.http.headers.included=Accept,Content-Type,Authorization
-recordo.http.headers.sensitive=Authorization,Set-Cookie
-```
-
-# Read Module
-
-The Read module lets you source test objects from external files and keep them under version control. If a referenced file is missing on the first run, Recordo generates it with a sensible structure and randomized values; on subsequent runs the same file is read back, keeping your tests deterministic.
-
-## Annotation Parameters
-
-`@Read` supports:
-
-* **`value`** – resource path (e.g. `/books/book.json`).
-* **`objectMapper`** – optional name of an `ObjectMapper` bean or test‑class field to use for (de)serialization.
-
-## Approach 1 — Interface‑based Object Factory
-
-Declare a factory interface with `@RecordoObjectFactory`. Mark factory methods with `@Read` to bind them to files. Use `@Modifier` methods for fluent tweaks.
+You can combine Recordo with other JUnit extensions:
 
 ```java
+
+@ExtendWith({RecordoExtension.class, MockitoExtension.class})
+class ServiceTest {
+}
+```
+
+# Resource Files
+
+Recordo treats annotation paths as paths under the configured test resource root. By default, that root is:
+
+```properties
+resources.root.folder=/src/test/resources
+```
+
+For example, `@Read("/books/book.json")` points to:
+
+```text
+src/test/resources/books/book.json
+```
+
+To override the location, create `recordo.properties` on the test classpath:
+
+```properties
+resources.root.folder=/src/integrationTest/resources
+```
+
+Generated files are written under the same root.
+
+# ObjectMapper Resolution
+
+Recordo uses Jackson 3 for JSON serialization and deserialization. When an API accepts an `objectMapper` name, Recordo
+looks for an `ObjectMapper` or `JsonMapper`
+with that name.
+
+Object mappers can come from:
+
+- Spring beans, when a Spring test context is available.
+- Test class fields annotated with `@RecordoBean`.
+- Recordo's default mapper, when no custom mapper is selected.
+
+Example:
+
+```java
+import com.cariochi.recordo.core.Recordo;
+import com.cariochi.recordo.core.RecordoBean;
+import com.cariochi.recordo.read.Read;
+import com.cariochi.recordo.read.RecordoObjectFactory;
+import tools.jackson.databind.json.JsonMapper;
+
 @RecordoObjectFactory
-public interface LogRecordFactory {
+interface BookFactory {
 
-    // one object
-    @Read("/messages/log.json")
-    LogRecord logRecord();
-
-    // list of objects
-    @Read("/messages/logs.json")
-    List<LogRecord> list();
-
-    // raw bytes (e.g., zip archive)
-    @Read("/files/out.zip")
-    byte[] archive();
-
-    // fluent modifications
-    @Modifier("id")
-    LogRecordFactory withId(long id);
-
-    @Modifier("responses[0].status")
-    LogRecordFactory withFirstStatus(Status status);
+    @Read(value = "/books/book.json", objectMapper = "testMapper")
+    Book book();
 }
-```
 
-**Usage**
-
-```java
 @ExtendWith(RecordoExtension.class)
-class LogTests {
-    
-    LogRecordFactory factory = Recordo.create(LogRecordFactory.class);
+class JsonTest {
+
+    @RecordoBean
+    private final JsonMapper testMapper = JsonMapper.builder().build();
+
+    private final BookFactory books = Recordo.create(BookFactory.class);
 
     @Test
-    void creates_and_modifies() {
-        LogRecord base = factory.logRecord();
-        LogRecord modified = factory.withId(123).withFirstStatus(Status.SUCCESS).logRecord();
-        byte[] zip = factory.archive();
+    void reads_with_named_mapper() {
+        Book book = books.book();
     }
 }
 ```
 
-## Approach 2 — Direct Object Creation
+If more than one mapper is available, prefer passing `objectMapper = "..."` explicitly.
 
-Use `@Read` directly on test parameters for quick loading without factories.
+# Configuration
 
-```java
-@Test
-void single_object(@Read("/books/book.json") Book book) { /* ... */ }
+Create `recordo.properties` in test resources to override defaults.
 
-@Test
-void list_of_objects(@Read("/books/books.json") List<Book> books) { /* ... */ }
-
-@Test
-void as_string(@Read("/texts/info.txt") String text) { /* ... */ }
-
-@Test
-void as_bytes(@Read("/files/archive.zip") byte[] bytes) { /* ... */ }
+```properties
+resources.root.folder=/src/test/resources
+http.mocks.headers.included=Authorization, Content-Encoding, Content-Type, Accept, Accept-Charset, Location, Link, X-Auth
+http.mocks.headers.sensitive=Authorization, X-Auth
 ```
 
-## Supported Types
+Available properties:
 
-* POJOs/DTOs via Jackson
-* `List<T>` / arrays
-* `String`
-* `byte[]`
+| Property                       | Default                                                                                         | Description                                                            |
+|--------------------------------|-------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
+| `resources.root.folder`        | `/src/test/resources`                                                                           | Base folder for reading and writing Recordo files.                     |
+| `http.mocks.headers.included`  | `Authorization, Content-Encoding, Content-Type, Accept, Accept-Charset, Location, Link, X-Auth` | Header names saved in HTTP recordings and used during replay matching. |
+| `http.mocks.headers.sensitive` | `Authorization, X-Auth`                                                                         | Header names masked as `********` in saved HTTP recordings.            |
 
-## First‑Run Behavior
+Header names are matched case-insensitively.
 
-* If the target file does not exist, Recordo **creates** it with a generated example that matches the return type.
-* You may edit the file to your needs; subsequent runs **read** it as a fixture.
+# Read Module
 
-> Tip: prefer small, focused files per test scenario; this keeps diffs readable and reviewable.
+The Read module loads test data from files and turns fixture files into reusable test data factories. If the target file
+is missing, Recordo generates a value
+for the requested type, writes it to disk, and returns it to the test.
+
+For new tests, prefer `@RecordoObjectFactory` interfaces. They keep fixture paths, named fixture methods, and
+modification rules in one reusable place, so test
+code reads like a small domain-specific fixture API.
+
+## Object Factory Interfaces
+
+Define an interface annotated with `@RecordoObjectFactory`. Methods annotated with `@Read` load objects from files.
+Methods annotated with `@Modify` create
+fluent modifiers that can be chained before a fixture method is called.
+
+```java
+import com.cariochi.objecto.Modify;
+import com.cariochi.recordo.read.RecordoObjectFactory;
+import com.cariochi.recordo.read.Read;
+
+@RecordoObjectFactory
+public interface BookFactory {
+
+    @Read("/books/book.json")
+    Book book();
+
+    @Read("/books/books.json")
+    List<Book> books();
+
+    @Read("/books/book.json")
+    Book book(@Modify("id") Long id);
+
+    @Modify("title")
+    BookFactory withTitle(String title);
+
+    @Modify("author.name")
+    BookFactory withAuthorName(String name);
+}
+```
+
+Use `Recordo.create(...)` to create the factory:
+
+```java
+import com.cariochi.recordo.core.Recordo;
+import com.cariochi.recordo.core.RecordoExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(RecordoExtension.class)
+class BookServiceTest {
+
+    private final BookFactory books = Recordo.create(BookFactory.class);
+
+    @Test
+    void should_create_custom_book() {
+        Book book = books
+                .withTitle("The Left Hand of Darkness")
+                .withAuthorName("Ursula Le Guin")
+                .book(42L);
+
+        assertThat(book.getId()).isEqualTo(42L);
+        assertThat(book.getTitle()).isEqualTo("The Left Hand of Darkness");
+    }
+
+    @Test
+    void should_load_list_fixture() {
+        List<Book> allBooks = books.withAuthorName("Ursula Le Guin").books();
+        assertThat(allBooks).isNotEmpty();
+    }
+}
+```
+
+Factory methods can return:
+
+- POJOs and DTOs.
+- Arrays and collections such as `List<T>`.
+- `String`.
+- `byte[]`.
+
+## Fixture Variations
+
+`@Modify` accepts object paths. Paths can target nested properties, collection indexes, and wildcards:
+
+```java
+
+@RecordoObjectFactory
+public interface UserFactory {
+
+    @Read("/users/user.json")
+    User user();
+
+    @Read("/users/user.json")
+    User user(@Modify("id") Long id);
+
+    @Modify("profile.email")
+    UserFactory withEmail(String email);
+
+    @Modify("roles[*].name")
+    UserFactory withRoleName(String roleName);
+}
+```
+
+Usage:
+
+```java
+User admin = users
+        .withEmail("admin@example.com")
+        .withRoleName("ADMIN")
+        .user(1L);
+```
+
+Modifiers are immutable from the caller's point of view: chaining returns a modified factory instance and does not edit
+the fixture file.
+
+## Default Methods
+
+Factory interfaces may contain default methods. Recordo still applies modifiers to objects returned by those methods:
+
+```java
+
+@RecordoObjectFactory
+interface UserFactory {
+
+    default User admin() {
+        return new User(1L, "admin");
+    }
+
+    @Modify("name")
+    UserFactory withName(String name);
+}
+```
+
+## Spring Bean Usage
+
+In Spring tests, Recordo can register missing `@RecordoObjectFactory` fields as beans when they are autowired:
+
+```java
+
+@SpringBootTest
+@ExtendWith(RecordoExtension.class)
+class BookServiceTest {
+
+    @Autowired
+    private BookFactory books;
+
+    @Test
+    void should_use_factory_bean() {
+        Book book = books.withTitle("Dune").book();
+        assertThat(book.getTitle()).isEqualTo("Dune");
+    }
+}
+```
+
+## Legacy APIs
+
+Recordo also supports direct `@Read` injection on parameters and fields, plus the lower-level `ObjectFactory<T>` API,
+for existing tests. New tests should
+prefer `@RecordoObjectFactory` interfaces because they keep fixture paths and modifications named, reusable, and easier
+to read.
 
 # Assertions Module
 
-The Assertions module compares objects and strings against JSON/CSV files using three classes:
+The Assertions module compares actual values against files and creates missing expected files on first run.
 
-* `JsonAssertion` — object ⇄ JSON file comparison.
-* `JsonCondition` — AssertJ `Condition` for object ⇄ JSON file comparison.
-* `CsvAssertion` — CSV string ⇄ CSV file comparison.
+## JSON Assertions
 
-
-## JSON Assertions (`JsonAssertion`)
-
-Pass any object (e.g., DTOs, collections, pages). Recordo will serialize it via Jackson and compare with the expected JSON file.
+Use `JsonAssertion.assertAsJson(actual)` for object-to-JSON comparison:
 
 ```java
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 
 @Test
-void shouldMatchBooksShortView() {
-    Page<Book> books = bookService.findAllByAuthor(author);
+void should_match_json() {
+    Page<Book> books = bookService.findAll();
 
     assertAsJson(books)
-        .including("content[*].id", "content[*].title", "content[*].author.id")
-        .isEqualTo("/books/short_books.json");
+            .isEqualTo("/books/books_page.json");
 }
 ```
 
-### Options
+Options:
 
-* `.including(paths...)` — compare only the listed JSON paths.
-* `.excluding(paths...)` — ignore listed paths.
-* `.extensible(true)` — allow extra fields.
-* `.withStrictOrder(true)` — require array order to match.
-* `.using(ObjectMapper)` — custom mapper.
+```java
+assertAsJson(books)
+        .
 
+including("content[*].id","content[*].title")
+        .
 
-## JSON Assertions as AssertJ Condition (`JsonCondition`)
+excluding("content[*].createdAt")
+        .
 
-`JsonCondition` provides an alternative syntax for the same functionality. It supports the same options as `JsonAssertion`.
+allowExtraFields(true)
+        .
+
+withStrictOrder(false)
+        .
+
+isEqualTo("/books/short_books.json");
+```
+
+| Method                      | Description                                                            |
+|-----------------------------|------------------------------------------------------------------------|
+| `including(String...)`      | Compare only selected JSON paths.                                      |
+| `excluding(String...)`      | Ignore selected JSON paths.                                            |
+| `allowExtraFields(boolean)` | Allow extra fields in actual JSON when comparing. Defaults to `false`. |
+| `withStrictOrder(boolean)`  | Require array order to match. Defaults to `true`.                      |
+| `using(ObjectMapper)`       | Use a specific mapper for this assertion.                              |
+
+JSON paths support nested properties, collection indexes, and `*` wildcards:
+
+```java
+assertAsJson(order)
+        .
+
+including("id","items[*].sku","items[*].price")
+        .
+
+isEqualTo("/orders/short_order.json");
+```
+
+## AssertJ Condition
+
+Use `JsonCondition.equalAsJsonTo(...)` when you prefer AssertJ condition syntax:
 
 ```java
 import static com.cariochi.recordo.assertions.JsonCondition.equalAsJsonTo;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Test
-void shouldMatchBooksShortView_withCondition() {
-    Page<Book> books = bookService.findAllByAuthor(author);
+assertThat(books)
+        .
 
-    assertThat(books)
-        .is(equalAsJsonTo("/books/short_books.json")
-            .including("content[*].id", "content[*].title", "content[*].author.id")
-        );
-}
+is(equalAsJsonTo("/books/books_page.json")
+                .
+
+withStrictOrder(false));
 ```
 
+## CSV Assertions
 
-## CSV Assertions (`CsvAssertion`)
-
-Compare an **actual CSV string** with an expected CSV file.
+Use `CsvAssertion.assertCsv(actualCsv)`:
 
 ```java
 import static com.cariochi.recordo.assertions.CsvAssertion.assertCsv;
 
 @Test
-void shouldMatchCsv() {
-    String actualCsv = "id,name\n1,John\n";
+void should_match_csv() {
+    String actualCsv = "id,name\n1,Ada\n2,Grace";
 
     assertCsv(actualCsv)
-        .withHeaders(true)
-        .withStrictOrder(true)
-        .withColumnSeparator(';')
-        .withLineSeparator("\r\n")
-        .isEqualsTo("/expected/users.csv");
+            .withHeaders(true)
+            .withStrictOrder(false)
+            .isEqualsTo("/csv/users.csv");
 }
 ```
 
-### Options
+Options:
 
-* `.withHeaders(boolean)` — treat the first row as a header.
-* `.withStrictOrder(boolean)` — require rows to appear in the same order.
-* `.withColumnSeparator(char)` — set a custom column separator (default is comma).
-* `.withLineSeparator(String)` — set a custom line separator.
+| Method                      | Description                           |
+|-----------------------------|---------------------------------------|
+| `withHeaders(boolean)`      | Treat the first row as a header row.  |
+| `withStrictOrder(boolean)`  | Require row order to match.           |
+| `withColumnSeparator(char)` | Use a separator other than comma.     |
+| `withLineSeparator(String)` | Use a line separator other than `\n`. |
 
+## First Run and Failures
 
-## First Run & Debugging Failures
+When an expected JSON or CSV file does not exist, Recordo writes the actual value to that path and fails the assertion.
+Review the generated file and rerun the
+test.
 
-* **First run (or if the expected file was deleted)**: Recordo serializes the actual data (object or CSV string) and creates the corresponding JSON/CSV file automatically.
-* **When a comparison fails**: Recordo writes the actual data into an `ACTUAL/` subfolder next to the expected file, using the same file name as in `isEqualTo`. For example, `/books/short_books.json` will produce `/books/ACTUAL/short_books.json`. This allows you to diff expected vs actual in your IDE. The `ACTUAL/` folder is only for debugging — delete it after review and never commit it to version control.
+When comparison fails and an expected file exists, Recordo writes the actual value next to it in an `ACTUAL/` folder:
 
-## Recommended .gitignore additions
-
+```text
+src/test/resources/books/books.json
+src/test/resources/books/ACTUAL/books.json
 ```
-# Recordo temporary outputs
+
+The `ACTUAL/` folder is a debugging aid and should not be committed.
+See [Reviewing ACTUAL Files](#reviewing-actual-files) for a practical review workflow.
+
+Recommended `.gitignore`:
+
+```gitignore
 **/ACTUAL/
 ```
 
-# MockMvc Module
+# Spring MockMvc Module
 
-This module lets you call Spring MVC controllers via **type‑safe clients** defined as annotated interfaces and executed with Spring `MockMvc`.
+The MockMvc module lets tests call Spring MVC controllers through typed API client interfaces. This is the recommended
+style for new tests because the client
+keeps request mappings, parameters, headers, bodies, and return types in one reusable contract.
 
-⚠️ Recordo will work only if there is a **single `MockMvc` instance** available in the Spring context.
+A Spring test context must contain exactly one usable `MockMvc` instance.
 
+## Typed API Clients
 
-## Define the client interface
+Define an interface that looks like a Spring MVC controller client:
 
 ```java
-@RecordoApiClient(
-    objectMapper = "customMapper",                                      // bean name (optional)
-    interceptors = { LocaleInterceptor.class, AuthInterceptor.class }   // optional
-)
+import com.cariochi.recordo.mockmvc.Request;
+import com.cariochi.recordo.mockmvc.Request.File;
+import com.cariochi.recordo.mockmvc.RecordoApiClient;
+import com.cariochi.recordo.mockmvc.Response;
+import org.springframework.web.multipart.MultipartFile;
+
+@RecordoApiClient(interceptors = {LocaleInterceptor.class, AuthInterceptor.class})
 @RequestMapping("/users")
-interface UserApiClient {
+public interface UserApiClient {
 
     @GetMapping("/{id}")
-    UserDto findById(@PathVariable("id") Long id);
+    UserDto getById(@PathVariable int id, @RequestParam("name") String name);
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
+    @GetMapping("/{id}")
+    Response<UserDto> getByIdAsResponse(@PathVariable int id, @RequestParam("name") String name);
+
+    @GetMapping("/{id}")
+    Request<UserDto> getByIdAsRequest(@PathVariable int id, @RequestParam("name") String name);
+
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     UserDto create(@RequestBody UserDto user);
 
+    @PostMapping("/{id}/upload")
+    String upload(
+            @PathVariable int id,
+            @RequestParam MultipartFile file1,
+            @RequestParam File file2,
+            @RequestParam("prefix") String prefix
+    );
+
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    void delete(@PathVariable("id") Long id);
+    void delete(@PathVariable int id);
+
+    @GetMapping
+    Page<UserDto> findAll(@RequestParam("count") int count, Pageable pageable);
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    ErrorDto getById_withErrors(@PathVariable int id,
-                                @RequestParam("name") String name,
-                                @RequestHeader("Authorization") String auth);
+    ErrorDto getUnauthorized(@PathVariable int id, @RequestHeader("Authorization") String auth);
 }
 ```
 
-**Notes**
-
-* In `@RecordoApiClient` interfaces you use **standard Spring annotations**: `@RequestMapping`, `@GetMapping`, `@PostMapping`, `@DeleteMapping`, `@PathVariable`, `@RequestParam`, `@RequestBody`, `@RequestHeader`, `@ResponseStatus`.
-* Recordo executes requests via `MockMvc`, automatically verifies the HTTP status, and maps the response body into the declared return type.
-* The expected status is declared with `@ResponseStatus`. This allows you to write not only positive tests but also **error handling** or **security tests**.
-
-
-## Create and use the client
+Use it either as a Spring bean or create it manually through Recordo:
 
 ```java
+
 @WebMvcTest(UserController.class)
 @ExtendWith(RecordoExtension.class)
-class UserControllerTest {
-    
-    private final UserApiClient api = Recordo.create(UserApiClient.class);
+class UserControllerClientTest {
+
+    @Autowired
+    private UserApiClient api;
+
+    private final UserApiClient api2 = Recordo.create(UserApiClient.class);
 
     @Test
-    void shouldCreateAndFetch() {
-        UserDto created = api.create(new UserDto("John"));   // 201 CREATED (from @ResponseStatus)
-        UserDto loaded  = api.findById(created.getId());     // 200 OK (default)
+    void should_call_controller() {
+        UserDto user = api.getById(1, "Test User");
+        assertAsJson(user).isEqualTo("/mockmvc/user.json");
+    }
+
+    @Test
+    void should_upload_files() {
+        MultipartFile file1 = new MockMultipartFile("file1", "Upload File 1".getBytes());
+        File file2 = File.builder().name("file2").content("Upload File 2".getBytes()).build();
+
+        String content = api.upload(1, file1, file2, "File content");
+
+        assertThat(content).isEqualTo("File content: Upload File 1");
     }
 }
 ```
 
+Supported Spring annotations include:
 
-## Return types
+| Annotation                                                                                         | Purpose                                                                                                          |
+|----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| `@RequestMapping`, `@GetMapping`, `@PostMapping`, `@PutMapping`, `@PatchMapping`, `@DeleteMapping` | Define the request path, HTTP method, params, consumes, and produces metadata.                                   |
+| `@PathVariable`                                                                                    | Bind method arguments into URI template variables.                                                               |
+| `@RequestParam`                                                                                    | Add query parameters or multipart fields, including `Collection` values and `Pageable`.                          |
+| `@RequestHeader`                                                                                   | Add request headers from method arguments.                                                                       |
+| `@RequestBody`                                                                                     | Serialize a method argument as the request body.                                                                 |
+| `@ResponseStatus`                                                                                  | Set the expected response status for non-`200 OK` responses and still deserialize the body into the return type. |
 
-Recordo MockMvc clients support three styles of return values:
+Supported return styles:
 
-**Direct result**
+| Return style     | Example                                                | Behavior                                                                                                         |
+|------------------|--------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| Direct body      | `UserDto`, `Page<UserDto>`, `String`, `byte[]`, `void` | Recordo performs the request immediately and returns the deserialized response body.                             |
+| Full response    | `Response<UserDto>`                                    | Recordo performs the request immediately and returns status, headers, and deserialized body.                     |
+| Deferred request | `Request<UserDto>`                                     | Recordo prepares the request only. The test can add headers, params, files, or body data, then call `perform()`. |
 
-```java
-// Declaration
-@GetMapping("/{id}")
-UserDto getById(@PathVariable int id, @RequestParam("name") String name);
+## Request Interceptors
 
-// Usage
-UserDto user = apiClient.getById(1, "Test User");
-```
-
-**Response wrapper**
-
-```java
-// Declaration
-@GetMapping("/{id}")
-Response<UserDto> getById(@PathVariable int id, @RequestParam("name") String name);
-
-// Usage
-Response<UserDto> response = apiClient.getById(1, "Test User");
-UserDto userDto = response.getBody();
-Map<String, String> headers = response.getHeaders();
-HttpStatus status = response.getStatus();
-```
-
-**Request object**
+Implement `RequestInterceptor` to mutate outgoing requests:
 
 ```java
-// Declaration
-@GetMapping("/{id}")
-Request<UserDto> getById(@PathVariable int id, @RequestParam("name") String name);
+import com.cariochi.recordo.mockmvc.Request;
+import com.cariochi.recordo.mockmvc.RequestInterceptor;
 
-// Usage
-Request<UserDto> request = apiClient.getById(1, "Test User");
-Response<UserDto> response = request.header("Authorization", "Bearer ...").perform();
-```
-
-
-## Request interceptors
-
-Declare interceptors in `@RecordoApiClient(interceptors = {...})`. Resolution order:
-
-1. if a Spring bean of that type exists in the context — it is used;
-2. otherwise, the interceptor is **instantiated via default constructor**.
-
-Interceptors can mutate outgoing requests (e.g., add headers) before they are executed by `MockMvc`.
-
-**Example:**
-
-```java
-@Component
-@RequiredArgsConstructor
 public class AuthInterceptor implements RequestInterceptor {
 
-    private static SecurityService securityService;
-    
     @Override
     public Request<?> apply(Request<?> request) {
-        if (request.headers().get("Authorization") == null) {
-            request = request.header("Authorization", "Bearer " + securityService.currentToken());
+        if (!request.headers().containsKey("Authorization")) {
+            return request.header("Authorization", "Bearer test-token");
         }
         return request;
     }
 }
 ```
+
+Interceptors can be declared on `@RecordoApiClient`. If a Spring bean of the interceptor type exists, Recordo uses it;
+otherwise it creates the interceptor
+with a default constructor. Legacy parameter annotations can also declare interceptors.
+
+## Legacy APIs
+
+Recordo also supports parameter-level `@Get`, `@Post`, `@Put`, `@Patch`, `@Delete`, and `@Perform` annotations for
+existing tests. New tests should prefer
+`@RecordoApiClient` interfaces.
+
 # MockServer Module
 
-Recordo can **record** real HTTP interactions on the first run and **replay** them on subsequent runs. Interactions are persisted as JSON and kept under version control, so your tests remain deterministic.
+The MockServer module records real HTTP requests and responses on the first run, then replays them from JSON files on
+later runs.
 
-## How it works on test runs
+Supported clients:
 
-* **First run (or if the file is missing)** — real HTTP calls are executed; Recordo captures request/response pairs and writes them to the configured file/folder.
-* **Subsequent runs** — HTTP calls are **not** sent to the network; responses are taken from the saved JSON.
+- Spring `RestTemplate`.
+- Spring `RestClient`.
+- OkHttp `OkHttpClient`.
+- Apache HttpClient 5 `HttpClient`.
+- OpenFeign when Feign uses one of the supported underlying clients.
 
-This module keeps your integration tests fast, repeatable, and reviewable (recordings are plain JSON files).
+## Basic Usage
 
-
-## Setup with Spring
-
-### Interceptor-first integration (primary)
-
-Recordo integrates via a **dedicated HTTP interceptor bean** that you attach to your HTTP client. The main idea: **create an interceptor bean and add it to the client**, so that Recordo can intercept requests/responses.
-
-Available interceptors:
-
-* `ApacheRecordoInterceptor`
-* `RestClientRecordoInterceptor`
-* `RestTemplateRecordoInterceptor`
-* `OkhttpRecordoInterceptor`
-
-> Make the interceptor a Spring **bean** and wire it into the client you use.
-
-**OkHttp (OkHttpClient)**
+Add `@MockServer` to a test method to enable HTTP recording and replay for that test. Use one annotation for a single
+client or endpoint group, or repeat
+`@MockServer` when the test needs separate recordings for multiple clients or URL patterns.
 
 ```java
-@Bean
-OkhttpRecordoInterceptor recordoOkhttpInterceptor() { return new OkhttpRecordoInterceptor(); }
+import com.cariochi.recordo.mockserver.MockServer;
 
-@Bean
-OkHttpClient okHttpClient(OkhttpRecordoInterceptor interceptor) {
-    return new OkHttpClient.Builder()
-        .addInterceptor(interceptor)
-        .build();
-}
-```
-
-**Apache HttpClient (client5)**
-
-```java
-@Bean
-ApacheRecordoInterceptor recordoApacheInterceptor() { return new ApacheRecordoInterceptor(); }
-
-@Bean
-org.apache.hc.client5.http.classic.HttpClient apacheHttpClient(ApacheRecordoInterceptor interceptor) {
-    return HttpClients.custom()
-        .addRequestInterceptorFirst(interceptor)
-        .build();
-}
-```
-
-**Spring RestTemplate**
-
-```java
-@Bean
-RestTemplateRecordoInterceptor recordoRestTemplateInterceptor() { return new RestTemplateRecordoInterceptor(); }
-
-@Bean
-RestTemplate restTemplate(RestTemplateRecordoInterceptor interceptor) {
-    var restTemplate = new RestTemplate();
-    restTemplate.getInterceptors().add(interceptor);
-    return restTemplate;
-}
-```
-
-**Spring RestClient**
-
-```java
-@Bean
-RestClientRecordoInterceptor recordoRestClientInterceptor() { return new RestClientRecordoInterceptor(); }
-
-@Bean
-RestClient restClient(RestClientRecordoInterceptor interceptor) {
-    return RestClient.builder()
-        .requestInterceptor(interceptor)
-        .build();
-}
-```
-
-### Auto-wiring client bean (alternative)
-
-As an alternative, Recordo can **search for an HTTP client bean** in the Spring context and automatically attach its interceptor. This requires no explicit interceptor wiring, but works only when there is a **single supported client bean** of that type in the context.
-
-Example with `RestTemplate`:
-
-```java
 @SpringBootTest
-class BookServiceTest {
+@ExtendWith(RecordoExtension.class)
+class GitHubClientTest {
 
     @Autowired
-    private RestTemplate restTemplate; // Recordo will detect and wrap it automatically
+    private GitHubClient gitHubClient;
 
     @Test
-    @MockServer("/mock_servers/books.json")
-    void should_retrieve_books() {
-        List<Book> books = bookClient.getBooks();
-        // interactions recorded or replayed automatically
+    @MockServer("/mockserver/github/get_gists.rest.json")
+    void should_retrieve_gists() {
+        List<GistResponse> gists = gitHubClient.getGists();
+        assertAsJson(gists).isEqualTo("/mockserver/github/gists.json");
     }
 }
 ```
 
-## Using Recordo without Spring
+First run:
 
-Recordo can also be used in projects **without Spring**. In this case you annotate the HTTP client or interceptor field with `@EnableRecordo`, and Recordo will instrument it directly.
+- The target mock file is missing.
+- Real HTTP calls are executed.
+- Recordo stores request/response interactions in JSON.
 
-### With explicit interceptor
+Later runs:
+
+- Recordo reads the mock file.
+- HTTP calls are intercepted.
+- Saved responses are returned without network access.
+- Requests are compared with the saved requests.
+
+To record the HTTP interactions again, delete the existing mock file or folder and rerun the test.
+
+If not all saved interactions are used, the test fails with `Not all mocks requests were called`.
+
+## Storage Modes
+
+Single file mode stores all interactions in one JSON file:
 
 ```java
+@MockServer("/mockserver/github/gists.rest.json")
+```
+
+Folder mode stores each interaction as a separate file:
+
+```java
+@MockServer("/mockserver/github/gists")
+```
+
+Folder mode file names are generated from request order, HTTP method, host, and path:
+
+```text
+001__POST__api.github.com__gists.json
+002__GET__api.github.com__gists_31e4458e2fbb1e073787790766268622.json
+```
+
+## MockServer Annotation
+
+`@MockServer` is repeatable and is applied to test methods.
+
+| Attribute          | Default  | Description                                                  |
+|--------------------|----------|--------------------------------------------------------------|
+| `value`            | required | Path to a JSON file or folder under the resource root.       |
+| `client`           | `""`     | Name of the HTTP client bean or `@RecordoBean` field to use. |
+| `objectMapper`     | `""`     | Name of the mapper used to read/write recordings.            |
+| `urlPattern`       | `"**"`   | URL matcher. Supports `?`, `*`, and `**`.                    |
+| `allowExtraFields` | `false`  | Allow extra JSON fields in request matching.                 |
+| `strictOrder`      | `true`   | Require strict array order in request matching.              |
+
+Example with relaxed request body comparison:
+
+```java
+
+@Test
+@MockServer(
+        value = "/mockserver/search.rest.json",
+        allowExtraFields = true,
+        strictOrder = false
+)
+void should_search() {
+}
+```
+
+## Client Selection
+
+If `client` is empty, Recordo tries to find a single supported HTTP client. If several candidates exist, name the client
+bean or `@RecordoBean` field
+explicitly:
+
+```java
+
+@Autowired
+private RestTemplate booksRestTemplate;
+
+@Autowired
+private RestTemplate authorsRestTemplate;
+
+@Test
+@MockServer(client = "booksRestTemplate", value = "/mockserver/books.rest.json")
+@MockServer(client = "authorsRestTemplate", value = "/mockserver/authors.rest.json")
+void should_call_two_services() {
+}
+```
+
+When requests should be routed by URL instead of client name, use repeatable `@MockServer` annotations with different
+URL patterns:
+
+```java
+
+@Test
+@MockServer(urlPattern = "https://books.server/**", value = "/mockserver/books.rest.json")
+@MockServer(urlPattern = "https://authors.server/**", value = "/mockserver/authors.rest.json")
+void should_route_by_url() {
+}
+```
+
+URL pattern wildcards:
+
+| Wildcard | Meaning                     |
+|----------|-----------------------------|
+| `?`      | One character.              |
+| `*`      | Zero or more characters.    |
+| `**`     | Zero or more path segments. |
+
+## Spring Client Integration
+
+For Spring tests, prefer adding the Recordo interceptor directly to the HTTP client bean used by application code.
+Recordo finds that interceptor during
+`@MockServer` tests and attaches the active recording/replay handler to it. Outside `@MockServer` tests the interceptor
+passes requests through unchanged.
+
+### RestTemplate
+
+```java
+import com.cariochi.recordo.mockserver.interceptors.resttemplate.RestTemplateInterceptor;
+import org.springframework.boot.restclient.RestTemplateBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.client.RestTemplate;
+
+@Bean
+RestTemplate restTemplate(RestTemplateBuilder builder) {
+    return builder
+            .interceptors(new RestTemplateInterceptor())
+            .build();
+}
+```
+
+### RestClient
+
+```java
+import com.cariochi.recordo.mockserver.interceptors.restclient.RestClientInterceptor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.client.RestClient;
+
+@Bean
+RestClient restClient() {
+    return RestClient.builder()
+            .requestInterceptor(new RestClientInterceptor())
+            .build();
+}
+```
+
+### OkHttp
+
+```java
+import com.cariochi.recordo.mockserver.interceptors.okhttp.OkhttpInterceptor;
+import okhttp3.OkHttpClient;
+import org.springframework.context.annotation.Bean;
+
+@Bean
+OkHttpClient okHttpClient() {
+    return new OkHttpClient.Builder()
+            .addInterceptor(new OkhttpInterceptor())
+            .build();
+}
+```
+
+### Apache HttpClient 5
+
+```java
+import com.cariochi.recordo.mockserver.interceptors.apache.ApacheInterceptor;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.springframework.context.annotation.Bean;
+
+@Bean
+HttpClient httpClient() {
+    return HttpClients.custom()
+            .addExecInterceptorFirst("recordo", new ApacheInterceptor())
+            .build();
+}
+```
+
+Recordo interceptors:
+
+- `RestTemplateInterceptor`.
+- `RestClientInterceptor`.
+- `OkhttpInterceptor`.
+- `ApacheInterceptor`.
+
+Recordo can also install an interceptor automatically when there is exactly one supported client bean, or one supported
+client marked as `@Primary`. This can
+be useful for small tests, but explicit client wiring is recommended for projects with multiple clients or
+production-like Spring contexts.
+
+```java
+
+@Bean
+RestTemplate restTemplate() {
+    return new RestTemplate();
+}
+```
+
+## Feign Integration
+
+Feign is supported when it uses one of the supported underlying HTTP clients. Add the Recordo interceptor to the
+underlying client, then expose that client
+through Feign.
+
+With Feign OkHttp:
+
+```java
+import com.cariochi.recordo.mockserver.interceptors.okhttp.OkhttpInterceptor;
+import feign.Client;
+import okhttp3.OkHttpClient;
+import org.springframework.context.annotation.Bean;
+
+@Bean
+OkHttpClient okHttpClient() {
+    return new OkHttpClient.Builder()
+            .addInterceptor(new OkhttpInterceptor())
+            .build();
+}
+
+@Bean
+Client feignClient(OkHttpClient client) {
+    return new feign.okhttp.OkHttpClient(client);
+}
+```
+
+With Feign Apache HttpClient 5:
+
+```java
+import com.cariochi.recordo.mockserver.interceptors.apache.ApacheInterceptor;
+import feign.Client;
+import feign.hc5.ApacheHttp5Client;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.springframework.context.annotation.Bean;
+
+@Bean
+HttpClient httpClient() {
+    return HttpClients.custom()
+            .addExecInterceptorFirst("recordo", new ApacheInterceptor())
+            .build();
+}
+
+@Bean
+Client feignClient(HttpClient httpClient) {
+    return new ApacheHttp5Client(httpClient);
+}
+```
+
+## Non-Spring Usage
+
+Annotate a supported client field with `@RecordoBean` and add the Recordo interceptor to that client:
+
+```java
+
 @ExtendWith(RecordoExtension.class)
 class GitHubServiceTest {
 
-    @EnableRecordo
-    private final OkhttpRecordoInterceptor recordoInterceptor = new OkhttpRecordoInterceptor();
-
+    @RecordoBean
     private final OkHttpClient client = new OkHttpClient.Builder()
-            .addInterceptor(recordoInterceptor)
+            .addInterceptor(new OkhttpInterceptor())
             .build();
 
     private final GitHubService service = new GitHubService(client);
 
     @Test
-    @MockServer("/mockserver/gists.mock.json")
-    void test_mock_server() {
+    @MockServer("/mockserver/github/gists.mock.json")
+    void should_replay_http() {
         List<GistDto> gists = service.getGists();
-        // first run records, next runs replay
+        assertAsJson(gists).isEqualTo("/mockserver/github/gists.json");
     }
 }
 ```
 
-### Without explicit interceptor
+## Recorded Headers
+
+Recordo stores only headers listed in `http.mocks.headers.included`. Sensitive headers listed in
+`http.mocks.headers.sensitive` are masked:
+
+```json
+{
+  "request": {
+    "headers": {
+      "authorization": "********",
+      "content-type": "application/json"
+    }
+  }
+}
+```
+
+The first recording run executes real HTTP calls with the credentials configured for the test environment. Use
+`http.mocks.headers.sensitive` to keep secrets
+out of committed recordings. After recording and debugging, review the mock files and replace any real credentials or
+user data in bodies, URLs, or non-masked
+headers with placeholders before committing.
+
+Keep real credentials in local-only configuration while recording. Do not commit them in Spring test properties, `.env`
+files, local config files, or IDE run
+configurations.
+
+## Debugging Failed Replay
+
+When an actual request does not match the next expected recorded request, Recordo writes the actual interaction into an
+`ACTUAL/` folder.
+
+Single file mode:
+
+```text
+src/test/resources/mockserver/github/gists.rest.json
+src/test/resources/mockserver/github/ACTUAL/gists.rest.json
+```
+
+Folder mode:
+
+```text
+src/test/resources/mockserver/github/gists/ACTUAL/
+```
+
+Diff the expected and actual files, then either fix the test/client behavior or update the committed recording
+intentionally.
+
+# Reviewing ACTUAL Files
+
+When a test fails on `assertAsJson`, `assertCsv`, or `@MockServer`, use your IDE's file comparison tool to compare the
+expected file with the file generated in
+the `ACTUAL/` folder. This is usually the fastest way to see whether the test exposed a real regression or the expected
+fixture needs to be updated.
+
+If the failure is expected, for example after an intentional change in business logic, and the `ACTUAL` file is correct,
+replace the expected file with the
+reviewed `ACTUAL` file. You can move it from the `ACTUAL/` folder into the parent folder, or use the IDE compare view to
+copy only the intended changes from
+`ACTUAL` into the expected file.
+
+# Recommended Project Hygiene
+
+Commit:
+
+- Source tests.
+- Reviewed JSON fixtures.
+- Reviewed CSV fixtures.
+- Reviewed HTTP mock recordings.
+
+Do not commit:
+
+- `ACTUAL/` folders.
+- Generated fixtures that have not been reviewed.
+- Recordings containing real credentials or user data.
+
+Recommended `.gitignore`:
+
+```gitignore
+**/ACTUAL/
+```
+
+# Troubleshooting
+
+## A fixture file was generated and the test failed
+
+That is expected on first run for assertions. Review the generated file, commit it if correct, and rerun the test.
+
+## Recordo cannot find my ObjectMapper
+
+If you pass `objectMapper = "customMapper"`, make sure there is a Spring bean or an `@RecordoBean` field with exactly
+that name.
+
+```java
+
+@RecordoBean
+private final JsonMapper customMapper = JsonMapper.builder().build();
+```
+
+## MockServer selected the wrong client
+
+Pass `client` explicitly:
+
+```java
+@MockServer(client = "externalApiRestTemplate", value = "/mockserver/external.rest.json")
+```
+
+## MockServer fails with `Not all mocks requests were called`
+
+The recording contains more expected interactions than the test executed. Remove unused interactions from the recording
+or update the test so it performs the
+expected calls.
+
+## Request replay fails after harmless response changes
+
+Recordo matches requests, not responses, during replay. Check the `ACTUAL/` request file. If request body order or
+additional fields are expected to vary,
+configure `allowExtraFields` or `strictOrder` on `@MockServer`.
+
+## Spring MockMvc parameter injection does not work
+
+Ensure the test has:
 
 ```java
 @ExtendWith(RecordoExtension.class)
-class GitHubServiceTest {
-
-    @EnableRecordo
-    private final OkHttpClient client = new OkHttpClient();
-
-    private final GitHubService service = new GitHubService(client);
-
-    @Test
-    @MockServer("/mockserver/gists.mock.json")
-    void test_mock_server() {
-        List<GistDto> gists = service.getGists();
-        // first run records, next runs replay
-    }
-}
 ```
 
-In both cases, `@EnableRecordo` tells Recordo to wrap the client or interceptor so that interactions can be recorded and replayed during tests.
-
-
-## OpenFeign (via supported HTTP clients)
-
-OpenFeign can be used together with Recordo by wiring it to one of the **supported HTTP clients** (OkHttp or Apache HttpClient). Recordo will attach its interceptors to the underlying client and capture/replay calls.
-
-**OkHttp setup**
-
-```java
-@Bean
-public okhttp3.OkHttpClient okHttpClient() {
-    return new okhttp3.OkHttpClient();
-}
-
-@Bean
-public feign.Client feignClient(okhttp3.OkHttpClient okHttpClient) {
-    return new feign.okhttp.OkHttpClient(okHttpClient);
-}
-```
-
-**Apache HttpClient setup**
-
-```java
-@Bean
-public org.apache.hc.client5.http.classic.HttpClient apacheHttpClient() {
-    return HttpClients.createDefault();
-}
-
-@Bean
-public feign.Client feignClient(org.apache.hc.client5.http.classic.HttpClient httpClient) {
-    return new feign.httpclient.ApacheHttpClient(httpClient);
-}
-```
-
-> Note: Recordo interacts with Feign **through** the configured OkHttp/Apache client by inserting its interceptors. Make sure these clients are the ones used by Feign in the Spring context.
-
-
-## Annotation Parameters
-
-Use `@MockServer` on a test method (or class). Parameters:
-
-* **`value`** (String) — path to the storage location:
-    * **File path** ending with `.json` → *all interactions* are recorded into a **single file**.
-    * **Folder path** (no `.json`) → each interaction is recorded as a **separate JSON file** inside the folder.
-
-
-* **`urlPattern`** (String) — optional URL matcher; supports `?` (one char), `*` (zero or more chars), `**` (zero or more path segments).
-
-
-* **`beanName`** (String) — bean name, which can be either the name of the interceptor bean (in interceptor-first mode) or the client bean (in auto-wiring mode).
-
-
-* **`objectMapper`** (String) — name of `ObjectMapper` bean or test field.
-
-
-## Examples
-
-### Single server (file storage)
-
-```java
-@Test
-@MockServer("/mock_servers/get_gists.json")
-void should_retrieve_gists() {
-    List<GistResponse> gists = gitHubClient.getGists();
-    // first run records, next runs replay
-}
-```
-
-### Single server (folder storage)
-
-```java
-@Test
-@MockServer("/mock_servers/gists/") // folder
-void should_retrieve_gists_in_folder_mode() {
-    List<GistResponse> gists = gitHubClient.getGists();
-}
-```
-
-### Multiple HTTP clients
-
-```java
-@Autowired private RestTemplate bookServerRestTemplate;
-@Autowired private RestTemplate authorServerRestTemplate;
-
-@Test
-@MockServer(httpClient = "bookServerRestTemplate", value = "/mockserver/multiservers/books-server.rest.json")
-@MockServer(httpClient = "authorServerRestTemplate", value = "/mockserver/multiservers/authors-server.rest.json")
-void should_retrieve_books_and_authors() {
-    // calls using two different clients are recorded into two files
-}
-```
-
-### Multiple servers (URL pattern)
-
-```java
-@Test
-@MockServer(beanName = "https://books.server/**",  value = "/mockserver/multiservers/books-server.rest.json")
-@MockServer(beanName = "https://authors.server/**", value = "/mockserver/multiservers/authors-server.rest.json")
-void should_retrieve_from_multiple_servers() {
-    // calls to matching hosts go into the respective files
-}
-```
+and that the Spring test context has a single `MockMvc` instance.
 
 # License
 
-Recordo is distributed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+Recordo is distributed under the [Apache License 2.0](LICENSE).

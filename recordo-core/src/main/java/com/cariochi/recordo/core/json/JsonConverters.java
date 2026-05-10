@@ -1,10 +1,11 @@
 package com.cariochi.recordo.core.json;
 
 import com.cariochi.recordo.core.utils.Beans;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Optional;
 import lombok.experimental.UtilityClass;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import tools.jackson.databind.ObjectMapper;
+
+import java.util.Optional;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -16,7 +17,7 @@ public class JsonConverters {
         if (context == null) {
             return new JsonConverter();
         }
-        final Optional<ObjectMapper> optionalBean = Beans.of(context).find(beanName, ObjectMapper.class);
+        final Optional<ObjectMapper> optionalBean = Beans.of(context).find(beanName, ObjectMapper.class).map(Beans.Bean::instance);
         if (isNotEmpty(beanName) && optionalBean.isEmpty()) {
             throw new IllegalArgumentException(format("No ObjectMapper bean named '%s' available.", beanName));
         }

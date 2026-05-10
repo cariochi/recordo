@@ -1,24 +1,25 @@
 package com.cariochi.recordo.github;
 
-import com.cariochi.recordo.core.EnableRecordo;
+import com.cariochi.recordo.core.RecordoBean;
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.github.dto.GistDto;
 import com.cariochi.recordo.mockserver.MockServer;
 import com.cariochi.recordo.mockserver.RecordoMockServer;
-import com.cariochi.recordo.mockserver.interceptors.okhttp.OkhttpRecordoInterceptor;
-import java.util.List;
+import com.cariochi.recordo.mockserver.interceptors.okhttp.OkhttpInterceptor;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.List;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 
 @ExtendWith(RecordoExtension.class)
 class GitHubService2Test {
 
-    @EnableRecordo
-    private final OkhttpRecordoInterceptor recordoInterceptor = new OkhttpRecordoInterceptor();
+    private final OkhttpInterceptor recordoInterceptor = new OkhttpInterceptor();
 
+    @RecordoBean
     private final OkHttpClient client = new OkHttpClient.Builder()
             .addInterceptor(recordoInterceptor)
             .build();

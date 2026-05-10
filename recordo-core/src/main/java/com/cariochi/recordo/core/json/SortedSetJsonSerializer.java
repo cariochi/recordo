@@ -1,9 +1,10 @@
 package com.cariochi.recordo.core.json;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ser.std.StdSerializer;
+
 import java.util.Set;
 
 public class SortedSetJsonSerializer extends StdSerializer<Set> {
@@ -15,14 +16,14 @@ public class SortedSetJsonSerializer extends StdSerializer<Set> {
     }
 
     @Override
-    public void serialize(Set set, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    public void serialize(Set set, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
         if (set == null) {
             gen.writeNull();
             return;
         }
         gen.writeStartArray();
         for (Object item : setSorter.sort(set)) {
-            gen.writeObject(item);
+            ctxt.writeValue(gen, item);
         }
         gen.writeEndArray();
     }

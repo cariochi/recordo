@@ -4,18 +4,20 @@ import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.mockserver.GitHub;
 import com.cariochi.recordo.mockserver.MockServer;
 import com.cariochi.recordo.mockserver.RecordoMockServer;
-import com.cariochi.recordo.mockserver.installers.configs.MultipleRestTemplatesConfig;
 import com.cariochi.recordo.mockserver.dto.Gist;
 import com.cariochi.recordo.mockserver.dto.GistResponse;
+import com.cariochi.recordo.mockserver.installers.configs.MultipleRestTemplatesConfig;
+import com.cariochi.recordo.mockserver.interceptors.InterceptorInstaller;
 import com.cariochi.recordo.mockserver.interceptors.resttemplate.RestTemplateInstaller;
-import com.cariochi.recordo.mockserver.interceptors.resttemplate.RestTemplateRecordoInterceptor;
+import com.cariochi.recordo.mockserver.interceptors.resttemplate.RestTemplateInterceptor;
 import com.cariochi.recordo.read.Read;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,9 +58,9 @@ class RestTemplateTest {
     @Test
     void should_get_exception() {
         assertThatThrownBy(() -> {
-            final RestTemplateRecordoInterceptor interceptor = new RestTemplateRecordoInterceptor();
-            try (RestTemplateInstaller installer = new RestTemplateInstaller(restTemplate).install(interceptor);
-                    RecordoMockServer mockServer = new RecordoMockServer(interceptor, "/mockserver/resttemplate/several_requests.rest.json")
+            final RestTemplateInterceptor interceptor = new RestTemplateInterceptor();
+            try (InterceptorInstaller installer = new RestTemplateInstaller(restTemplate).install(interceptor);
+                 RecordoMockServer mockServer = new RecordoMockServer(interceptor, "/mockserver/resttemplate/several_requests.rest.json")
             ) {
                 gitHub.getGists();
             }

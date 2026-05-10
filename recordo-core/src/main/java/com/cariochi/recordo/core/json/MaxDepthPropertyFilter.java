@@ -1,29 +1,29 @@
 package com.cariochi.recordo.core.json;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonStreamContext;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.PropertyWriter;
-import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.TokenStreamContext;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ser.PropertyWriter;
+import tools.jackson.databind.ser.std.SimpleBeanPropertyFilter;
 
 public class MaxDepthPropertyFilter extends SimpleBeanPropertyFilter {
 
     private final static int maxDepth = 3;
 
     @Override
-    public void serializeAsField(Object pojo, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer) throws Exception {
+    public void serializeAsProperty(Object pojo, JsonGenerator gen, SerializationContext ctxt, PropertyWriter writer) throws Exception {
         int depth = calcDepth(writer, gen);
         if (depth <= maxDepth) {
-            writer.serializeAsField(pojo, gen, provider);
+            writer.serializeAsProperty(pojo, gen, ctxt);
         }
         // comment this if you don't want {} placeholders
         else {
-            writer.serializeAsOmittedField(pojo, gen, provider);
+            writer.serializeAsOmittedProperty(pojo, gen, ctxt);
         }
     }
 
     private int calcDepth(PropertyWriter writer, JsonGenerator jgen) {
-        JsonStreamContext sc = jgen.getOutputContext();
+        TokenStreamContext sc = jgen.streamWriteContext();
         int depth = -1;
         while (sc != null) {
             sc = sc.getParent();

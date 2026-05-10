@@ -1,23 +1,25 @@
 package com.cariochi.recordo.github;
 
-import com.cariochi.recordo.core.EnableRecordo;
+import com.cariochi.recordo.core.RecordoBean;
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.github.dto.GistDto;
 import com.cariochi.recordo.mockserver.MockServer;
 import com.cariochi.recordo.mockserver.RecordoMockServer;
+import com.cariochi.recordo.mockserver.interceptors.InterceptorInstaller;
 import com.cariochi.recordo.mockserver.interceptors.okhttp.OkhttpInstaller;
-import com.cariochi.recordo.mockserver.interceptors.okhttp.OkhttpRecordoInterceptor;
-import java.util.List;
+import com.cariochi.recordo.mockserver.interceptors.okhttp.OkhttpInterceptor;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.List;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 
 @ExtendWith(RecordoExtension.class)
 class GitHubServiceTest {
 
-    @EnableRecordo
+    @RecordoBean
     private final OkHttpClient client = new OkHttpClient();
 
     private final GitHubService service = new GitHubService(client);
@@ -31,9 +33,9 @@ class GitHubServiceTest {
 
     @Test
     void test_mock_http_with_variables() {
-        final OkhttpRecordoInterceptor interceptor = new OkhttpRecordoInterceptor();
-        try (OkhttpInstaller installer = new OkhttpInstaller(client).install(interceptor);
-                RecordoMockServer mockServer = new RecordoMockServer(interceptor, "/mockserver/gists_with_variables.mock.json")
+        final OkhttpInterceptor interceptor = new OkhttpInterceptor();
+        try (InterceptorInstaller installer = new OkhttpInstaller(client).install(interceptor);
+             RecordoMockServer mockServer = new RecordoMockServer(interceptor, "/mockserver/gists_with_variables.mock.json")
         ) {
             mockServer.set("id1", "36387e79b940de553ad0b381afc29bf4");
             mockServer.set("id2", "cc7e0f8678d69196387b623bd45f0f33");

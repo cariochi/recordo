@@ -9,19 +9,16 @@ import com.cariochi.recordo.mockserver.interceptors.RecordoRequestHandler;
 import com.cariochi.recordo.mockserver.model.MockInteraction;
 import com.cariochi.recordo.mockserver.model.MockRequest;
 import com.cariochi.recordo.mockserver.model.MockResponse;
-import java.net.URI;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.JSONCompareResult;
+
+import java.net.URI;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.stream.Stream;
 
 import static com.cariochi.recordo.core.json.JsonUtils.compareMode;
 import static com.cariochi.recordo.core.utils.Files.isJson;
@@ -33,6 +30,12 @@ import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.text.StringSubstitutor.replace;
 import static org.skyscreamer.jsonassert.JSONCompare.compareJSON;
 
+/**
+ * Programmatic HTTP recorder/replayer used by Recordo interceptors.
+ * <p>
+ * Most tests should use {@link MockServer}. This class is useful for non-annotation based setups where the
+ * test controls the interceptor lifecycle directly.
+ */
 @Slf4j
 public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
 
@@ -44,11 +47,25 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
     private List<MockInteraction> expectedMocks;
     private final Map<String, Object> variables = new HashMap<>();
 
+    /**
+     * Creates a mock server attached to an existing Recordo interceptor.
+     *
+     * @param interceptor interceptor that will route requests to this server
+     * @param mocksPath   path to a JSON file or folder with recorded interactions
+     */
     public RecordoMockServer(RecordoInterceptor interceptor, String mocksPath) {
         this("**", mocksPath, new JsonConverter(), compareMode(false, true));
-        interceptor.init(this);
+        interceptor.setHandler(this);
     }
 
+    /**
+     * Creates a mock server for annotation-driven routing.
+     *
+     * @param urlPattern URL pattern handled by this server
+     * @param mocksPath path to a JSON file or folder with recorded interactions
+     * @param jsonConverter converter used to read and write recordings
+     * @param compareMode request JSON comparison mode
+     */
     public RecordoMockServer(String urlPattern, String mocksPath, JsonConverter jsonConverter, JSONCompareMode compareMode) {
         this.urlPatternMatcher = new UrlPatternMatcher(urlPattern);
         this.mocksPath = mocksPath;

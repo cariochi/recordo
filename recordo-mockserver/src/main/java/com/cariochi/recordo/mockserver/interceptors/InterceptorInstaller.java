@@ -1,10 +1,15 @@
 package com.cariochi.recordo.mockserver.interceptors;
 
 import java.io.Closeable;
+import java.util.Optional;
 
-public interface InterceptorInstaller extends Closeable {
+public interface InterceptorInstaller<T extends RecordoInterceptor> extends Closeable {
 
-    void init(RecordoRequestHandler handler);
+    InterceptorInstaller<T> install(T interceptor);
+
+    void setHandler(RecordoRequestHandler handler);
+
+    Optional<RecordoInterceptor> findInterceptor();
 
     void uninstall();
 
