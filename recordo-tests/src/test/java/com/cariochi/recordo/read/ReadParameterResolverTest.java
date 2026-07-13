@@ -86,4 +86,27 @@ class ReadParameterResolverTest {
         assertEquals(EXPECTED_LIST, list);
     }
 
+    @Test
+    void given_yaml(
+            @Read("/read/dto.yaml") TestDto dto
+    ) {
+        assertEquals(EXPECTED_DTO, dto);
+        assertAsJson(dto).isEqualTo("/read/dto.yaml");
+    }
+
+    @Test
+    void given_yaml_list(
+            @Read("/read/list.yaml") List<TestDto> list
+    ) {
+        assertEquals(EXPECTED_LIST, list);
+        assertAsJson(list).isEqualTo("/read/list.yaml");
+    }
+
+    @Test
+    void generated_yaml_test(
+            @Read("/read/generated_dto.yaml") TestDto dto
+    ) {
+        assertAsJson(dto).isEqualTo("/read/generated_dto.yaml");
+    }
+
 }

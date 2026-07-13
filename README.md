@@ -65,7 +65,7 @@ Use `recordo-all` if you want all four modules in one dependency:
 <dependency>
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-all</artifactId>
-    <version>2.1.0</version>
+    <version>2.1.1</version>
     <type>pom</type>
     <scope>test</scope>
 </dependency>
@@ -78,28 +78,28 @@ Or add only the modules you need:
 <dependency>
     <groupId>com.cariochi.recordo</groupId>
     <artifactId>recordo-read</artifactId>
-    <version>2.1.0</version>
+    <version>2.1.1</version>
     <scope>test</scope>
 </dependency>
 
 <dependency>
    <groupId>com.cariochi.recordo</groupId>
    <artifactId>recordo-assertions</artifactId>
-   <version>2.1.0</version>
+   <version>2.1.1</version>
    <scope>test</scope>
 </dependency>
 
 <dependency>
    <groupId>com.cariochi.recordo</groupId>
    <artifactId>recordo-spring-mockmvc</artifactId>
-   <version>2.1.0</version>
+   <version>2.1.1</version>
    <scope>test</scope>
 </dependency>
 
 <dependency>
    <groupId>com.cariochi.recordo</groupId>
    <artifactId>recordo-mockserver</artifactId>
-   <version>2.1.0</version>
+   <version>2.1.1</version>
    <scope>test</scope>
 </dependency>
 ```
@@ -149,6 +149,32 @@ resources.root.folder=/src/integrationTest/resources
 
 Generated files are written under the same root.
 
+## Supported File Formats
+
+Recordo supports both **JSON** and **YAML** fixture files. The format is detected automatically by file extension:
+
+| Extension | Format |
+|-----------|--------|
+| `.json`   | JSON   |
+| `.yaml`, `.yml` | YAML |
+
+You can use YAML for any fixture — `@Read`, `assertAsJson`, and `@MockServer` all support it:
+
+```java
+@Read("/books/book.yaml")
+private Book book;
+
+assertAsJson(actual).isEqualTo("/books/book.yaml");
+```
+
+```java
+@Test
+@MockServer("/mockserver/should_retrieve_gists.rest.yml")
+void should_retrieve_gists() { ... }
+```
+
+When a fixture file is missing, Recordo generates and writes it in the same format as the requested path extension.
+
 # ObjectMapper Resolution
 
 Recordo uses Jackson 3 for JSON serialization and deserialization. When an API accepts an `objectMapper` name, Recordo
@@ -196,12 +222,33 @@ If more than one mapper is available, prefer passing `objectMapper = "..."` expl
 
 # Configuration
 
-Create `recordo.properties` in test resources to override defaults.
+Configuration is resolved in this priority order:
+
+1. **System property** — `-Drecordo.resources.root.folder=...` (useful for CI)
+2. **Spring Environment** — `recordo.resources.root.folder` in `application-test.yaml` or `@TestPropertySource`
+3. **`recordo.properties`** — file on the test classpath
+4. **Built-in defaults**
+
+Create `recordo.properties` in test resources to override defaults:
 
 ```properties
 resources.root.folder=/src/test/resources
 http.mocks.headers.included=Authorization, Content-Encoding, Content-Type, Accept, Accept-Charset, Location, Link, X-Auth
 http.mocks.headers.sensitive=Authorization, X-Auth
+```
+
+Or with Spring:
+
+```yaml
+# application-test.yaml
+recordo:
+  resources.root.folder: /src/integrationTest/resources
+```
+
+Or on the command line:
+
+```bash
+mvn test -Drecordo.resources.root.folder=/custom/path
 ```
 
 Available properties:
@@ -378,9 +425,9 @@ to read.
 
 The Assertions module compares actual values against files and creates missing expected files on first run.
 
-## JSON Assertions
+## JSON and YAML Assertions
 
-Use `JsonAssertion.assertAsJson(actual)` for object-to-JSON comparison:
+Use `JsonAssertion.assertAsJson(actual)` to compare an object against a fixture file. Both JSON and YAML files are supported — the format is detected from the file extension:
 
 ```java
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
@@ -390,7 +437,15 @@ void should_match_json() {
     Page<Book> books = bookService.findAll();
 
     assertAsJson(books)
-            .isEqualTo("/books/books_page.json");
+            .isEqualTo("/books/books_page.json");   // JSON fixture
+}
+
+@Test
+void should_match_yaml() {
+    Book book = bookService.findById(1L);
+
+    assertAsJson(book)
+            .isEqualTo("/books/book.yaml");          // YAML fixture
 }
 ```
 
@@ -638,7 +693,7 @@ existing tests. New tests should prefer
 
 # MockServer Module
 
-The MockServer module records real HTTP requests and responses on the first run, then replays them from JSON files on
+The MockServer module records real HTTP requests and responses on the first run, then replays them from fixture files on
 later runs.
 
 Supported clients:
@@ -693,13 +748,14 @@ If not all saved interactions are used, the test fails with `Not all mocks reque
 
 ## Storage Modes
 
-Single file mode stores all interactions in one JSON file:
+Single file mode stores all interactions in one file. Both JSON and YAML are supported:
 
 ```java
-@MockServer("/mockserver/github/gists.rest.json")
+@MockServer("/mockserver/github/gists.rest.json")   // JSON
+@MockServer("/mockserver/github/gists.rest.yml")    // YAML
 ```
 
-Folder mode stores each interaction as a separate file:
+Folder mode stores each interaction as a separate JSON file:
 
 ```java
 @MockServer("/mockserver/github/gists")
@@ -716,14 +772,14 @@ Folder mode file names are generated from request order, HTTP method, host, and 
 
 `@MockServer` is repeatable and is applied to test methods.
 
-| Attribute          | Default  | Description                                                  |
-|--------------------|----------|--------------------------------------------------------------|
-| `value`            | required | Path to a JSON file or folder under the resource root.       |
-| `client`           | `""`     | Name of the HTTP client bean or `@RecordoBean` field to use. |
-| `objectMapper`     | `""`     | Name of the mapper used to read/write recordings.            |
-| `urlPattern`       | `"**"`   | URL matcher. Supports `?`, `*`, and `**`.                    |
-| `allowExtraFields` | `false`  | Allow extra JSON fields in request matching.                 |
-| `strictOrder`      | `true`   | Require strict array order in request matching.              |
+| Attribute          | Default  | Description                                                          |
+|--------------------|----------|----------------------------------------------------------------------|
+| `value`            | required | Path to a `.rest.json`, `.rest.yml` file or folder under the resource root. |
+| `client`           | `""`     | Name of the HTTP client bean or `@RecordoBean` field to use.         |
+| `objectMapper`     | `""`     | Name of the mapper used to read/write recordings.                    |
+| `urlPattern`       | `"**"`   | URL matcher. Supports `?`, `*`, and `**`.                            |
+| `allowExtraFields` | `false`  | Allow extra JSON fields in request matching.                         |
+| `strictOrder`      | `true`   | Require strict array order in request matching.                      |
 
 Example with relaxed request body comparison:
 

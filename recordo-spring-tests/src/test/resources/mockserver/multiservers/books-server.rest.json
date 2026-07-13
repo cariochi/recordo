@@ -4,7 +4,7 @@
       "method": "GET",
       "url": "https://books.server/books",
       "headers": {
-        "accept": "application/json, application/*+json"
+        "accept": "application/json, application/yaml, application/*+json"
       }
     },
     "response": {
@@ -40,7 +40,7 @@
       "method": "GET",
       "url": "https://books.server/books/129649986932158",
       "headers": {
-        "accept": "application/json, application/*+json"
+        "accept": "application/json, application/yaml, application/*+json"
       }
     },
     "response": {

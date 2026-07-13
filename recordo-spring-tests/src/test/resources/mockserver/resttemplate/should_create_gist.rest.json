@@ -6,7 +6,7 @@
       "headers": {
         "authorization": "********",
         "content-type": "application/json",
-        "accept": "application/json, application/*+json"
+        "accept": "application/json, application/yaml, application/*+json"
       },
       "body": {
         "description": "Hello World!",
@@ -115,7 +115,7 @@
       "headers": {
         "authorization": "********",
         "content-type": "application/json",
-        "accept": "application/json, application/*+json"
+        "accept": "application/json, application/yaml, application/*+json"
       },
       "body": {
         "description": "Hello World!",
@@ -252,7 +252,7 @@
       "url": "https://api.github.com/gists/9e7523a1ac4f0faa30e7661b4f738775",
       "headers": {
         "authorization": "********",
-        "accept": "application/json, application/*+json"
+        "accept": "application/json, application/yaml, application/*+json"
       }
     },
     "response": {
@@ -381,7 +381,7 @@
       "url": "https://api.github.com/gists/9e7523a1ac4f0faa30e7661b4f738775",
       "headers": {
         "authorization": "********",
-        "accept": "application/json, application/*+json"
+        "accept": "application/json, application/yaml, application/*+json"
       }
     },
     "response": {

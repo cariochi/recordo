@@ -1,12 +1,13 @@
 package com.cariochi.recordo.core.utils;
 
+import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import lombok.SneakyThrows;
-import lombok.experimental.UtilityClass;
 
 import static java.lang.System.getProperty;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -87,5 +88,9 @@ public class Files {
 
     public static boolean isJson(String path) {
         return path.endsWith(".json");
+    }
+
+    public static boolean isYaml(String path) {
+        return path.endsWith(".yaml") || path.endsWith(".yml");
     }
 }

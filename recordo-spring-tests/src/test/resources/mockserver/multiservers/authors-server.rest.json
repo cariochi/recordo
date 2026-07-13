@@ -4,7 +4,7 @@
       "method": "GET",
       "url": "https://authors.server/authors",
       "headers": {
-        "accept": "application/json, application/*+json"
+        "accept": "application/json, application/yaml, application/*+json"
       }
     },
     "response": {
@@ -27,7 +27,7 @@
       "method": "GET",
       "url": "https://authors.server/authors/1",
       "headers": {
-        "accept": "application/json, application/*+json"
+        "accept": "application/json, application/yaml, application/*+json"
       }
     },
     "response": {
