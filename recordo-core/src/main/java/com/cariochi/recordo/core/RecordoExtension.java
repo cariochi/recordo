@@ -1,21 +1,15 @@
 package com.cariochi.recordo.core;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.ServiceLoader.Provider;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.extension.AfterAllCallback;
-import org.junit.jupiter.api.extension.AfterEachCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterContext;
-import org.junit.jupiter.api.extension.ParameterResolutionException;
-import org.junit.jupiter.api.extension.ParameterResolver;
+import org.junit.jupiter.api.extension.*;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.ServiceLoader.Provider;
 
 import static com.cariochi.reflecto.Reflecto.reflect;
 import static java.util.ServiceLoader.load;
@@ -47,6 +41,7 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
     @Override
     public void beforeAll(ExtensionContext context) {
         RecordoExtension.context = context;
+        registerSpringEnvironment(context);
         final List<BeforeAllCallback> callbacks = handlers.stream()
                 .filter(extension -> reflect(extension).type().is(BeforeAllCallback.class))
                 .sorted(orderAnnotationComparator())
@@ -55,6 +50,18 @@ public class RecordoExtension implements BeforeAllCallback, BeforeEachCallback, 
 
         for (BeforeAllCallback callback : callbacks) {
             callback.beforeAll(context);
+        }
+    }
+
+    private void registerSpringEnvironment(ExtensionContext context) {
+        if (!isSpringContextAvailable()) {
+            return;
+        }
+        try {
+            Object appContext = org.springframework.test.context.junit.jupiter.SpringExtension.getApplicationContext(context);
+            Object environment = appContext.getClass().getMethod("getEnvironment").invoke(appContext);
+            com.cariochi.recordo.core.utils.EnvironmentHolder.set(environment);
+        } catch (Exception ignored) {
         }
     }
 

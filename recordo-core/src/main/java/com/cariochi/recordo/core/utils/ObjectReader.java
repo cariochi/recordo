@@ -3,11 +3,12 @@ package com.cariochi.recordo.core.utils;
 import com.cariochi.objecto.generators.ObjectoGenerator;
 import com.cariochi.recordo.core.json.JsonConverter;
 import com.cariochi.reflecto.types.ReflectoType;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.function.Function;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,27 +27,32 @@ public class ObjectReader {
         if (!Files.exists(file)) {
             return generate(file, type);
         }
-        return byte[].class.equals(type.actualClass())
-                ? Files.readBytes(file)
-                : jsonConverter.fromJson(Files.readString(file), type.actualType());
+        if (byte[].class.equals(type.actualClass())) {
+            return Files.readBytes(file);
+        }
+        String content = Files.readString(file);
+        return Files.isYaml(file)
+                ? jsonConverter.fromYaml(content, type.actualType())
+                : jsonConverter.fromJson(content, type.actualType());
     }
 
     private Object generate(String file, ReflectoType type) {
         Object givenObject = null;
-        String json;
+        String content;
+        boolean yaml = Files.isYaml(file);
         try {
             givenObject = generator.apply(type.actualType());
             if (givenObject == null) {
-                json = type.is(Collection.class) || type.isArray() ? "[]" : "{}";
+                content = type.is(Collection.class) || type.isArray() ? "[]" : "{}";
             } else {
-                json = jsonConverter.toJson(givenObject);
+                content = yaml ? jsonConverter.toYaml(givenObject) : jsonConverter.toJson(givenObject);
             }
         } catch (Exception e) {
-            log.error("Cannot serialize object into JSON", e);
-            json = "{}";
+            log.error("Cannot serialize object into {}", yaml ? "YAML" : "JSON", e);
+            content = "{}";
         }
-        Files.write(json, file)
-                .ifPresent(path -> log.warn("\nFile not found. Empty json is generated: file://{}", path));
+        Files.write(content, file)
+                .ifPresent(path -> log.warn("\nFile not found. Empty {} is generated: file://{}", yaml ? "yaml" : "json", path));
         return givenObject;
     }
 

@@ -4,7 +4,6 @@ import com.cariochi.recordo.books.dto.Author;
 import com.cariochi.recordo.books.dto.Book;
 import com.cariochi.recordo.core.RecordoExtension;
 import com.cariochi.recordo.read.Read;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
+
+import java.util.List;
 
 import static com.cariochi.recordo.assertions.JsonAssertion.assertAsJson;
 import static com.cariochi.recordo.assertions.JsonCondition.equalAsJsonTo;
@@ -31,7 +32,7 @@ class BookServiceTest {
     @Test
     void should_get_book_by_id() {
         final Book actual = bookService.findById(1L);
-        assertAsJson(actual).isEqualTo("/books/book.json");
+        assertAsJson(actual).isEqualTo("/books/book.yml");
         assertThat(actual).is(equalAsJsonTo("/books/book.json"));
     }
 
@@ -43,11 +44,12 @@ class BookServiceTest {
 
         assertAsJson(books)
                 .including("content[*].id", "content[*].title", "content[*].author.id")
-                .isEqualTo("/books/short_books.json");
+                .isEqualTo("/books/short_books.yml");
 
         assertThat(books)
                 .is(equalAsJsonTo("/books/short_books.json")
                         .including("content[*].id", "content[*].title", "content[*].author.id"));
+
     }
 
     @Test
@@ -71,11 +73,12 @@ class BookServiceTest {
 
     @Test
     void should_add_book_to_shelf(
-            @Read("/books/book.json") Book book,
+            @Read("/books/book.yml") Book book,
             @Read("/books/books.json") List<Book> books
     ) {
         final Page<Book> merged = bookService.merge(books, book);
         assertAsJson(merged).isEqualTo("/books/expected_books.json");
+        assertAsJson(merged).isEqualTo("/books/expected_books.yml");
     }
 
 }

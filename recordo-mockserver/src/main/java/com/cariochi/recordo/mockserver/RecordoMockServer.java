@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 
 import static com.cariochi.recordo.core.json.JsonUtils.compareMode;
 import static com.cariochi.recordo.core.utils.Files.isJson;
+import static com.cariochi.recordo.core.utils.Files.isYaml;
 import static com.cariochi.reflecto.types.Types.listOf;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
@@ -128,7 +129,7 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
                 .toList();
 
         final Path path = Path.of(mocksPath);
-        final Path actualPath = isJson(mocksPath)
+        final Path actualPath = (isJson(mocksPath) || isYaml(mocksPath))
                 ? Path.of(path.getParent().toString(), "ACTUAL", path.getFileName().toString())
                 : Path.of(path.toString(), "ACTUAL");
 
@@ -163,9 +164,9 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
     }
 
     private void saveActualMocks(List<MockInteraction> mocks, String path) {
-        if (isJson(path)) {
-            final String json = jsonConverter.toJson(mocks);
-            Files.write(json, path)
+        if (isJson(path) || isYaml(path)) {
+            final String content = isYaml(path) ? jsonConverter.toYaml(mocks) : jsonConverter.toJson(mocks);
+            Files.write(content, path)
                     .ifPresent(file -> log.info("Actual http mocks are saved to file://{}:\n{}", file, urlsOf(actualMocks)));
         } else {
             for (int i = 0; i < mocks.size(); i++) {
@@ -193,19 +194,23 @@ public class RecordoMockServer implements AutoCloseable, RecordoRequestHandler {
     @SneakyThrows
     private List<MockInteraction> loadExpectedMocks(String path) {
         if (Files.exists(path)) {
-            if (isJson(path)) {
-                final String json = applyVariables(Files.readString(path));
-                final List<MockInteraction> mocks = jsonConverter.fromJson(json, listOf(MockInteraction.class));
+            if (isJson(path) || isYaml(path)) {
+                final String content = applyVariables(Files.readString(path));
+                final List<MockInteraction> mocks = isYaml(path)
+                        ? jsonConverter.fromYaml(content, listOf(MockInteraction.class))
+                        : jsonConverter.fromJson(content, listOf(MockInteraction.class));
                 log.info("Read Http Mocks from file://{}\nRequests:\n{}", Files.path(path), urlsOf(mocks));
                 return mocks;
             } else {
                 final List<Path> fileNames = Files.getFileList(path);
                 return fileNames.stream()
                         .map(Path::toString)
-                        .filter(Files::isJson)
+                        .filter(file -> Files.isJson(file) || Files.isYaml(file))
                         .map(file -> {
-                            final String json = applyVariables(Files.readString(file));
-                            final MockInteraction mock = jsonConverter.fromJson(json, MockInteraction.class);
+                            final String content = applyVariables(Files.readString(file));
+                            final MockInteraction mock = Files.isYaml(file)
+                                    ? jsonConverter.fromYaml(content, MockInteraction.class)
+                                    : jsonConverter.fromJson(content, MockInteraction.class);
                             log.info("Read Http Mock from file://{}\nRequest:\n{}", Files.path(file), mock.getRequest().getUrl());
                             return mock;
                         })

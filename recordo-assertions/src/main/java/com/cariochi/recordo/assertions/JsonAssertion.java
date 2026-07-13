@@ -93,19 +93,6 @@ public class JsonAssertion<T> {
     }
 
     /**
-     * Sets whether the comparison should allow additional fields in the actual JSON.
-     * Defaults to false.
-     *
-     * @param allowExtraFields true if actual JSON may contain fields missing from expected JSON
-     * @return This JsonAssertion instance for method chaining.
-     * @deprecated Use {@link #allowExtraFields(boolean)} instead.
-     */
-    @Deprecated(since = "2.1.0", forRemoval = true)
-    public JsonAssertion<T> extensible(boolean allowExtraFields) {
-        return allowExtraFields(allowExtraFields);
-    }
-
-    /**
      * Sets whether array order must match exactly.
      * Defaults to true.
      *

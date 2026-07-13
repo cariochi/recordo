@@ -14,6 +14,8 @@ import tools.jackson.databind.ser.ValueSerializerModifier;
 import tools.jackson.databind.ser.std.SimpleBeanPropertyFilter;
 import tools.jackson.databind.ser.std.SimpleFilterProvider;
 import tools.jackson.databind.util.StdDateFormat;
+import tools.jackson.dataformat.yaml.YAMLMapper;
+import tools.jackson.dataformat.yaml.YAMLWriteFeature;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -24,26 +26,45 @@ import java.util.Set;
 public class JsonConverter {
 
     private final ObjectMapper objectMapper;
+    private final ObjectMapper yamlMapper;
     private final JacksonPrinter printer = new JacksonPrinter();
 
     public JsonConverter() {
-        final JsonMapper.Builder builder = JsonMapper.builder()
+        final JsonMapper.Builder jsonBuilder = JsonMapper.builder()
                 .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+                .disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .addModule(getJsonModule())
+                .defaultDateFormat(new StdDateFormat());
+
+        final YAMLMapper.Builder yamlBuilder = YAMLMapper.builder()
+                .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+                .disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .enable(YAMLWriteFeature.INDENT_ARRAYS_WITH_INDICATOR)
                 .addModule(getJsonModule())
                 .defaultDateFormat(new StdDateFormat());
 
         try {
             Class<?> pageImpl = Class.forName("org.springframework.data.domain.PageImpl");
-            builder.addMixIn(pageImpl, IgnoringPageable.class);
+            jsonBuilder.addMixIn(pageImpl, IgnoringPageable.class);
+            yamlBuilder.addMixIn(pageImpl, IgnoringPageable.class);
         } catch (ClassNotFoundException ignored) {
         }
 
-        objectMapper = builder.build();
+        objectMapper = jsonBuilder.build();
+        yamlMapper = yamlBuilder.build();
     }
 
     public JsonConverter(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper.rebuild()
+                .disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
                 .addModule(getJsonModule())
+                .build();
+        yamlMapper = YAMLMapper.builder()
+                .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+                .disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .enable(YAMLWriteFeature.INDENT_ARRAYS_WITH_INDICATOR)
+                .addModule(getJsonModule())
+                .defaultDateFormat(new StdDateFormat())
                 .build();
     }
 
@@ -85,6 +106,42 @@ public class JsonConverter {
         }
         final JavaType valueType = objectMapper.constructType(type);
         return objectMapper.readValue(json, valueType);
+    }
+
+    public String toYaml(Object object) {
+        return toYaml(object, null);
+    }
+
+    @SneakyThrows
+    public String toYaml(Object object, JsonFilter filter) {
+        if (object == null || object instanceof String) {
+            return (String) object;
+        }
+        // YAML context doesn't support path-based filtering — filter via JSON first, then convert
+        if (filter != null && filter.hasProperties()) {
+            Object value = objectMapper.readValue(toJson(object, filter), Object.class);
+            return yamlMapper.writeValueAsString(value);
+        }
+        return yamlMapper.writeValueAsString(object);
+    }
+
+    @SneakyThrows
+    @SuppressWarnings("unchecked")
+    public <T> T fromYaml(String yaml, Type type) {
+        if (yaml == null) {
+            return null;
+        }
+        if (String.class.equals(type)) {
+            return (T) yaml;
+        }
+        final JavaType valueType = yamlMapper.constructType(type);
+        return yamlMapper.readValue(yaml, valueType);
+    }
+
+    @SneakyThrows
+    public String yamlToJson(String yaml) {
+        Object value = yamlMapper.readValue(yaml, Object.class);
+        return objectMapper.writer().with(printer).writeValueAsString(value);
     }
 
     public ObjectMapper objectMapper(JsonFilter propertyFilter) {

@@ -31,15 +31,24 @@ class AsJsonComparator {
     ) {
         final String actualJson = jsonConverter.toJson(actualObject, jsonFilter);
         if (Files.exists(expectedFileName)) {
-            final String expectedJson = Files.readString(expectedFileName);
+            final String expectedContent = Files.readString(expectedFileName);
+            final String expectedJson = Files.isYaml(expectedFileName)
+                    ? jsonConverter.yamlToJson(expectedContent)
+                    : expectedContent;
             final JSONCompareResult result = compareJSON(expectedJson, actualJson, new JsonFilterComparator(compareMode, jsonFilter));
             if (result.failed()) {
-                Files.write(actualJson, actualFileName(expectedFileName))
+                String actual = Files.isYaml(expectedFileName)
+                        ? jsonConverter.toYaml(actualObject, jsonFilter)
+                        : actualJson;
+                Files.write(actual, actualFileName(expectedFileName))
                         .ifPresent(file -> log.info(result.getMessage() + "\nActual value is saved to file://{}", file));
             }
             return result;
         } else {
-            Files.write(actualJson, expectedFileName)
+            String content = Files.isYaml(expectedFileName)
+                    ? jsonConverter.toYaml(actualObject, jsonFilter)
+                    : actualJson;
+            Files.write(content, expectedFileName)
                     .ifPresent(file -> log.info("\nExpected value is saved to file://{}", file));
             return failed();
         }
